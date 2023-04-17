@@ -16,7 +16,6 @@ type MeshConfig struct {
 	// Mesh Node
 	DataDir                string `json:"data_dir"`
 	RPCPort                string `json:"rpc_port"`
-	ChainsName             string `json:"chains_name"`
 	ClientRPCTimeout       int64  `json:"client_rpc_timeout"`
 	LogLevel               string `json:"log_level"`
 	LogChainRequest        bool   `json:"log_chain_request"`
@@ -25,11 +24,14 @@ type MeshConfig struct {
 	AuthTokenFile          string `json:"auth_token_file"`
 	JSONSortRelayResponses bool   `json:"json_sort_relay_responses"`
 
-	// Chains HTTP Client
-	ChainRPCTimeout             int64 `json:"chain_rpc_timeout"`
-	ChainRPCMaxIdleConnections  int   `json:"chain_rpc_max_idle_connections"`
-	ChainRPCMaxConnsPerHost     int   `json:"chain_rpc_max_conns_per_host"`
-	ChainRPCMaxIdleConnsPerHost int   `json:"chain_rpc_max_idle_conns_per_host"`
+	// Chains
+	ChainsName                  string `json:"chains_name"`
+	ChainsNameMap               string `json:"chains_name_map"`
+	RemoteChainsNameMap         string `json:"remote_chains_name_map"`
+	ChainRPCTimeout             int64  `json:"chain_rpc_timeout"`
+	ChainRPCMaxIdleConnections  int    `json:"chain_rpc_max_idle_connections"`
+	ChainRPCMaxConnsPerHost     int    `json:"chain_rpc_max_conns_per_host"`
+	ChainRPCMaxIdleConnsPerHost int    `json:"chain_rpc_max_idle_conns_per_host"`
 
 	// Relay Cache
 	RelayCacheFile                         string `json:"relay_cache_file"`
@@ -67,10 +69,11 @@ type MeshConfig struct {
 	PrometheusAddr         string `json:"pocket_prometheus_port"`
 	PrometheusMaxOpenfiles int    `json:"prometheus_max_open_files"`
 	// Metrics Workers
-	MetricsWorkerStrategy     string `json:"metrics_worker_strategy"`
-	MetricsMaxWorkers         int    `json:"metrics_max_workers"`
-	MetricsMaxWorkersCapacity int    `json:"metrics_max_workers_capacity"`
-	MetricsWorkersIdleTimeout int    `json:"metrics_workers_idle_timeout"`
+	MetricsWorkerStrategy      string `json:"metrics_worker_strategy"`
+	MetricsMaxWorkers          int    `json:"metrics_max_workers"`
+	MetricsMaxWorkersCapacity  int    `json:"metrics_max_workers_capacity"`
+	MetricsWorkersIdleTimeout  int    `json:"metrics_workers_idle_timeout"`
+	MetricsAttachServicerLabel bool   `json:"metrics_attach_servicer_label"`
 	// Metrics report interval in seconds
 	MetricsReportInterval int `json:"metrics_report_interval"`
 }
@@ -80,7 +83,6 @@ func defaultMeshConfig(dataDir string) MeshConfig {
 		// Mesh Node
 		DataDir:                dataDir,
 		RPCPort:                sdk.DefaultRPCPort,
-		ChainsName:             sdk.DefaultChainsName,
 		ClientRPCTimeout:       sdk.DefaultRPCTimeout,
 		LogLevel:               "*:info, *:error",
 		LogChainRequest:        false,
@@ -88,7 +90,10 @@ func defaultMeshConfig(dataDir string) MeshConfig {
 		UserAgent:              sdk.DefaultUserAgent,
 		AuthTokenFile:          "auth" + FS + "mesh.json",
 		JSONSortRelayResponses: sdk.DefaultJSONSortRelayResponses,
-		// Chains Client
+		// Chains
+		ChainsName:                  sdk.DefaultChainsName,
+		ChainsNameMap:               "chains_name_map.json",
+		RemoteChainsNameMap:         "",
 		ChainRPCTimeout:             sdk.DefaultRPCTimeout,
 		ChainRPCMaxIdleConnections:  2500,
 		ChainRPCMaxConnsPerHost:     2500,
@@ -120,13 +125,14 @@ func defaultMeshConfig(dataDir string) MeshConfig {
 		SessionCacheCleanUpInterval: 1800,
 		// Metrics
 		// Prometheus
-		PrometheusAddr:            sdk.DefaultPocketPrometheusListenAddr,
-		PrometheusMaxOpenfiles:    sdk.DefaultPrometheusMaxOpenFile,
-		MetricsWorkerStrategy:     "lazy",
-		MetricsMaxWorkers:         50,
-		MetricsMaxWorkersCapacity: 50000,
-		MetricsWorkersIdleTimeout: 10000,
-		MetricsReportInterval:     10,
+		PrometheusAddr:             sdk.DefaultPocketPrometheusListenAddr,
+		PrometheusMaxOpenfiles:     sdk.DefaultPrometheusMaxOpenFile,
+		MetricsAttachServicerLabel: false,
+		MetricsWorkerStrategy:      "lazy",
+		MetricsMaxWorkers:          50,
+		MetricsMaxWorkersCapacity:  50000,
+		MetricsWorkersIdleTimeout:  10000,
+		MetricsReportInterval:      10,
 	}
 
 	return c

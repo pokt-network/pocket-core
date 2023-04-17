@@ -139,15 +139,17 @@ func StartRPC(router *httprouter.Router) {
 	rand.Seed(time.Now().Unix())
 	// load auth token files (servicer and mesh node)
 	loadAuthTokens()
+	// instantiate all the http clients used to call Chains and Servicer
+	prepareHttpClients()
 	// retrieve the nonNative blockchains your node is hosting
 	chains = loadHostedChains()
+	// load chain name map use on metrics. this will not raise or throw an error.
+	loadChainsNameMap()
 	// turn on chains hot reload
 	go initKeysHotReload()
 	go initChainsHotReload()
 	// initialize prometheus metrics
 	StartPrometheusServer()
-	// instantiate all the http clients used to call Chains and Servicer
-	prepareHttpClients()
 	// read servicer
 	totalNodes, totalServicers := loadServicerNodes()
 	// check servicers are reachable at required endpoints

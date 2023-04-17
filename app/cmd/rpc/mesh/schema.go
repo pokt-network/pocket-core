@@ -60,3 +60,34 @@ var nodeFileSchema = `
   ]
 }
 `
+
+var plainChainsMapSchema = `
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "patternProperties": {
+    ".*": {
+      "type": "string"
+    }
+  }
+}
+`
+
+var richChainsMapSchema = `
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "patternProperties": {
+    ".*": {
+      "type": "object",
+	  "required": ["label"],
+	  "additionalProperties": true,
+      "properties": {
+        "label": {
+          "type": "string"
+		}
+      }
+    }
+  }
+}
+`

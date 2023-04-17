@@ -9,7 +9,6 @@ import (
 	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	stdPrometheus "github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/puzpuzpuz/xsync"
 	"github.com/robfig/cron/v3"
 	log2 "log"
 	"net/http"
@@ -18,9 +17,26 @@ import (
 
 var (
 	ServiceMetricsNamespace = "geo_mesh"
-	NodeWorkerLabel         = "node_worker"
-	MetricsWorkerLabel      = "metrics_worker"
-	ServicerLabel           = "validator_address"
+	StatTypeLabel           = "stat_type"
+	NodeNameLabel           = "node_name"
+	ServicerLabel           = "servicer_address"
+	ChainIDLabel            = "chain_id"
+	ChainNameLabel          = "chain_name"
+	NotifyLabel             = "is_notify"
+
+	runningWorkers      *stdPrometheus.GaugeVec
+	idleWorkers         *stdPrometheus.GaugeVec
+	tasksSubmittedTotal *stdPrometheus.GaugeVec
+	tasksWaitingTotal   *stdPrometheus.GaugeVec
+	successTasksTotal   *stdPrometheus.GaugeVec
+	failedTasksTotal    *stdPrometheus.GaugeVec
+	completedTasksTotal *stdPrometheus.GaugeVec
+	minWorker           *stdPrometheus.GaugeVec
+	maxWorker           *stdPrometheus.GaugeVec
+	maxCapacity         *stdPrometheus.GaugeVec
+	relayCounter        *stdPrometheus.CounterVec
+	relayTime           *stdPrometheus.HistogramVec
+	errCounter          *stdPrometheus.CounterVec
 )
 
 type ServiceMetric struct {
@@ -34,255 +50,57 @@ type ServiceMetric struct {
 	NotifyAvgRelayTime *stdPrometheus.HistogramVec `json:"notify_avg_relay_time"`
 }
 
+func getLabelSignature() []string {
+	if app.GlobalMeshConfig.MetricsAttachServicerLabel {
+		return []string{ServicerLabel, ChainIDLabel, ChainNameLabel, NotifyLabel}
+	} else {
+		return []string{ChainIDLabel, ChainNameLabel, NotifyLabel}
+	}
+}
+
+func getMetricLabelSignature() []string {
+	// just in case it change in the future, 1 place to update.
+	return []string{StatTypeLabel, NodeNameLabel}
+}
+
 var (
 	prometheusServer *http.Server
-
-	// total metrics per servicer
-	servicerMetrics = &ServiceMetric{}
-
-	// metric per chain
-	perChainMetrics = xsync.NewMapOf[*ServiceMetric]()
-
-	// pool metrics
-	runningWorkers = stdPrometheus.NewGaugeVec(
-		stdPrometheus.GaugeOpts{
-			Namespace: ModuleName,
-			Subsystem: ServiceMetricsNamespace,
-			Name:      "node_workers_running",
-			Help:      "Number of running worker goroutines",
-		},
-		[]string{NodeWorkerLabel})
-
-	idleWorkers = stdPrometheus.NewGaugeVec(
-		stdPrometheus.GaugeOpts{
-			Namespace: ModuleName,
-			Subsystem: ServiceMetricsNamespace,
-			Name:      "node_workers_idle",
-			Help:      "Number of idle worker goroutines",
-		},
-		[]string{NodeWorkerLabel})
-
-	tasksSubmittedTotal = stdPrometheus.NewGaugeVec(
-		stdPrometheus.GaugeOpts{
-			Namespace: ModuleName,
-			Subsystem: ServiceMetricsNamespace,
-			Name:      "node_tasks_submitted_total",
-			Help:      "Number of tasks submitted",
-		},
-		[]string{NodeWorkerLabel})
-	tasksWaitingTotal = stdPrometheus.NewGaugeVec(
-		stdPrometheus.GaugeOpts{
-			Namespace: ModuleName,
-			Subsystem: ServiceMetricsNamespace,
-			Name:      "node_tasks_waiting_total",
-			Help:      "Number of tasks waiting in the queue",
-		},
-		[]string{NodeWorkerLabel})
-	successTasksTotal = stdPrometheus.NewGaugeVec(
-		stdPrometheus.GaugeOpts{
-			Namespace: ModuleName,
-			Subsystem: ServiceMetricsNamespace,
-			Name:      "node_tasks_successful_total",
-			Help:      "Number of tasks that completed successfully",
-		},
-		[]string{NodeWorkerLabel})
-	failedTasksTotal = stdPrometheus.NewGaugeVec(
-		stdPrometheus.GaugeOpts{
-			Namespace: ModuleName,
-			Subsystem: ServiceMetricsNamespace,
-			Name:      "node_tasks_failed_total",
-			Help:      "Number of tasks that completed with panic",
-		},
-		[]string{NodeWorkerLabel})
-	completedTasksTotal = stdPrometheus.NewGaugeVec(
-		stdPrometheus.GaugeOpts{
-			Namespace: ModuleName,
-			Subsystem: ServiceMetricsNamespace,
-			Name:      "node_tasks_completed_total",
-			Help:      "Number of tasks that completed either successfully or with panic",
-		},
-		[]string{NodeWorkerLabel})
-	minWorker = stdPrometheus.NewGaugeVec(
-		stdPrometheus.GaugeOpts{
-			Namespace: ModuleName,
-			Subsystem: ServiceMetricsNamespace,
-			Name:      "node_min_workers",
-			Help:      "Number min workers of node pool",
-		},
-		[]string{NodeWorkerLabel})
-	maxWorker = stdPrometheus.NewGaugeVec(
-		stdPrometheus.GaugeOpts{
-			Namespace: ModuleName,
-			Subsystem: ServiceMetricsNamespace,
-			Name:      "node_max_workers",
-			Help:      "Number max workers of node pool",
-		},
-		[]string{NodeWorkerLabel})
-	maxCapacity = stdPrometheus.NewGaugeVec(
-		stdPrometheus.GaugeOpts{
-			Namespace: ModuleName,
-			Subsystem: ServiceMetricsNamespace,
-			Name:      "node_max_capacity",
-			Help:      "Number max capacity of node pool",
-		},
-		[]string{NodeWorkerLabel})
-
-	// internal worker metrics
-	internalRunningWorkers = stdPrometheus.NewGaugeVec(
-		stdPrometheus.GaugeOpts{
-			Namespace: ModuleName,
-			Subsystem: ServiceMetricsNamespace,
-			Name:      "metrics_workers_running",
-			Help:      "Number of running worker goroutines",
-		},
-		[]string{MetricsWorkerLabel})
-	internalIdleWorkers = stdPrometheus.NewGaugeVec(
-		stdPrometheus.GaugeOpts{
-			Namespace: ModuleName,
-			Subsystem: ServiceMetricsNamespace,
-			Name:      "metrics_workers_idle",
-			Help:      "Number of idle worker goroutines",
-		},
-		[]string{MetricsWorkerLabel})
-	internalTasksSubmittedTotal = stdPrometheus.NewGaugeVec(
-		stdPrometheus.GaugeOpts{
-			Namespace: ModuleName,
-			Subsystem: ServiceMetricsNamespace,
-			Name:      "metrics_tasks_submitted_total",
-			Help:      "Number of tasks submitted",
-		},
-		[]string{MetricsWorkerLabel})
-	internalTasksWaitingTotal = stdPrometheus.NewGaugeVec(
-		stdPrometheus.GaugeOpts{
-			Namespace: ModuleName,
-			Subsystem: ServiceMetricsNamespace,
-			Name:      "metrics_tasks_waiting_total",
-			Help:      "Number of tasks waiting in the queue",
-		},
-		[]string{MetricsWorkerLabel})
-	internalSuccessTasksTotal = stdPrometheus.NewGaugeVec(
-		stdPrometheus.GaugeOpts{
-			Namespace: ModuleName,
-			Subsystem: ServiceMetricsNamespace,
-			Name:      "metrics_tasks_successful_total",
-			Help:      "Number of tasks that completed successfully",
-		},
-		[]string{MetricsWorkerLabel})
-	internalFailedTasksTotal = stdPrometheus.NewGaugeVec(
-		stdPrometheus.GaugeOpts{
-			Namespace: ModuleName,
-			Subsystem: ServiceMetricsNamespace,
-			Name:      "metrics_tasks_failed_total",
-			Help:      "Number of tasks that completed with panic",
-		},
-		[]string{MetricsWorkerLabel})
-	internalCompletedTasksTotal = stdPrometheus.NewGaugeVec(
-		stdPrometheus.GaugeOpts{
-			Namespace: ModuleName,
-			Subsystem: ServiceMetricsNamespace,
-			Name:      "metrics_tasks_completed_total",
-			Help:      "Number of tasks that completed either successfully or with panic",
-		},
-		[]string{MetricsWorkerLabel})
-	internalMinWorker = stdPrometheus.NewGaugeVec(
-		stdPrometheus.GaugeOpts{
-			Namespace: ModuleName,
-			Subsystem: ServiceMetricsNamespace,
-			Name:      "metrics_min_workers",
-			Help:      "Number min workers of metrics pool",
-		},
-		[]string{MetricsWorkerLabel})
-	internalMaxWorker = stdPrometheus.NewGaugeVec(
-		stdPrometheus.GaugeOpts{
-			Namespace: ModuleName,
-			Subsystem: ServiceMetricsNamespace,
-			Name:      "metrics_max_workers",
-			Help:      "Number max workers of metrics pool",
-		},
-		[]string{MetricsWorkerLabel})
-	internalMaxCapacity = stdPrometheus.NewGaugeVec(
-		stdPrometheus.GaugeOpts{
-			Namespace: ModuleName,
-			Subsystem: ServiceMetricsNamespace,
-			Name:      "metrics_max_capacity",
-			Help:      "Number max capacity of metrics pool",
-		},
-		[]string{MetricsWorkerLabel})
 )
 
-// getServicerLabel - return properly formatted prometheus label
-func getServicerLabel(nodeAddress *sdk.Address) map[string]string {
-	return map[string]string{ServicerLabel: nodeAddress.String()}
+// getLabel - return properly formatted prometheus label
+func getLabel(nodeAddress *sdk.Address, chainID string, notify bool) map[string]string {
+	labels := map[string]string{
+		ChainIDLabel: chainID,
+		NotifyLabel:  fmt.Sprintf("%v", notify),
+	}
+
+	if name, ok := ChainNameMap.Load(chainID); ok {
+		labels[ChainNameLabel] = name
+	} else {
+		// fallback
+		labels[ChainNameLabel] = chainID
+	}
+
+	if app.GlobalMeshConfig.MetricsAttachServicerLabel {
+		labels[ServicerLabel] = nodeAddress.String()
+	}
+
+	return labels
 }
 
 // addRelayFor - accumulate a relay on servicer and per chain counters.
-func addRelayFor(networkID string, relayTime float64, nodeAddress *sdk.Address, notify bool) {
+func addRelayFor(chainID string, relayDuration float64, nodeAddress *sdk.Address, notify bool) {
 	// add relay to accumulated count
-	labels := getServicerLabel(nodeAddress)
-
-	var relayCounter *stdPrometheus.CounterVec
-	var avgRelay *stdPrometheus.HistogramVec
-	var chainRelayCounter *stdPrometheus.CounterVec
-	var chainAvgRelay *stdPrometheus.HistogramVec
-
-	var chainMetric *ServiceMetric
-
-	if cm, ok := perChainMetrics.Load(networkID); !ok {
-		logger.Error("unable to find corresponding networkID in service metrics: ", networkID)
-		// path on the fly
-		chainMetric = NewServiceMetricsFor(networkID)
-		perChainMetrics.Store(networkID, chainMetric)
-	} else {
-		chainMetric = cm
-	}
-
-	if !notify {
-		relayCounter = servicerMetrics.RelayCount
-		avgRelay = servicerMetrics.AvgRelayTime
-		chainRelayCounter = chainMetric.RelayCount
-		chainAvgRelay = chainMetric.AvgRelayTime
-	} else {
-		relayCounter = servicerMetrics.NotifyRelayCount
-		avgRelay = servicerMetrics.NotifyAvgRelayTime
-		chainRelayCounter = chainMetric.NotifyRelayCount
-		chainAvgRelay = chainMetric.NotifyAvgRelayTime
-	}
-
+	labels := getLabel(nodeAddress, chainID, notify)
 	relayCounter.With(labels).Add(1)
-	avgRelay.With(labels).Observe(relayTime)
-	chainRelayCounter.With(labels).Add(1)
-	chainAvgRelay.With(labels).Observe(relayTime)
+	relayTime.With(labels).Observe(relayDuration)
 }
 
 // addErrorFor - accumulate a relay on servicer and per chain counters.
-func addErrorFor(networkID string, nodeAddress *sdk.Address, notify bool) {
+func addErrorFor(chainID string, nodeAddress *sdk.Address, notify bool) {
 	// add relay to accumulated count
-	labels := getServicerLabel(nodeAddress)
-
-	var errCounter *stdPrometheus.CounterVec
-	var chainErrCounter *stdPrometheus.CounterVec
-
-	var chainMetric *ServiceMetric
-
-	if cm, ok := perChainMetrics.Load(networkID); !ok {
-		logger.Error("unable to find corresponding networkID in service metrics: ", networkID)
-		// path on the fly
-		chainMetric = NewServiceMetricsFor(networkID)
-		perChainMetrics.Store(networkID, chainMetric)
-	} else {
-		chainMetric = cm
-	}
-
-	if !notify {
-		errCounter = servicerMetrics.ErrCount
-		chainErrCounter = chainMetric.ErrCount
-	} else {
-		errCounter = servicerMetrics.NotifyErrCount
-		chainErrCounter = chainMetric.NotifyErrCount
-	}
-
+	labels := getLabel(nodeAddress, chainID, notify)
 	errCounter.With(labels).Add(1)
-	chainErrCounter.With(labels).Add(1)
 }
 
 type Metrics struct {
@@ -297,7 +115,7 @@ type Metrics struct {
 
 // report - add values to all the collectors
 func (m *Metrics) report() {
-	nodeWorkerLabel := map[string]string{NodeWorkerLabel: m.name}
+	nodeWorkerLabel := map[string]string{StatTypeLabel: "node", NodeNameLabel: m.name}
 	// pool metrics
 	runningWorkers.With(nodeWorkerLabel).Set(float64(m.pool.RunningWorkers()))
 	idleWorkers.With(nodeWorkerLabel).Set(float64(m.pool.IdleWorkers()))
@@ -310,18 +128,19 @@ func (m *Metrics) report() {
 	maxWorker.With(nodeWorkerLabel).Set(float64(m.pool.MaxWorkers()))
 	maxCapacity.With(nodeWorkerLabel).Set(float64(m.pool.MaxCapacity()))
 
-	metricsWorkerLabel := map[string]string{MetricsWorkerLabel: m.name}
+	metricsWorkerLabel := map[string]string{StatTypeLabel: "metric", NodeNameLabel: m.name}
 	// internal metrics
-	internalRunningWorkers.With(metricsWorkerLabel).Set(float64(m.worker.RunningWorkers()))
-	internalIdleWorkers.With(metricsWorkerLabel).Set(float64(m.worker.IdleWorkers()))
-	internalTasksSubmittedTotal.With(metricsWorkerLabel).Set(float64(m.worker.SubmittedTasks()))
-	internalTasksWaitingTotal.With(metricsWorkerLabel).Set(float64(m.worker.WaitingTasks()))
-	internalSuccessTasksTotal.With(metricsWorkerLabel).Set(float64(m.worker.SuccessfulTasks()))
-	internalFailedTasksTotal.With(metricsWorkerLabel).Set(float64(m.worker.FailedTasks()))
-	internalCompletedTasksTotal.With(metricsWorkerLabel).Set(float64(m.worker.CompletedTasks()))
-	internalMinWorker.With(metricsWorkerLabel).Set(float64(m.worker.MinWorkers()))
-	internalMaxWorker.With(metricsWorkerLabel).Set(float64(m.worker.MaxWorkers()))
-	internalMaxCapacity.With(metricsWorkerLabel).Set(float64(m.worker.MaxCapacity()))
+	// pool metrics
+	runningWorkers.With(metricsWorkerLabel).Set(float64(m.worker.RunningWorkers()))
+	idleWorkers.With(metricsWorkerLabel).Set(float64(m.worker.IdleWorkers()))
+	tasksSubmittedTotal.With(metricsWorkerLabel).Set(float64(m.worker.SubmittedTasks()))
+	tasksWaitingTotal.With(metricsWorkerLabel).Set(float64(m.worker.WaitingTasks()))
+	successTasksTotal.With(metricsWorkerLabel).Set(float64(m.worker.SuccessfulTasks()))
+	failedTasksTotal.With(metricsWorkerLabel).Set(float64(m.worker.FailedTasks()))
+	completedTasksTotal.With(metricsWorkerLabel).Set(float64(m.worker.CompletedTasks()))
+	minWorker.With(metricsWorkerLabel).Set(float64(m.worker.MinWorkers()))
+	maxWorker.With(metricsWorkerLabel).Set(float64(m.worker.MaxWorkers()))
+	maxCapacity.With(metricsWorkerLabel).Set(float64(m.worker.MaxCapacity()))
 }
 
 // AddServiceMetricErrorFor - add to prometheus metrics an error for a servicer
@@ -386,120 +205,134 @@ func NewWorkerPoolMetrics(name string, pool *pond.WorkerPool) *Metrics {
 	return metrics
 }
 
-// NewServiceMetricsFor - Create prometheus vector for received network id
-func NewServiceMetricsFor(networkID string) *ServiceMetric {
-	// relay counter metric
-	relayCounter := stdPrometheus.NewCounterVec(
-		stdPrometheus.CounterOpts{
-			Namespace: ModuleName,
-			Subsystem: ServiceMetricsNamespace,
-			Name:      pocketTypes.RelayCountName + networkID,
-			Help:      pocketTypes.RelayCountHelp + networkID,
-		},
-		[]string{ServicerLabel},
-	)
-	// err counter metric
-	errCounter := stdPrometheus.NewCounterVec(
-		stdPrometheus.CounterOpts{
-			Namespace: ModuleName,
-			Subsystem: ServiceMetricsNamespace,
-			Name:      pocketTypes.ErrCountName + networkID,
-			Help:      pocketTypes.ErrCountName + networkID,
-		},
-		[]string{ServicerLabel},
-	)
-	// Avg relay time histogram metric
-	avgRelayTime := stdPrometheus.NewHistogramVec(
-		stdPrometheus.HistogramOpts{
-			Namespace:   ModuleName,
-			Subsystem:   ServiceMetricsNamespace,
-			Name:        pocketTypes.AvgRelayHistName + networkID,
-			Help:        pocketTypes.AvgrelayHistHelp + networkID,
-			ConstLabels: nil,
-			Buckets:     stdPrometheus.LinearBuckets(1, 20, 20),
-		},
-		[]string{ServicerLabel},
-	)
-
-	// relay counter metric
-	notifyRelayCounter := stdPrometheus.NewCounterVec(
-		stdPrometheus.CounterOpts{
-			Namespace: ModuleName,
-			Subsystem: ServiceMetricsNamespace,
-			Name:      "notify_" + pocketTypes.RelayCountName + networkID,
-			Help:      "the number of relays notified to fullnode against: " + networkID,
-		},
-		[]string{ServicerLabel},
-	)
-	// err counter metric
-	notifyErrCounter := stdPrometheus.NewCounterVec(
-		stdPrometheus.CounterOpts{
-			Namespace: ModuleName,
-			Subsystem: ServiceMetricsNamespace,
-			Name:      "notify_" + pocketTypes.ErrCountName + networkID,
-			Help:      "the number of errors resulting from notify relays executed against: " + networkID,
-		},
-		[]string{ServicerLabel},
-	)
-	// Avg relay time histogram metric
-	notifyAvgRelayTime := stdPrometheus.NewHistogramVec(
-		stdPrometheus.HistogramOpts{
-			Namespace:   ModuleName,
-			Subsystem:   ServiceMetricsNamespace,
-			Name:        "notify_" + pocketTypes.AvgRelayHistName + networkID,
-			Help:        "the average notify relay time in ms executed against: " + networkID,
-			ConstLabels: nil,
-			Buckets:     stdPrometheus.LinearBuckets(1, 20, 20),
-		},
-		[]string{ServicerLabel},
-	)
-
-	return &ServiceMetric{
-		RelayCount:         relayCounter,
-		ErrCount:           errCounter,
-		AvgRelayTime:       avgRelayTime,
-		NotifyRelayCount:   notifyRelayCounter,
-		NotifyErrCount:     notifyErrCounter,
-		NotifyAvgRelayTime: notifyAvgRelayTime,
-	}
-}
-
-// RegisterMetricsForChains - Register vector for each loaded chain, this will not register a chain 2 times.
-func RegisterMetricsForChains() {
-	// read current chains
-	currentChains := GetChains()
-
-	currentChains.L.Lock()
-	for _, chain := range currentChains.M {
-		if _, ok := perChainMetrics.Load(chain.ID); !ok {
-			chainMetrics := NewServiceMetricsFor(chain.ID)
-			perChainMetrics.Store(chain.ID, chainMetrics)
-			stdPrometheus.MustRegister(
-				chainMetrics.RelayCount,
-				chainMetrics.AvgRelayTime,
-				chainMetrics.ErrCount,
-				chainMetrics.NotifyRelayCount,
-				chainMetrics.NotifyErrCount,
-				chainMetrics.NotifyAvgRelayTime,
-			)
-		}
-	}
-	currentChains.L.Unlock()
-}
-
 // RegisterMetrics - register to prom all the collectors
 func RegisterMetrics() {
-	servicerMetrics = NewServiceMetricsFor("all")
-	stdPrometheus.MustRegister(
-		servicerMetrics.RelayCount,
-		servicerMetrics.AvgRelayTime,
-		servicerMetrics.ErrCount,
-		servicerMetrics.NotifyRelayCount,
-		servicerMetrics.NotifyErrCount,
-		servicerMetrics.NotifyAvgRelayTime,
+	// pool metrics
+	runningWorkers = stdPrometheus.NewGaugeVec(
+		stdPrometheus.GaugeOpts{
+			Namespace: ModuleName,
+			Subsystem: ServiceMetricsNamespace,
+			Name:      "workers_running",
+			Help:      "Number of running worker goroutines",
+		},
+		getMetricLabelSignature(),
 	)
 
-	RegisterMetricsForChains()
+	idleWorkers = stdPrometheus.NewGaugeVec(
+		stdPrometheus.GaugeOpts{
+			Namespace: ModuleName,
+			Subsystem: ServiceMetricsNamespace,
+			Name:      "workers_idle",
+			Help:      "Number of idle worker goroutines",
+		},
+		getMetricLabelSignature(),
+	)
+
+	tasksSubmittedTotal = stdPrometheus.NewGaugeVec(
+		stdPrometheus.GaugeOpts{
+			Namespace: ModuleName,
+			Subsystem: ServiceMetricsNamespace,
+			Name:      "tasks_submitted_total",
+			Help:      "Number of tasks submitted",
+		},
+		getMetricLabelSignature(),
+	)
+	tasksWaitingTotal = stdPrometheus.NewGaugeVec(
+		stdPrometheus.GaugeOpts{
+			Namespace: ModuleName,
+			Subsystem: ServiceMetricsNamespace,
+			Name:      "tasks_waiting_total",
+			Help:      "Number of tasks waiting in the queue",
+		},
+		getMetricLabelSignature(),
+	)
+	successTasksTotal = stdPrometheus.NewGaugeVec(
+		stdPrometheus.GaugeOpts{
+			Namespace: ModuleName,
+			Subsystem: ServiceMetricsNamespace,
+			Name:      "tasks_successful_total",
+			Help:      "Number of tasks that completed successfully",
+		},
+		getMetricLabelSignature(),
+	)
+	failedTasksTotal = stdPrometheus.NewGaugeVec(
+		stdPrometheus.GaugeOpts{
+			Namespace: ModuleName,
+			Subsystem: ServiceMetricsNamespace,
+			Name:      "tasks_failed_total",
+			Help:      "Number of tasks that completed with panic",
+		},
+		getMetricLabelSignature(),
+	)
+	completedTasksTotal = stdPrometheus.NewGaugeVec(
+		stdPrometheus.GaugeOpts{
+			Namespace: ModuleName,
+			Subsystem: ServiceMetricsNamespace,
+			Name:      "tasks_completed_total",
+			Help:      "Number of tasks that completed either successfully or with panic",
+		},
+		getMetricLabelSignature(),
+	)
+	minWorker = stdPrometheus.NewGaugeVec(
+		stdPrometheus.GaugeOpts{
+			Namespace: ModuleName,
+			Subsystem: ServiceMetricsNamespace,
+			Name:      "min_workers",
+			Help:      "Number min workers of node pool",
+		},
+		getMetricLabelSignature(),
+	)
+	maxWorker = stdPrometheus.NewGaugeVec(
+		stdPrometheus.GaugeOpts{
+			Namespace: ModuleName,
+			Subsystem: ServiceMetricsNamespace,
+			Name:      "max_workers",
+			Help:      "Number max workers of node pool",
+		},
+		getMetricLabelSignature(),
+	)
+	maxCapacity = stdPrometheus.NewGaugeVec(
+		stdPrometheus.GaugeOpts{
+			Namespace: ModuleName,
+			Subsystem: ServiceMetricsNamespace,
+			Name:      "max_capacity",
+			Help:      "Number max capacity of node pool",
+		},
+		getMetricLabelSignature(),
+	)
+
+	// relay counter metric
+	relayCounter = stdPrometheus.NewCounterVec(
+		stdPrometheus.CounterOpts{
+			Namespace: ModuleName,
+			Subsystem: ServiceMetricsNamespace,
+			Name:      "relay_count",
+			Help:      "the number of relays executed against:",
+		},
+		getLabelSignature(),
+	)
+	// Avg relay time histogram metric
+	relayTime = stdPrometheus.NewHistogramVec(
+		stdPrometheus.HistogramOpts{
+			Namespace:   ModuleName,
+			Subsystem:   ServiceMetricsNamespace,
+			Name:        "relay_time",
+			Help:        "the average relay time in ms executed against:",
+			ConstLabels: nil,
+			Buckets:     stdPrometheus.LinearBuckets(1, 20, 20),
+		},
+		getLabelSignature(),
+	)
+	// err counter metric
+	errCounter = stdPrometheus.NewCounterVec(
+		stdPrometheus.CounterOpts{
+			Namespace: ModuleName,
+			Subsystem: ServiceMetricsNamespace,
+			Name:      "error_count",
+			Help:      "the number of errors resulting from relays executed against:",
+		},
+		getLabelSignature(),
+	)
 
 	stdPrometheus.MustRegister(
 		// pool collectors
@@ -513,17 +346,10 @@ func RegisterMetrics() {
 		minWorker,
 		maxWorker,
 		maxCapacity,
-		// internal collectors
-		internalRunningWorkers,
-		internalIdleWorkers,
-		internalTasksSubmittedTotal,
-		internalTasksWaitingTotal,
-		internalSuccessTasksTotal,
-		internalFailedTasksTotal,
-		internalCompletedTasksTotal,
-		internalMinWorker,
-		internalMaxWorker,
-		internalMaxCapacity,
+		// servicer
+		relayCounter,
+		relayTime,
+		errCounter,
 	)
 }
 
@@ -537,15 +363,6 @@ func UnregisterMetrics() {
 	stdPrometheus.Unregister(successTasksTotal)
 	stdPrometheus.Unregister(failedTasksTotal)
 	stdPrometheus.Unregister(completedTasksTotal)
-
-	// unregister node collectors
-	stdPrometheus.Unregister(internalRunningWorkers)
-	stdPrometheus.Unregister(internalIdleWorkers)
-	stdPrometheus.Unregister(internalTasksSubmittedTotal)
-	stdPrometheus.Unregister(internalTasksWaitingTotal)
-	stdPrometheus.Unregister(internalSuccessTasksTotal)
-	stdPrometheus.Unregister(internalFailedTasksTotal)
-	stdPrometheus.Unregister(internalCompletedTasksTotal)
 }
 
 // StartPrometheusServer - starts a Prometheus HTTP server, listening for metrics
