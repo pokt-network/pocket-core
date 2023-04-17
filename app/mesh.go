@@ -92,7 +92,7 @@ func defaultMeshConfig(dataDir string) MeshConfig {
 		JSONSortRelayResponses: sdk.DefaultJSONSortRelayResponses,
 		// Chains
 		ChainsName:                  sdk.DefaultChainsName,
-		ChainsNameMap:               "chains_name_map.json",
+		ChainsNameMap:               "",
 		RemoteChainsNameMap:         "",
 		ChainRPCTimeout:             sdk.DefaultRPCTimeout,
 		ChainRPCMaxIdleConnections:  2500,
