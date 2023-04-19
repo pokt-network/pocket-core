@@ -149,7 +149,7 @@ func notifyServicer(r *pocketTypes.Relay) {
 	req, err := retryablehttp.NewRequestWithContext(ctx, "POST", requestURL, bytes.NewBuffer(jsonData))
 	if err != nil {
 		logger.Error(fmt.Sprintf("error formatting Servicer URL: %s", err.Error()))
-		servicerNode.Node.MetricsWorker.AddServiceMetricErrorFor(r.Proof.Blockchain, &servicerNode.Address, true)
+		servicerNode.Node.MetricsWorker.AddServiceMetricErrorFor(r.Proof.Blockchain, &servicerNode.Address, true, NotifyStatusType, "500")
 		return
 	}
 	req.Header.Set("Content-Type", "application/json")
@@ -161,7 +161,7 @@ func notifyServicer(r *pocketTypes.Relay) {
 
 	if err != nil {
 		logger.Error(fmt.Sprintf("error dispatching relay to Servicer: %s", err.Error()))
-		servicerNode.Node.MetricsWorker.AddServiceMetricErrorFor(r.Proof.Blockchain, &servicerNode.Address, true)
+		servicerNode.Node.MetricsWorker.AddServiceMetricErrorFor(r.Proof.Blockchain, &servicerNode.Address, true, NotifyStatusType, "500")
 		return
 	}
 
@@ -177,7 +177,7 @@ func notifyServicer(r *pocketTypes.Relay) {
 	_, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
 		logger.Error("Couldn't parse response body.", "err", err)
-		servicerNode.Node.MetricsWorker.AddServiceMetricErrorFor(r.Proof.Blockchain, &servicerNode.Address, true)
+		servicerNode.Node.MetricsWorker.AddServiceMetricErrorFor(r.Proof.Blockchain, &servicerNode.Address, true, NotifyStatusType, "500")
 		return
 	}
 
@@ -195,7 +195,7 @@ func notifyServicer(r *pocketTypes.Relay) {
 				result.Error.Code, result.Error.Codespace, result.Error.Error,
 			),
 		)
-		servicerNode.Node.MetricsWorker.AddServiceMetricErrorFor(r.Proof.Blockchain, &servicerNode.Address, true)
+		servicerNode.Node.MetricsWorker.AddServiceMetricErrorFor(r.Proof.Blockchain, &servicerNode.Address, true, NotifyStatusType, fmt.Sprintf("%d", resp.StatusCode))
 		evaluateServicerError(r, result.Error)
 	} else {
 		logger.Debug(fmt.Sprintf("servicer processed relay %s successfully", r.RequestHashString()))
@@ -234,8 +234,8 @@ func notifyServicer(r *pocketTypes.Relay) {
 		}
 
 		// track the notify relay time
-		relayTime := time.Since(relayTimeStart)
-		servicerNode.Node.MetricsWorker.AddServiceMetricRelayFor(r, &servicerNode.Address, relayTime, true)
+		relayDuration := time.Since(relayTimeStart)
+		servicerNode.Node.MetricsWorker.AddServiceMetricRelayFor(r, &servicerNode.Address, relayDuration, true)
 	}
 
 	return
@@ -246,6 +246,7 @@ func execute(r *pocketTypes.Relay, hostedBlockchains *pocketTypes.HostedBlockcha
 	node := GetNodeFromAddress(address.String())
 
 	if node == nil {
+		node.MetricsWorker.AddServiceMetricErrorFor(r.Proof.Blockchain, address, false, InternalStatusType, "500")
 		return "", sdk.ErrInternal("Failed to find correct servicer PK")
 	}
 
@@ -253,7 +254,7 @@ func execute(r *pocketTypes.Relay, hostedBlockchains *pocketTypes.HostedBlockcha
 	chain, err := hostedBlockchains.GetChain(r.Proof.Blockchain)
 	if err != nil {
 		// metric track
-		node.MetricsWorker.AddServiceMetricErrorFor(r.Proof.Blockchain, address, false)
+		node.MetricsWorker.AddServiceMetricErrorFor(r.Proof.Blockchain, address, false, InternalStatusType, "500")
 		return "", err
 	}
 	_url := strings.Trim(chain.URL, `/`)
@@ -262,16 +263,21 @@ func execute(r *pocketTypes.Relay, hostedBlockchains *pocketTypes.HostedBlockcha
 	}
 
 	// do basic http request on the relay
-	res, er := ExecuteBlockchainHTTPRequest(
+	res, er, code := ExecuteBlockchainHTTPRequest(
 		r.Payload.Data, _url,
 		app.GlobalMeshConfig.UserAgent, chain.BasicAuth,
 		r.Payload.Method, r.Payload.Headers,
 	)
 	if er != nil {
 		// metric track
-		node.MetricsWorker.AddServiceMetricErrorFor(r.Proof.Blockchain, address, false)
+		node.MetricsWorker.AddServiceMetricErrorFor(r.Proof.Blockchain, address, false, InternalStatusType, "500")
 		return res, pocketTypes.NewHTTPExecutionError(ModuleName, er)
 	}
+
+	if code >= 400 {
+		node.MetricsWorker.AddServiceMetricErrorFor(r.Proof.Blockchain, address, false, ChainStatusType, fmt.Sprintf("%d", code))
+	}
+
 	return res, nil
 }
 

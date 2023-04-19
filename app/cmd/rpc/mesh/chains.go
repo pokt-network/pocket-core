@@ -326,7 +326,7 @@ func initChainsHotReload() {
 }
 
 // ExecuteBlockchainHTTPRequest - run the non-native blockchain http request reusing chains http client.
-func ExecuteBlockchainHTTPRequest(payload, url, userAgent string, basicAuth pocketTypes.BasicAuth, method string, headers map[string]string) (string, error) {
+func ExecuteBlockchainHTTPRequest(payload, url, userAgent string, basicAuth pocketTypes.BasicAuth, method string, headers map[string]string) (string, error, int) {
 	var m string
 	if method == "" {
 		m = pocketTypes.DEFAULTHTTPMETHOD
@@ -336,7 +336,7 @@ func ExecuteBlockchainHTTPRequest(payload, url, userAgent string, basicAuth pock
 	// generate an http request
 	req, err := http.NewRequest(m, url, bytes.NewBuffer([]byte(payload)))
 	if err != nil {
-		return "", err
+		return "", err, 500
 	}
 	if basicAuth.Username != "" {
 		req.SetBasicAuth(basicAuth.Username, basicAuth.Password)
@@ -355,7 +355,7 @@ func ExecuteBlockchainHTTPRequest(payload, url, userAgent string, basicAuth pock
 	// execute the request
 	resp, err := chainsClient.Do(req)
 	if err != nil {
-		return "", err
+		return "", err, 500
 	}
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
@@ -366,7 +366,7 @@ func ExecuteBlockchainHTTPRequest(payload, url, userAgent string, basicAuth pock
 	// read all bz
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return "", err
+		return "", err, 500
 	}
 	if app.GlobalMeshConfig.JSONSortRelayResponses {
 		body = []byte(sortJSONResponse(string(body)))
@@ -382,7 +382,7 @@ func ExecuteBlockchainHTTPRequest(payload, url, userAgent string, basicAuth pock
 		logStr = logStr + fmt.Sprintf("RES=%s\n", string(body))
 	}
 
-	return string(body), nil
+	return string(body), nil, resp.StatusCode
 }
 
 // GetChains - return current chains list.

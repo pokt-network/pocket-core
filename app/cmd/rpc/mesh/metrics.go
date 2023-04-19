@@ -23,6 +23,9 @@ var (
 	ChainIDLabel            = "chain_id"
 	ChainNameLabel          = "chain_name"
 	NotifyLabel             = "is_notify"
+	StatusTypeLabel         = "status_type"
+	StatusCodeLabel         = "status_label"
+	InstanceMoniker         = "moniker"
 
 	runningWorkers      *stdPrometheus.GaugeVec
 	idleWorkers         *stdPrometheus.GaugeVec
@@ -52,15 +55,15 @@ type ServiceMetric struct {
 
 func getLabelSignature() []string {
 	if app.GlobalMeshConfig.MetricsAttachServicerLabel {
-		return []string{ServicerLabel, ChainIDLabel, ChainNameLabel, NotifyLabel}
+		return []string{InstanceMoniker, ServicerLabel, ChainIDLabel, ChainNameLabel, NotifyLabel}
 	} else {
-		return []string{ChainIDLabel, ChainNameLabel, NotifyLabel}
+		return []string{InstanceMoniker, ChainIDLabel, ChainNameLabel, NotifyLabel}
 	}
 }
 
 func getMetricLabelSignature() []string {
 	// just in case it change in the future, 1 place to update.
-	return []string{StatTypeLabel, NodeNameLabel}
+	return []string{InstanceMoniker, StatTypeLabel, NodeNameLabel}
 }
 
 var (
@@ -70,8 +73,10 @@ var (
 // getLabel - return properly formatted prometheus label
 func getLabel(nodeAddress *sdk.Address, chainID string, notify bool) map[string]string {
 	labels := map[string]string{
-		ChainIDLabel: chainID,
-		NotifyLabel:  fmt.Sprintf("%v", notify),
+		// useful to identify different mesh instances against many writing to same prometheus like cross region.
+		InstanceMoniker: app.GlobalMeshConfig.MetricsMoniker,
+		ChainIDLabel:    chainID,
+		NotifyLabel:     fmt.Sprintf("%v", notify),
 	}
 
 	if name, ok := ChainNameMap.Load(chainID); ok {
@@ -88,6 +93,23 @@ func getLabel(nodeAddress *sdk.Address, chainID string, notify bool) map[string]
 	return labels
 }
 
+func getErrorLabel(nodeAddress *sdk.Address, chainID string, notify bool, statusType, statusCode string) map[string]string {
+	labels := getLabel(nodeAddress, chainID, notify)
+
+	labels[StatusTypeLabel] = statusType
+	labels[StatusCodeLabel] = statusCode
+
+	return labels
+}
+
+func getMetricLabel(statType, name string) map[string]string {
+	return map[string]string{
+		InstanceMoniker: app.GlobalMeshConfig.MetricsMoniker,
+		StatTypeLabel:   statType,
+		NodeNameLabel:   name,
+	}
+}
+
 // addRelayFor - accumulate a relay on servicer and per chain counters.
 func addRelayFor(chainID string, relayDuration float64, nodeAddress *sdk.Address, notify bool) {
 	// add relay to accumulated count
@@ -97,9 +119,9 @@ func addRelayFor(chainID string, relayDuration float64, nodeAddress *sdk.Address
 }
 
 // addErrorFor - accumulate a relay on servicer and per chain counters.
-func addErrorFor(chainID string, nodeAddress *sdk.Address, notify bool) {
+func addErrorFor(chainID string, nodeAddress *sdk.Address, notify bool, statusType, statusCode string) {
 	// add relay to accumulated count
-	labels := getLabel(nodeAddress, chainID, notify)
+	labels := getErrorLabel(nodeAddress, chainID, notify, statusType, statusCode)
 	errCounter.With(labels).Add(1)
 }
 
@@ -115,7 +137,7 @@ type Metrics struct {
 
 // report - add values to all the collectors
 func (m *Metrics) report() {
-	nodeWorkerLabel := map[string]string{StatTypeLabel: "node", NodeNameLabel: m.name}
+	nodeWorkerLabel := getMetricLabel("node", m.name)
 	// pool metrics
 	runningWorkers.With(nodeWorkerLabel).Set(float64(m.pool.RunningWorkers()))
 	idleWorkers.With(nodeWorkerLabel).Set(float64(m.pool.IdleWorkers()))
@@ -128,7 +150,7 @@ func (m *Metrics) report() {
 	maxWorker.With(nodeWorkerLabel).Set(float64(m.pool.MaxWorkers()))
 	maxCapacity.With(nodeWorkerLabel).Set(float64(m.pool.MaxCapacity()))
 
-	metricsWorkerLabel := map[string]string{StatTypeLabel: "metric", NodeNameLabel: m.name}
+	metricsWorkerLabel := getMetricLabel("metric", m.name)
 	// internal metrics
 	// pool metrics
 	runningWorkers.With(metricsWorkerLabel).Set(float64(m.worker.RunningWorkers()))
@@ -144,9 +166,9 @@ func (m *Metrics) report() {
 }
 
 // AddServiceMetricErrorFor - add to prometheus metrics an error for a servicer
-func (m *Metrics) AddServiceMetricErrorFor(blockchain string, address *sdk.Address, notify bool) {
+func (m *Metrics) AddServiceMetricErrorFor(blockchain string, address *sdk.Address, notify bool, statusType, statusCode string) {
 	m.worker.Submit(func() {
-		addErrorFor(blockchain, address, notify)
+		addErrorFor(blockchain, address, notify, statusType, statusCode)
 	})
 }
 
