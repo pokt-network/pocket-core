@@ -95,7 +95,7 @@ func meshSimulateRelay(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 		),
 	)
 	// do basic http request on the relay
-	res, er := mesh.ExecuteBlockchainHTTPRequest(
+	res, er, _ := mesh.ExecuteBlockchainHTTPRequest(
 		params.Payload.Data, _url, app.GlobalMeshConfig.UserAgent,
 		chain.BasicAuth, params.Payload.Method, params.Payload.Headers,
 	)

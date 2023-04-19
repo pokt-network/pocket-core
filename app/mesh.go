@@ -68,6 +68,8 @@ type MeshConfig struct {
 	// Prometheus
 	PrometheusAddr         string `json:"pocket_prometheus_port"`
 	PrometheusMaxOpenfiles int    `json:"prometheus_max_open_files"`
+	// Metrics uniq moniker name
+	MetricsMoniker string `json:"metrics_moniker"`
 	// Metrics Workers
 	MetricsWorkerStrategy      string `json:"metrics_worker_strategy"`
 	MetricsMaxWorkers          int    `json:"metrics_max_workers"`
@@ -127,6 +129,7 @@ func defaultMeshConfig(dataDir string) MeshConfig {
 		// Prometheus
 		PrometheusAddr:             sdk.DefaultPocketPrometheusListenAddr,
 		PrometheusMaxOpenfiles:     sdk.DefaultPrometheusMaxOpenFile,
+		MetricsMoniker:             "geo-mesh-node",
 		MetricsAttachServicerLabel: false,
 		MetricsWorkerStrategy:      "lazy",
 		MetricsMaxWorkers:          50,

@@ -7,6 +7,12 @@ import (
 	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
 )
 
+var (
+	InternalStatusType = "internal"
+	NotifyStatusType   = "notify"
+	ChainStatusType    = "chain"
+)
+
 // SdkErrorResponse - response error format for re-implemented endpoints.
 type SdkErrorResponse struct {
 	Code      sdk.CodeType      `json:"code"`
