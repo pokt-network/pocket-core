@@ -53,6 +53,14 @@ type ServiceMetric struct {
 	NotifyAvgRelayTime *stdPrometheus.HistogramVec `json:"notify_avg_relay_time"`
 }
 
+func getErrorLabelSignature() []string {
+	if app.GlobalMeshConfig.MetricsAttachServicerLabel {
+		return []string{InstanceMoniker, ServicerLabel, ChainIDLabel, ChainNameLabel, NotifyLabel, StatusTypeLabel, StatusCodeLabel}
+	} else {
+		return []string{InstanceMoniker, ChainIDLabel, ChainNameLabel, NotifyLabel, StatusTypeLabel, StatusCodeLabel}
+	}
+}
+
 func getLabelSignature() []string {
 	if app.GlobalMeshConfig.MetricsAttachServicerLabel {
 		return []string{InstanceMoniker, ServicerLabel, ChainIDLabel, ChainNameLabel, NotifyLabel}
@@ -353,7 +361,7 @@ func RegisterMetrics() {
 			Name:      "error_count",
 			Help:      "the number of errors resulting from relays executed against:",
 		},
-		getLabelSignature(),
+		getErrorLabelSignature(),
 	)
 
 	stdPrometheus.MustRegister(
