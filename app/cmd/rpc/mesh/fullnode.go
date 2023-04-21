@@ -72,13 +72,13 @@ func (node *fullNode) stop() {
 // checkNodeEndpoint - check node endpoint
 func (node *fullNode) checkNodeEndpoint(endpoint string) error {
 	requestURL := fmt.Sprintf(
-		"%s%s?authtoken=%s&verify=true",
+		"%s%s?verify=true",
 		node.URL,
 		endpoint,
-		servicerAuthToken.Value,
 	)
 	req, err := http.NewRequest("POST", requestURL, nil)
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set(AuthorizationHeader, servicerAuthToken.Value)
 	if app.GlobalMeshConfig.UserAgent != "" {
 		req.Header.Set("User-Agent", app.GlobalMeshConfig.UserAgent)
 	}
@@ -146,12 +146,12 @@ func (node *fullNode) runCheck() error {
 	}
 
 	requestURL := fmt.Sprintf(
-		"%s%s?authtoken=%s",
+		"%s%s",
 		node.URL,
 		ServicerCheckEndpoint,
-		servicerAuthToken.Value,
 	)
 	req, err := http.NewRequest("POST", requestURL, bytes.NewBuffer(jsonData))
+	req.Header.Set(AuthorizationHeader, servicerAuthToken.Value)
 	if err != nil {
 		return err
 	}
