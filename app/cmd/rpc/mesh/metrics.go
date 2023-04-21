@@ -24,7 +24,7 @@ var (
 	ChainNameLabel          = "chain_name"
 	NotifyLabel             = "is_notify"
 	StatusTypeLabel         = "status_type"
-	StatusCodeLabel         = "status_label"
+	StatusCodeLabel         = "status_code"
 	InstanceMoniker         = "moniker"
 
 	runningWorkers      *stdPrometheus.GaugeVec
@@ -337,7 +337,7 @@ func RegisterMetrics() {
 			Namespace: ModuleName,
 			Subsystem: ServiceMetricsNamespace,
 			Name:      "relay_count",
-			Help:      "the number of relays executed against:",
+			Help:      "Number of relays executed",
 		},
 		getLabelSignature(),
 	)
@@ -347,7 +347,7 @@ func RegisterMetrics() {
 			Namespace:   ModuleName,
 			Subsystem:   ServiceMetricsNamespace,
 			Name:        "relay_time",
-			Help:        "the average relay time in ms executed against:",
+			Help:        "Relay duration in milliseconds",
 			ConstLabels: nil,
 			Buckets:     stdPrometheus.LinearBuckets(1, 20, 20),
 		},
@@ -359,7 +359,7 @@ func RegisterMetrics() {
 			Namespace: ModuleName,
 			Subsystem: ServiceMetricsNamespace,
 			Name:      "error_count",
-			Help:      "the number of errors resulting from relays executed against:",
+			Help:      "Number of errors resulting from relays (mesh or chain)",
 		},
 		getErrorLabelSignature(),
 	)
