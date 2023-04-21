@@ -286,3 +286,4 @@ Also, you can use [LocalNet Repository](https://github.com/pokt-scan/pocket-loca
   * Async Maps (Faster than native) [xsync](github.com/puzpuzpuz/xsync)
   * Cron jobs [cron](github.com/robfig/cron/v3)
   * JSON Schema validation [gojsonschema](github.com/xeipuuv/gojsonschema)
+  * Sets [golang-set](github.com/deckarep/golang-set/v2)
