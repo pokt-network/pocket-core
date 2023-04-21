@@ -54,19 +54,19 @@ type ServiceMetric struct {
 }
 
 func getErrorLabelSignature() []string {
+	baseLabels := []string{InstanceMoniker, ChainIDLabel, ChainNameLabel, NotifyLabel, StatusTypeLabel, StatusCodeLabel}
 	if app.GlobalMeshConfig.MetricsAttachServicerLabel {
-		return []string{InstanceMoniker, ServicerLabel, ChainIDLabel, ChainNameLabel, NotifyLabel, StatusTypeLabel, StatusCodeLabel}
-	} else {
-		return []string{InstanceMoniker, ChainIDLabel, ChainNameLabel, NotifyLabel, StatusTypeLabel, StatusCodeLabel}
+		baseLabels = append(baseLabels, ServicerLabel)
 	}
+	return baseLabels
 }
 
 func getLabelSignature() []string {
+	baseLabels := []string{InstanceMoniker, ChainIDLabel, ChainNameLabel, NotifyLabel}
 	if app.GlobalMeshConfig.MetricsAttachServicerLabel {
-		return []string{InstanceMoniker, ServicerLabel, ChainIDLabel, ChainNameLabel, NotifyLabel}
-	} else {
-		return []string{InstanceMoniker, ChainIDLabel, ChainNameLabel, NotifyLabel}
+		baseLabels = append(baseLabels, ServicerLabel)
 	}
+	return baseLabels
 }
 
 func getMetricLabelSignature() []string {
