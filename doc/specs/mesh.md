@@ -123,22 +123,6 @@ This is just a basic sample, please refer to the full config details to extend a
 }
 ```
 3. Create Servicer private key file with one of the  following formats into the path you set on `config.json`:
-Fallback Format:
-```json
-[
-  {
-    // servicer private key
-    "priv_key": "aaabbbbcccccddd",
-    // servicer url/ip where mesh node can reach the servicer node to check health, proxy requests and notify relays
-    // NOTE: name will be hostname parsed from servicer_url
-    "servicer_url": "http://localhost:8081"
-  },
-  {
-    ... // add as much servicers as you need to handle with one single geo-mesh process.
-  }
-]
-```
-New Format:
 ```json
 [
   {
@@ -155,6 +139,24 @@ New Format:
   }
 ]
 ```
+<details>
+  <summary>Fallback Format</summary>
+  ```json
+    [
+      {
+        // servicer private key
+        "priv_key": "aaabbbbcccccddd",
+        // servicer url/ip where mesh node can reach the servicer node to check health, proxy requests and notify relays
+        // NOTE: name will be hostname parsed from servicer_url
+        "servicer_url": "http://localhost:8081"
+      },
+      {
+        ... // add as much servicers as you need to handle with one single geo-mesh process.
+      }
+    ]
+  ```
+</details>
+
 4. Create auth.json files into the path you set on `config.json` for `auth_token_file` and `servicer_auth_token_file`:
 ```json
 {
