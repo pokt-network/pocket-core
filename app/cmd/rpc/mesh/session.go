@@ -119,12 +119,12 @@ func getAppSession(relay *pocketTypes.Relay, model interface{}) *SdkErrorRespons
 	}
 
 	requestURL := fmt.Sprintf(
-		"%s%s?authtoken=%s",
+		"%s%s",
 		servicerNode.Node.URL,
 		ServicerSessionEndpoint,
-		servicerAuthToken.Value,
 	)
 	req, e := http.NewRequest("POST", requestURL, bytes.NewBuffer(jsonData))
+	req.Header.Set(AuthorizationHeader, servicerAuthToken.Value)
 	if e != nil {
 		return NewSdkErrorFromPocketSdkError(sdk.ErrInternal(e.Error()))
 	}

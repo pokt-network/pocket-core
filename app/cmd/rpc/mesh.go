@@ -227,7 +227,7 @@ func meshServicerNodeRelay(w http.ResponseWriter, r *http.Request, ps httprouter
 		return
 	}
 
-	token := r.URL.Query().Get("authtoken")
+	token := r.Header.Get("Authorization")
 	if token != app.AuthToken.Value {
 		WriteErrorResponse(w, 401, "wrong authtoken: "+token)
 		return
@@ -287,7 +287,7 @@ func meshServicerNodeRelay(w http.ResponseWriter, r *http.Request, ps httprouter
 func meshServicerNodeSession(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var session pocketTypes.MeshSession
 
-	token := r.URL.Query().Get("authtoken")
+	token := r.Header.Get("Authorization")
 	if token != app.AuthToken.Value {
 		WriteErrorResponse(w, 401, "wrong authtoken: "+token)
 		return
@@ -371,7 +371,7 @@ func meshServicerNodeSession(w http.ResponseWriter, r *http.Request, ps httprout
 func meshServicerNodeCheck(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var checkPayload mesh.CheckPayload
 
-	token := r.URL.Query().Get("authtoken")
+	token := r.Header.Get("Authorization")
 	if token != app.AuthToken.Value {
 		WriteErrorResponse(w, 401, "wrong authtoken: "+token)
 		return
@@ -508,7 +508,7 @@ func getMeshRoutes(simulation bool) Routes {
 		Route{Name: "LocalNodes", Method: "POST", Path: "/v1/private/nodes", HandlerFunc: mesh.ProxyRequest},
 		Route{Name: "QueryUnconfirmedTxs", Method: "POST", Path: "/v1/query/unconfirmedtxs", HandlerFunc: mesh.ProxyRequest},
 		Route{Name: "QueryUnconfirmedTx", Method: "POST", Path: "/v1/query/unconfirmedtx", HandlerFunc: mesh.ProxyRequest},
-		//
+		// mesh public route to handle relays
 		Route{Name: "MeshService", Method: "POST", Path: "/v1/client/relay", HandlerFunc: reuseBody(meshNodeRelay)},
 		// mesh private routes
 		Route{Name: "MeshHealth", Method: "GET", Path: "/v1/private/mesh/health", HandlerFunc: meshHealth},
@@ -529,11 +529,11 @@ func getMeshRoutes(simulation bool) Routes {
 
 // IsAuthorized - check if the request is authorized using authToken of the auth.json file
 func isAuthorized(w http.ResponseWriter, r *http.Request) bool {
-	token := r.URL.Query().Get("authtoken")
+	token := r.Header.Get(mesh.AuthorizationHeader)
 	if token == mesh.GetAuthToken() {
 		return true
 	} else {
-		WriteErrorResponse(w, 401, "wrong authtoken: "+token)
+		WriteErrorResponse(w, 401, "wrong Authorization: "+token)
 		return false
 	}
 }

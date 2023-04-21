@@ -139,14 +139,14 @@ func notifyServicer(r *pocketTypes.Relay) {
 	}
 
 	requestURL := fmt.Sprintf(
-		"%s%s?authtoken=%s&chain=%s&app=%s",
+		"%s%s?chain=%s&app=%s",
 		servicerNode.Node.URL,
 		ServicerRelayEndpoint,
-		servicerAuthToken.Value,
 		r.Proof.Blockchain,
 		r.Proof.Token.ApplicationPublicKey,
 	)
 	req, err := retryablehttp.NewRequestWithContext(ctx, "POST", requestURL, bytes.NewBuffer(jsonData))
+	req.Header.Set(AuthorizationHeader, servicerAuthToken.Value)
 	if err != nil {
 		logger.Error(fmt.Sprintf("error formatting Servicer URL: %s", err.Error()))
 		servicerNode.Node.MetricsWorker.AddServiceMetricErrorFor(r.Proof.Blockchain, &servicerNode.Address, true, NotifyStatusType, "500")
