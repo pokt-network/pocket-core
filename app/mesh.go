@@ -14,15 +14,18 @@ var (
 
 type MeshConfig struct {
 	// Mesh Node
-	DataDir                string `json:"data_dir"`
-	RPCPort                string `json:"rpc_port"`
-	ClientRPCTimeout       int64  `json:"client_rpc_timeout"`
-	LogLevel               string `json:"log_level"`
-	LogChainRequest        bool   `json:"log_chain_request"`
-	LogChainResponse       bool   `json:"log_chain_response"`
-	UserAgent              string `json:"user_agent"`
-	AuthTokenFile          string `json:"auth_token_file"`
-	JSONSortRelayResponses bool   `json:"json_sort_relay_responses"`
+	DataDir                    string `json:"data_dir"`
+	RPCPort                    string `json:"rpc_port"`
+	ClientRPCTimeout           int64  `json:"client_rpc_timeout"`
+	ClientRPCReadTimeout       int64  `json:"client_rpc_read_timeout"`
+	ClientRPCReadHeaderTimeout int64  `json:"client_rpc_read_header_timeout"`
+	ClientRPCWriteTimeout      int64  `json:"client_rpc_write_timeout"`
+	LogLevel                   string `json:"log_level"`
+	LogChainRequest            bool   `json:"log_chain_request"`
+	LogChainResponse           bool   `json:"log_chain_response"`
+	UserAgent                  string `json:"user_agent"`
+	AuthTokenFile              string `json:"auth_token_file"`
+	JSONSortRelayResponses     bool   `json:"json_sort_relay_responses"`
 
 	// Chains
 	ChainsName                  string `json:"chains_name"`
@@ -32,6 +35,7 @@ type MeshConfig struct {
 	ChainRPCMaxIdleConnections  int    `json:"chain_rpc_max_idle_connections"`
 	ChainRPCMaxConnsPerHost     int    `json:"chain_rpc_max_conns_per_host"`
 	ChainRPCMaxIdleConnsPerHost int    `json:"chain_rpc_max_idle_conns_per_host"`
+	ChainDropConnections        bool   `json:"chain_drop_connections"`
 
 	// Relay Cache
 	RelayCacheFile                         string `json:"relay_cache_file"`
@@ -83,15 +87,19 @@ type MeshConfig struct {
 func defaultMeshConfig(dataDir string) MeshConfig {
 	c := MeshConfig{
 		// Mesh Node
-		DataDir:                dataDir,
-		RPCPort:                sdk.DefaultRPCPort,
-		ClientRPCTimeout:       sdk.DefaultRPCTimeout,
-		LogLevel:               "*:info, *:error",
-		LogChainRequest:        false,
-		LogChainResponse:       false,
-		UserAgent:              sdk.DefaultUserAgent,
-		AuthTokenFile:          "auth" + FS + "mesh.json",
-		JSONSortRelayResponses: sdk.DefaultJSONSortRelayResponses,
+		DataDir: dataDir,
+		RPCPort: sdk.DefaultRPCPort,
+		// following values are to be able to handle very big response from blockchains.
+		ClientRPCTimeout:           120000,
+		ClientRPCReadTimeout:       60000,
+		ClientRPCReadHeaderTimeout: 50000,
+		ClientRPCWriteTimeout:      90000,
+		LogLevel:                   "*:info, *:error",
+		LogChainRequest:            false,
+		LogChainResponse:           false,
+		UserAgent:                  sdk.DefaultUserAgent,
+		AuthTokenFile:              "auth" + FS + "mesh.json",
+		JSONSortRelayResponses:     sdk.DefaultJSONSortRelayResponses,
 		// Chains
 		ChainsName:                  sdk.DefaultChainsName,
 		ChainsNameMap:               "",
@@ -100,6 +108,7 @@ func defaultMeshConfig(dataDir string) MeshConfig {
 		ChainRPCMaxIdleConnections:  2500,
 		ChainRPCMaxConnsPerHost:     2500,
 		ChainRPCMaxIdleConnsPerHost: 2500,
+		ChainDropConnections:        false,
 		// Relay Cache
 		RelayCacheFile:                         "data" + FS + "relays.pkt",
 		RelayCacheBackgroundSyncInterval:       3600,
