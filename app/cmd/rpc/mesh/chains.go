@@ -381,11 +381,11 @@ func ExecuteBlockchainHTTPRequest(payload, url, userAgent string, basicAuth pock
 
 	logStr := fmt.Sprintf("executing blockchain request:\nURL=%s\nMETHOD=%s\nSTATUS=%d\n", url, m, resp.StatusCode)
 
-	if !app.GlobalMeshConfig.LogChainRequest {
+	if app.GlobalMeshConfig.LogChainRequest {
 		logStr = logStr + fmt.Sprintf("REQ=%s\n", payload)
 	}
 
-	if !app.GlobalMeshConfig.LogChainResponse {
+	if app.GlobalMeshConfig.LogChainResponse {
 		logStr = logStr + fmt.Sprintf("RES=%s\n", string(body))
 	}
 
