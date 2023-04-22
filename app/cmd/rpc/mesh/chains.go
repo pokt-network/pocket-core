@@ -352,6 +352,13 @@ func ExecuteBlockchainHTTPRequest(payload, url, userAgent string, basicAuth pock
 			req.Header.Set(k, v)
 		}
 	}
+
+	// some users report lots of EOF due to connections trying to behind reused but net.Http fails to understand it.
+	if app.GlobalMeshConfig.ChainDropConnections {
+		req.Header.Set("Connection", "close")
+		req.Close = true
+	}
+
 	// execute the request
 	resp, err := chainsClient.Do(req)
 	if err != nil {

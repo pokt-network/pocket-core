@@ -160,9 +160,9 @@ func StartRPC(router *httprouter.Router) {
 	initCache()
 
 	srv = &http.Server{
-		ReadTimeout:       30 * time.Second,
-		ReadHeaderTimeout: 20 * time.Second,
-		WriteTimeout:      60 * time.Second,
+		ReadTimeout:       time.Duration(app.GlobalMeshConfig.ClientRPCReadTimeout) * time.Millisecond,
+		ReadHeaderTimeout: time.Duration(app.GlobalMeshConfig.ClientRPCReadHeaderTimeout) * time.Millisecond,
+		WriteTimeout:      time.Duration(app.GlobalMeshConfig.ClientRPCWriteTimeout) * time.Millisecond,
 		Addr:              ":" + app.GlobalMeshConfig.RPCPort,
 		Handler: http.TimeoutHandler(
 			router,
