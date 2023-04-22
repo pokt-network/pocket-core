@@ -15,8 +15,10 @@ import (
 	log2 "log"
 	"net/http"
 	"os"
+	"strings"
 	"sync"
 	"time"
+	"unicode"
 )
 
 type RichChain struct {
@@ -333,6 +335,16 @@ func ExecuteBlockchainHTTPRequest(payload, url, userAgent string, basicAuth pock
 	} else {
 		m = method
 	}
+
+	if app.GlobalMeshConfig.ChainRequestPathCleanup {
+		url = strings.Map(func(r rune) rune {
+			if unicode.IsGraphic(r) {
+				return r
+			}
+			return -1
+		}, url)
+	}
+
 	// generate an http request
 	req, err := http.NewRequest(m, url, bytes.NewBuffer([]byte(payload)))
 	if err != nil {

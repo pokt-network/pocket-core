@@ -36,6 +36,7 @@ type MeshConfig struct {
 	ChainRPCMaxConnsPerHost     int    `json:"chain_rpc_max_conns_per_host"`
 	ChainRPCMaxIdleConnsPerHost int    `json:"chain_rpc_max_idle_conns_per_host"`
 	ChainDropConnections        bool   `json:"chain_drop_connections"`
+	ChainRequestPathCleanup     bool   `json:"chain_request_path_cleanup"`
 
 	// Relay Cache
 	RelayCacheFile                         string `json:"relay_cache_file"`
@@ -109,6 +110,7 @@ func defaultMeshConfig(dataDir string) MeshConfig {
 		ChainRPCMaxConnsPerHost:     2500,
 		ChainRPCMaxIdleConnsPerHost: 2500,
 		ChainDropConnections:        false,
+		ChainRequestPathCleanup:     false,
 		// Relay Cache
 		RelayCacheFile:                         "data" + FS + "relays.pkt",
 		RelayCacheBackgroundSyncInterval:       3600,
