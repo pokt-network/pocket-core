@@ -382,6 +382,12 @@ func ExecuteBlockchainHTTPRequest(payload, url, userAgent string, basicAuth pock
 		logStr = logStr + fmt.Sprintf("RES=%s\n", string(body))
 	}
 
+	if resp.StatusCode >= 400 {
+		logger.Error(logStr)
+	} else {
+		logger.Debug(logStr)
+	}
+
 	return string(body), nil, resp.StatusCode
 }
 
