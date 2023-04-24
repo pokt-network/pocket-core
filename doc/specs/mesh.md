@@ -93,35 +93,85 @@ This guide assume you already have a Servicer properly setup and running. If not
 1. Set up your proxy in the same way for a Servicer
 2. Create the following `config.json` file inside the `--datadir` directory
 This is just a basic sample, please refer to the full config details to extend and add/modify more config if u need.
+
+<details>
+<summary>Minimum Config</summary>
+
 ```json
 {
-  "data_dir": "/home/app/.pocket/mesh",
+  "data_dir": "/home/app/.pocket",
   "rpc_port": "8081",
   "chains_name": "chains/chains.json",
-  "client_rpc_timeout": 30000,
-  "chains_rpc_timeout": 30000,
   "auth_token_file": "key/auth.json",
   "relay_cache_file": "data/relays.pkt",
-  "worker_strategy": "balanced",
+  "servicer_private_key_file": "key/key.json",
+  "servicer_auth_token_file": "key/auth.json",
+  "remote_chains_name_map": "https://poktscan-v1.nyc3.cdn.digitaloceanspaces.com/pokt-chains-map.json",
+  "metrics_moniker": "my-mesh-node-uid"
+}
+```
+
+</details>
+
+<details>
+  <summary>Optimized Configs</summary>
+
+```json
+  {
+  "data_dir": "/home/app/.pocket",
+  "rpc_port": "8081",
+  "client_rpc_timeout": 120000,
+  "client_rpc_read_timeout": 60000,
+  "client_rpc_read_header_timeout": 50000,
+  "client_rpc_write_timeout": 110000,
+  "log_level": "*:error",
+  "log_chain_request": false,
+  "log_chain_response": false,
+  "user_agent": "mesh-node",
+  "auth_token_file": "key/auth.json",
+  "json_sort_relay_responses": false,
+  "chains_name": "chains/chains.json",
+  "remote_chains_name_map": "https://poktscan-v1.nyc3.cdn.digitaloceanspaces.com/pokt-chains-map.json",
+  "chain_rpc_timeout": 80000,
+  "chain_rpc_max_idle_connections": 2500,
+  "chain_rpc_max_conns_per_host": 2500,
+  "chain_rpc_max_idle_conns_per_host": 2500,
+  "chain_drop_connections": false,
+  "chain_request_path_cleanup": true,
+  "relay_cache_file": "data/relays.pkt",
+  "relay_cache_background_sync_interval": 3600,
+  "relay_cache_background_compaction_interval": 18000,
+  "keys_hot_reload_interval": 180000,
+  "chains_hot_reload_interval": 180000,
+  "servicer_worker_strategy": "balanced",
   "servicer_max_workers": 50,
   "servicer_max_workers_capacity": 50000,
   "servicer_workers_idle_timeout": 10000,
   "servicer_private_key_file": "key/key.json",
-  "servicer_rpc_timeout": 60000,
   "servicer_auth_token_file": "key/auth.json",
+  "servicer_rpc_timeout": 60000,
+  "servicer_retry_max_times": 10,
+  "servicer_retry_wait_min": 5,
+  "servicer_retry_wait_max": 180000,
+  "servicer_rpc_max_idle_connections": 50000,
+  "servicer_rpc_max_conns_per_host": 50000,
+  "servicer_rpc_max_idle_conns_per_host": 50000,
   "node_check_interval": 60,
   "session_cache_clean_up_interval": 1800,
   "pocket_prometheus_port": "8083",
   "prometheus_max_open_files": 3,
-  "metrics_moniker": "my-mesh-node-uid",
-  "metrics_worker_strategy": "lazy",
+  "metrics_moniker": "geo-mesh-node",
+  "metrics_worker_strategy": "balanced",
   "metrics_max_workers": 50,
   "metrics_max_workers_capacity": 50000,
   "metrics_workers_idle_timeout": 10000,
-  "metrics_report_interval": 10,
-  "metrics_attach_servicer_label": false
+  "metrics_attach_servicer_label": false,
+  "metrics_report_interval": 10
 }
 ```
+
+</details>
+
 3. Create Servicer private key file with one of the  following formats into the path you set on `config.json`:
 ```json
 [
@@ -141,20 +191,22 @@ This is just a basic sample, please refer to the full config details to extend a
 ```
 <details>
   <summary>Fallback Format</summary>
-  ```json
-    [
-      {
-        // servicer private key
-        "priv_key": "aaabbbbcccccddd",
-        // servicer url/ip where mesh node can reach the servicer node to check health, proxy requests and notify relays
-        // NOTE: name will be hostname parsed from servicer_url
-        "servicer_url": "http://localhost:8081"
-      },
-      {
-        ... // add as much servicers as you need to handle with one single geo-mesh process.
-      }
-    ]
-  ```
+
+```json
+  [
+    {
+      // servicer private key
+      "priv_key": "aaabbbbcccccddd",
+      // servicer url/ip where mesh node can reach the servicer node to check health, proxy requests and notify relays
+      // NOTE: name will be hostname parsed from servicer_url
+      "servicer_url": "http://localhost:8081"
+    },
+    {
+      ... // add as much servicers as you need to handle with one single geo-mesh process.
+    }
+  ]
+```
+
 </details>
 
 4. Create auth.json files into the path you set on `config.json` for `auth_token_file` and `servicer_auth_token_file`:
