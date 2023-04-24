@@ -4,12 +4,14 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	tmtypes "github.com/tendermint/tendermint/types"
 	"math"
 	"reflect"
 	"strconv"
 	"strings"
 
+	tmtypes "github.com/tendermint/tendermint/types"
+
+	"github.com/pokt-network/pocket-core/codec"
 	sdk "github.com/pokt-network/pocket-core/types"
 	appsTypes "github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/pocket-core/x/auth/exported"
@@ -22,6 +24,7 @@ import (
 
 const (
 	messageSenderQuery     = "tx.signer='%s'"
+	heightQuery            = "tx.height=%d"
 	transferRecipientQuery = "tx.recipient='%s'"
 	txHeightQuery          = "tx.height=%d"
 )
@@ -48,7 +51,7 @@ func (app PocketCoreApp) QueryTx(hash string, prove bool) (res *core_types.Resul
 	return
 }
 
-func (app PocketCoreApp) QueryAccountTxs(addr string, page, perPage int, prove bool, sort string) (res *core_types.ResultTxSearch, err error) {
+func (app PocketCoreApp) QueryAccountTxs(addr string, page, perPage int, prove bool, sort string, height int64) (res *core_types.ResultTxSearch, err error) {
 	tmClient := app.GetClient()
 	defer func() { _ = tmClient.Stop() }()
 	_, err = hex.DecodeString(addr)
@@ -56,11 +59,14 @@ func (app PocketCoreApp) QueryAccountTxs(addr string, page, perPage int, prove b
 		return nil, err
 	}
 	query := fmt.Sprintf(messageSenderQuery, addr)
+	if height > 0 {
+		query = fmt.Sprintf("%s AND %s", query, fmt.Sprintf(heightQuery, height))
+	}
 	page, perPage = checkPagination(page, perPage)
 	res, err = tmClient.TxSearch(query, prove, page, perPage, checkSort(sort))
 	return
 }
-func (app PocketCoreApp) QueryRecipientTxs(addr string, page, perPage int, prove bool, sort string) (res *core_types.ResultTxSearch, err error) {
+func (app PocketCoreApp) QueryRecipientTxs(addr string, page, perPage int, prove bool, sort string, height int64) (res *core_types.ResultTxSearch, err error) {
 	tmClient := app.GetClient()
 	defer func() { _ = tmClient.Stop() }()
 	_, err = hex.DecodeString(addr)
@@ -68,6 +74,9 @@ func (app PocketCoreApp) QueryRecipientTxs(addr string, page, perPage int, prove
 		return nil, err
 	}
 	query := fmt.Sprintf(transferRecipientQuery, addr)
+	if height > 0 {
+		query = fmt.Sprintf("%s AND %s", query, fmt.Sprintf(heightQuery, height))
+	}
 	page, perPage = checkPagination(page, perPage)
 	res, err = tmClient.TxSearch(query, prove, page, perPage, checkSort(sort))
 	return
@@ -85,7 +94,12 @@ func (app PocketCoreApp) QueryBlockTxs(height int64, page, perPage int, prove bo
 func (app PocketCoreApp) QueryAllBlockTxs(height int64, page, perPage int) (res *core_types.ResultTxSearch, err error) {
 	res = &core_types.ResultTxSearch{}
 	tmClient := app.GetClient()
-	defer func() { _ = tmClient.Stop() }()
+	if codec.TestMode > -4 {
+		// This was a hack needed to enable implementation of `TestBlockSize_ChangeAndFillBlockSize`
+		// Since each query is isolated and opens a new tendermint client, not closing it could trigger an OS level error of too many open files,
+		// but we need to keep it open for the duration of the test to fill the block completely.
+		defer func() { _ = tmClient.Stop() }()
+	}
 	page, perPage = checkPagination(page, perPage)
 	b, err := tmClient.Block(&height)
 	if err != nil {

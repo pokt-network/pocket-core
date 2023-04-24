@@ -297,17 +297,58 @@ func TestRPC_QueryAccountTXs(t *testing.T) {
 	kb := getInMemoryKeybase()
 	cb, err := kb.GetCoinbase()
 	assert.Nil(t, err)
+
+	// send a tx
 	tx, err = nodes.Send(memCodec(), memCLI, kb, cb.GetAddress(), cb.GetAddress(), "test", types.NewInt(100), true)
 	assert.Nil(t, err)
 	assert.NotNil(t, tx)
 
 	<-evtChan // Wait for tx
-	kb = getInMemoryKeybase()
-	cb, err = kb.GetCoinbase()
-	assert.Nil(t, err)
+
+	// query for account txs
 	var params = PaginateAddrParams{
 		Address: cb.GetAddress().String(),
 	}
+	resTXs := queryAccountTxsOrThrow(t, params)
+	assert.Equal(t, len(resTXs.Txs), 1)
+
+	_, _, evtChan = subscribeTo(t, tmTypes.EventNewBlock)
+	<-evtChan // Wait for block
+
+	// send another tx
+	_, stopCli, evtChan = subscribeTo(t, tmTypes.EventTx)
+	tx, err = nodes.Send(memCodec(), memCLI, kb, cb.GetAddress(), cb.GetAddress(), "test", types.NewInt(100), true)
+	assert.Nil(t, err)
+	assert.NotNil(t, tx)
+
+	var confirmedTx = <-evtChan // Wait for tx
+
+	// query with second tx block height returns only second tx
+	params = PaginateAddrParams{
+		Address: cb.GetAddress().String(),
+		Height:  confirmedTx.Data.(tmTypes.EventDataTx).Height,
+	}
+	resTXs2 := queryAccountTxsOrThrow(t, params)
+
+	assert.NotEmpty(t, resTXs2.Txs)
+	assert.Equal(t, len(resTXs2.Txs), 1)
+	assert.Equal(t, resTXs2.Txs[0].Hash.String(), tx.TxHash)
+
+	// query with first tx block height returns both txs
+	params = PaginateAddrParams{
+		Address: cb.GetAddress().String(),
+		Height:  resTXs.Txs[0].Height,
+	}
+	resTXsAll := queryAccountTxsOrThrow(t, params)
+
+	assert.NotEmpty(t, resTXsAll.Txs)
+	assert.Equal(t, len(resTXsAll.Txs), 2)
+	assert.Equal(t, resTXsAll.Txs[0].Hash.String(), resTXs.Txs[0].Hash.String())
+	cleanup()
+	stopCli()
+}
+
+func queryAccountTxsOrThrow(t *testing.T, params PaginateAddrParams) core_types.ResultTxSearch {
 	q := newQueryRequest("accounttxs", newBody(params))
 	rec := httptest.NewRecorder()
 	AccountTxs(rec, q, httprouter.Params{})
@@ -317,23 +358,7 @@ func TestRPC_QueryAccountTXs(t *testing.T) {
 	var resTXs core_types.ResultTxSearch
 	unmarshalErr := json.Unmarshal([]byte(resp), &resTXs)
 	assert.Nil(t, unmarshalErr)
-	assert.NotEmpty(t, resTXs.Txs)
-
-	_, _, evtChan = subscribeTo(t, tmTypes.EventNewBlock)
-	<-evtChan // Wait for block
-	q = newQueryRequest("accounttxs", newBody(params))
-	rec = httptest.NewRecorder()
-	AccountTxs(rec, q, httprouter.Params{})
-	resp = getJSONResponse(rec)
-	assert.NotNil(t, resp)
-	assert.NotEmpty(t, resp)
-	var resTXs2 core_types.ResultTxSearch
-	unmarshalErr = json.Unmarshal([]byte(resp), &resTXs2)
-	assert.Nil(t, unmarshalErr)
-	assert.NotEmpty(t, resTXs2.Txs)
-
-	cleanup()
-	stopCli()
+	return resTXs
 }
 
 func TestRPC_QueryBlockTXs(t *testing.T) {

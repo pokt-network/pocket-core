@@ -4,6 +4,10 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"math/big"
+	"net/http"
+	"strconv"
+
 	types4 "github.com/pokt-network/pocket-core/app/cmd/rpc/types"
 	sdk "github.com/pokt-network/pocket-core/types"
 	types2 "github.com/pokt-network/pocket-core/x/auth/types"
@@ -11,9 +15,6 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/bytes"
 	"github.com/tendermint/tendermint/types"
-	"math/big"
-	"net/http"
-	"strconv"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/pokt-network/pocket-core/app"
@@ -86,6 +87,7 @@ type PaginateAddrParams struct {
 	Received bool   `json:"received,omitempty"`
 	Prove    bool   `json:"prove,omitempty"`
 	Sort     string `json:"order,omitempty"`
+	Height   int64  `json:"height,omitempty"`
 }
 
 type PaginatedHeightParams struct {
@@ -317,9 +319,9 @@ func AccountTxs(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var res *core_types.ResultTxSearch
 	var err error
 	if !params.Received {
-		res, err = app.PCA.QueryAccountTxs(params.Address, params.Page, params.PerPage, params.Prove, params.Sort)
+		res, err = app.PCA.QueryAccountTxs(params.Address, params.Page, params.PerPage, params.Prove, params.Sort, params.Height)
 	} else {
-		res, err = app.PCA.QueryRecipientTxs(params.Address, params.Page, params.PerPage, params.Prove, params.Sort)
+		res, err = app.PCA.QueryRecipientTxs(params.Address, params.Page, params.PerPage, params.Prove, params.Sort, params.Height)
 	}
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
@@ -937,7 +939,7 @@ func Upgrade(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	WriteResponse(w, string(s), r.URL.Path, r.Host)
+	WriteJSONResponse(w, string(s), r.URL.Path, r.Host)
 }
 
 func ACL(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {

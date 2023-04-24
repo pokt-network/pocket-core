@@ -42,6 +42,8 @@ func TestAppModule_InitExportGenesis(t *testing.T) {
 	var genesis2 types.GenesisState
 	genesis2bz := am.ExportGenesis(ctx)
 	err = types.ModuleCdc.UnmarshalJSON(genesis2bz, &genesis2)
+
+	
 	assert.Equal(t, genesis2, types.DefaultGenesisState())
 	assert.Nil(t, err)
 }

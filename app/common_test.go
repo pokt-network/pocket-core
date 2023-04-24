@@ -2,25 +2,20 @@ package app
 
 import (
 	"context"
-	"github.com/tendermint/tendermint/privval"
 	"io"
 	"os"
 	"sync"
 	"testing"
 	"time"
 
-	types2 "github.com/pokt-network/pocket-core/codec/types"
-	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
-	"github.com/tendermint/tendermint/rpc/client/http"
-	"github.com/tendermint/tendermint/rpc/client/local"
+	"github.com/tendermint/tendermint/privval"
 
 	bam "github.com/pokt-network/pocket-core/baseapp"
 	"github.com/pokt-network/pocket-core/codec"
+	types2 "github.com/pokt-network/pocket-core/codec/types"
 	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/crypto/keys"
 	"github.com/pokt-network/pocket-core/store"
-
-	// sdk "github.com/pokt-network/pocket-core/types"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/types/module"
 	apps "github.com/pokt-network/pocket-core/x/apps"
@@ -31,6 +26,7 @@ import (
 	"github.com/pokt-network/pocket-core/x/nodes"
 	nodesTypes "github.com/pokt-network/pocket-core/x/nodes/types"
 	pocket "github.com/pokt-network/pocket-core/x/pocketcore"
+	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/stretchr/testify/assert"
 	tmCfg "github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/libs/log"
@@ -38,6 +34,8 @@ import (
 	"github.com/tendermint/tendermint/p2p"
 	"github.com/tendermint/tendermint/proxy"
 	"github.com/tendermint/tendermint/rpc/client"
+	"github.com/tendermint/tendermint/rpc/client/http"
+	"github.com/tendermint/tendermint/rpc/client/local"
 	cTypes "github.com/tendermint/tendermint/rpc/core/types"
 	"github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
@@ -45,6 +43,10 @@ import (
 
 const (
 	dummyChainsHash = "0001"
+)
+
+var (
+	tendermintTimeoutCommit = time.Duration(500) * time.Millisecond
 )
 
 type upgrades struct {
@@ -256,7 +258,7 @@ func inMemTendermintNodeWithValidators(genesisState []byte, validatorsPk []crypt
 			ChainID:     "pocket-test",
 			ConsensusParams: &types.ConsensusParams{
 				Block: types.BlockParams{
-					MaxBytes:   15000,
+					MaxBytes:   pocketTypes.DefaultBlockByteSize,
 					MaxGas:     -1,
 					TimeIotaMs: 1,
 				},
@@ -429,8 +431,8 @@ func getTestConfig() (newTMConfig *tmCfg.Config) {
 	newTMConfig.Consensus = tmCfg.TestConsensusConfig()
 	newTMConfig.Consensus.CreateEmptyBlocks = true // Set this to false to only produce blocks when there are txs or when the AppHash changes
 	newTMConfig.Consensus.SkipTimeoutCommit = false
-	newTMConfig.Consensus.CreateEmptyBlocksInterval = time.Duration(500) * time.Millisecond
-	newTMConfig.Consensus.TimeoutCommit = time.Duration(500) * time.Millisecond
+	newTMConfig.Consensus.CreateEmptyBlocksInterval = tendermintTimeoutCommit
+	newTMConfig.Consensus.TimeoutCommit = tendermintTimeoutCommit
 	newTMConfig.P2P.MaxNumInboundPeers = 4
 	newTMConfig.P2P.MaxNumOutboundPeers = 4
 	pocketTypes.InitClientBlockAllowance(10000)

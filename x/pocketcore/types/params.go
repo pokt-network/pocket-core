@@ -14,10 +14,10 @@ const (
 	DefaultParamspace                 = ModuleName
 	DefaultSessionNodeCount           = int64(5)       // default number of nodes in a session
 	DefaultClaimSubmissionWindow      = int64(3)       // default sessions to submit a claim
-	DefaultClaimExpiration            = int64(100)     // default sessions to exprie claims
+	DefaultClaimExpiration            = int64(100)     // default sessions to expire claims
 	DefaultReplayAttackBurnMultiplier = int64(3)       // default replay attack burn multiplier
 	DefaultMinimumNumberOfProofs      = int64(5)       // default minimum number of proofs
-	DefaultBlockByteSize              = int64(4000000) // default block size in bytes
+	DefaultBlockByteSize              = int64(4000000) // default block size in bytes at genesis; 4MB
 
 )
 
@@ -61,6 +61,13 @@ func (p *Params) ParamSetPairs() types.ParamSetPairs {
 
 // "DefaultParams" - Returns a default set of parameters
 func DefaultParams() Params {
+	defaultGenesisParams := DefaultGenesisParams()
+	defaultGenesisParams.BlockByteSize = DefaultBlockByteSize
+	return defaultGenesisParams
+}
+
+// "DefaultParams" - Returns a default set of parameters at genesis
+func DefaultGenesisParams() Params {
 	return Params{
 		SessionNodeCount:           DefaultSessionNodeCount,
 		ClaimSubmissionWindow:      DefaultClaimSubmissionWindow,

@@ -32,7 +32,12 @@ var (
 	UpgradeHeight                    int64 = math.MaxInt64
 	OldUpgradeHeight                 int64 = 0
 	NotProtoCompatibleInterfaceError       = errors.New("the interface passed for encoding does not implement proto marshaller")
-	TestMode                         int64 = 0
+	// Used to short-circuit specific protocol upgrades in tests;
+	// <= -1: replaced amino with proto
+	// <= -2: after validator split
+	// <= -3: after non-custodial
+	// <= -4: allow smaller block sizes for testing purposes
+	TestMode int64 = 0
 )
 
 const (
@@ -50,6 +55,8 @@ const (
 	BlockSizeModifyKey           = "BLOCK"
 	RSCALKey                     = "RSCAL"
 	VEDITKey                     = "VEDIT"
+	OutputAddressEditKey         = "OEDIT"
+	ClearUnjailedValSessionKey   = "CRVAL"
 )
 
 func GetCodecUpgradeHeight() int64 {
@@ -266,6 +273,12 @@ func (cdc *Codec) IsAfterNonCustodialUpgrade(height int64) bool {
 	return (UpgradeFeatureMap[NonCustodialUpdateKey] != 0 && height >= UpgradeFeatureMap[NonCustodialUpdateKey]) || TestMode <= -3
 }
 
+func (cdc *Codec) IsAfterOutputAddressEditorUpgrade(height int64) bool {
+	return (UpgradeFeatureMap[OutputAddressEditKey] != 0 &&
+		height >= UpgradeFeatureMap[OutputAddressEditKey]) ||
+		TestMode <= -3
+}
+
 // IsOnNonCustodialUpgrade Note: includes the actual upgrade height
 func (cdc *Codec) IsOnNonCustodialUpgrade(height int64) bool {
 	return (UpgradeFeatureMap[NonCustodialUpdateKey] != 0 && height == UpgradeFeatureMap[NonCustodialUpdateKey]) || TestMode <= -3
@@ -279,6 +292,24 @@ func (cdc *Codec) IsAfterNamedFeatureActivationHeight(height int64, key string) 
 // IsOnNamedFeatureActivationHeight Note: includes the actual upgrade height
 func (cdc *Codec) IsOnNamedFeatureActivationHeight(height int64, key string) bool {
 	return UpgradeFeatureMap[key] != 0 && height == UpgradeFeatureMap[key]
+}
+
+// IsOnNamedFeatureActivationHeightWithTolerance is used to enable certain
+// business logic within some tolerance (i.e. only a few blocks) of feature
+// activation to have more confidence in the feature's release and avoid
+// non-deterministic or hard-to-predict behaviour.
+func (cdc *Codec) IsOnNamedFeatureActivationHeightWithTolerance(
+	height int64,
+	featureKey string,
+	tolerance int64,
+) bool {
+	upgradeHeight := UpgradeFeatureMap[featureKey]
+	if upgradeHeight == 0 {
+		return false
+	}
+	minHeight := upgradeHeight - tolerance
+	maxHeight := upgradeHeight + tolerance
+	return height >= minHeight && height <= maxHeight
 }
 
 // Upgrade Utils for feature map

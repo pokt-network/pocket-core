@@ -114,10 +114,10 @@ var queryTx = &cobra.Command{
 }
 
 var queryAccountTxs = &cobra.Command{
-	Use:   "account-txs <address> <page> <per_page> <prove (true | false)> <received (true | false)> <order (asc | desc)>",
+	Use:   "account-txs <address> <page> <per_page> <prove (true | false)> <received (true | false)> <order (asc | desc)> <height>",
 	Short: "Get the transactions sent by the address, paginated by page and per_page",
 	Long:  `Retrieves the transactions sent by the address`,
-	Args:  cobra.RangeArgs(1, 6),
+	Args:  cobra.RangeArgs(1, 7),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		page := 0
@@ -125,6 +125,7 @@ var queryAccountTxs = &cobra.Command{
 		prove := false
 		received := false
 		order := "desc"
+		height := int64(0) // height=0 is ignored and implies latest height
 		if len(args) >= 2 {
 			parsedPage, err := strconv.Atoi(args[1])
 			if err == nil {
@@ -158,6 +159,12 @@ var queryAccountTxs = &cobra.Command{
 				order = "desc"
 			}
 		}
+		if len(args) >= 7 {
+			parsedHeight, err := strconv.ParseInt(args[6], 10, 64)
+			if err == nil {
+				height = parsedHeight
+			}
+		}
 		var err error
 		params := rpc.PaginateAddrParams{
 			Address:  args[0],
@@ -166,6 +173,7 @@ var queryAccountTxs = &cobra.Command{
 			Received: received,
 			Prove:    prove,
 			Sort:     order,
+			Height:   height,
 		}
 		j, err := json.Marshal(params)
 		if err != nil {

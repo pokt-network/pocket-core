@@ -61,27 +61,42 @@ func (k Keeper) ConvertState(ctx sdk.Ctx) {
 }
 
 func (k Keeper) ConsensusParamUpdate(ctx sdk.Ctx) *abci.ConsensusParams {
-	currentHeightBlockSize := k.BlockByteSize(ctx)
-	//If not 0 and different update
-	if currentHeightBlockSize > 0 {
-		previousBlockCtx, _ := ctx.PrevCtx(ctx.BlockHeight() - 1)
-		lastBlockSize := k.BlockByteSize(previousBlockCtx)
-		if lastBlockSize != currentHeightBlockSize {
-			//not go under default value
-			if currentHeightBlockSize < types.DefaultBlockByteSize {
-				return &abci.ConsensusParams{}
-			}
-			return &abci.ConsensusParams{
-				Block: &abci.BlockParams{
-					MaxBytes: currentHeightBlockSize,
-					MaxGas:   -1,
-				},
-				Evidence: &abci.EvidenceParams{
-					MaxAge: 50,
-				},
-			}
-		}
+	return k.consensusBlockSizeParamUpdate(ctx)
+}
+
+func (k Keeper) consensusBlockSizeParamUpdate(ctx sdk.Ctx) *abci.ConsensusParams {
+	previousBlockCtx, err := ctx.PrevCtx(ctx.BlockHeight() - 1)
+	if err != nil {
+		ctx.Logger().Error("failed to get previous block context")
+		return &abci.ConsensusParams{}
 	}
 
-	return &abci.ConsensusParams{}
+	currentHeightBlockSize := k.BlockByteSize(ctx)
+	// If it's 0, we're using the default value from genesis (i.e. unset)
+	if currentHeightBlockSize == 0 {
+		return &abci.ConsensusParams{}
+	}
+
+	lastBlockSize := k.BlockByteSize(previousBlockCtx)
+	// If the block size is unchanged, return empty params
+	if lastBlockSize == currentHeightBlockSize {
+		return &abci.ConsensusParams{}
+	}
+
+	if currentHeightBlockSize < types.DefaultBlockByteSize && codec.TestMode > -4 {
+		ctx.Logger().Error("block size is less than default value, this should never happen")
+		return &abci.ConsensusParams{}
+	}
+
+	// If the block size has changed
+	return &abci.ConsensusParams{
+		Block: &abci.BlockParams{
+			MaxBytes: currentHeightBlockSize,
+			MaxGas:   -1,
+		},
+		// INVESTIGATE: Looks like an extra measure to prevent the evidence pool from filling up during the upgrade
+		Evidence: &abci.EvidenceParams{
+			MaxAge: 50,
+		},
+	}
 }

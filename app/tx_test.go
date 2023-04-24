@@ -2,8 +2,15 @@
 package app
 
 import (
+	"context"
 	"encoding/hex"
 	"fmt"
+	"math/rand"
+	"strconv"
+	"sync"
+	"testing"
+	"time"
+
 	"github.com/pokt-network/pocket-core/codec"
 	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/crypto/keys"
@@ -20,9 +27,6 @@ import (
 	rand2 "github.com/tendermint/tendermint/libs/rand"
 	"github.com/tendermint/tendermint/node"
 	tmTypes "github.com/tendermint/tendermint/types"
-	"math/rand"
-	"testing"
-	"time"
 )
 
 func TestMain(m *testing.M) {
@@ -914,52 +918,225 @@ func TestChangeParamsSimpleTx(t *testing.T) {
 	}
 }
 
-func TestChangeParamsMaxBlocksizeBeforeActivationHeight(t *testing.T) {
+// NOTE: This is a single long test to show the lifecycle of the query parameter feature
+func TestBlockSize_ChangeParamValue(t *testing.T) {
+	blockSizeKey := "pocketcore/BlockByteSize"
+	newBlockSize := "69420" // bytes
 
-	tt := []struct {
-		name         string
-		memoryNodeFn func(t *testing.T, genesisState []byte) (tendermint *node.Node, keybase keys.Keybase, cleanup func())
-		*upgrades
-	}{
-		{name: "change MaxBlocksize parameter before activation height", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}}}, // TODO: FULL PROTO SCENARIO
-	}
-	for _, tc := range tt {
-		t.Run(tc.name, func(t *testing.T) {
-			codec.TestMode = -2
-			if tc.upgrades != nil { // NOTE: Use to perform neccesary upgrades for test
-				codec.UpgradeHeight = tc.upgrades.codecUpgrade.height
-				_ = memCodecMod(tc.upgrades.codecUpgrade.upgradeMod)
-			}
-			resetTestACL()
-			_, kb, cleanup := tc.memoryNodeFn(t, oneAppTwoNodeGenesis())
-			time.Sleep(1 * time.Second)
-			cb, err := kb.GetCoinbase()
-			assert.Nil(t, err)
-			_, err = kb.List()
-			assert.Nil(t, err)
-			_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-			<-evtChan // Wait for block
-			//Before Activation of the parameter ACL do not exist and the value and parameter should be 0 or nil
-			firstquery, _ := PCA.QueryParam(PCA.LastBlockHeight(), "pocketcore/BlockByteSize")
-			assert.Equal(t, "", firstquery.Value)
-			memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
-			//Tx wont modify anything as ACL is not configured (Txresult should be gov code 5)
-			tx, err := gov.ChangeParamsTx(memCodec(), memCli, kb, cb.GetAddress(), "pocketcore/BlockByteSize", 9000000, "test", 10000, false)
-			assert.Nil(t, err)
-			assert.NotNil(t, tx)
-			select {
-			case _ = <-evtChan:
-				//fmt.Println(res)
-				assert.Nil(t, err)
-				o, _ := PCA.QueryParam(PCA.LastBlockHeight(), "pocketcore/BlockByteSize")
-				//value should be equal to the first query of the param
-				assert.Equal(t, firstquery.Value, o.Value)
-				cleanup()
-				stopCli()
-			}
-		})
-	}
+	testModeTemp := codec.TestMode
+	upgradeHeightTemp := codec.UpgradeHeight
+
+	// Prepare governance parameters
+	codec.TestMode = -4                                   // Includes codec upgrade, validator split and non-custodial upgrade and block size reduction
+	codec.UpgradeHeight = 2                               // Height at which codec was upgraded from amino to proto
+	codec.UpgradeFeatureMap[codec.BlockSizeModifyKey] = 3 // Height at which to enable block size upgrades
+	resetTestACL()
+
+	// On cleanup, revert global values so they are the same everywhere else
+	t.Cleanup(func() {
+		codec.TestMode = testModeTemp
+		codec.UpgradeHeight = upgradeHeightTemp
+	})
+
+	// Prepare the test network
+	_, kb, cleanup := NewInMemoryTendermintNodeProto(t, oneAppTwoNodeGenesis())
+	defer cleanup()
+
+	// Get the address of the ACL owner (i.e. the DAO)
+	cb, err := kb.GetCoinbase()
+	assert.Nil(t, err)
+	daoAddr := cb.GetAddress()
+
+	// Subscribe to new events
+	_, _, newBlockEventChan := subscribeTo(t, tmTypes.EventNewBlock)
+	memCli, stopCli, txEventChan := subscribeTo(t, tmTypes.EventTx)
+	defer stopCli()
+
+	<-newBlockEventChan // Wait for block 1
+	<-newBlockEventChan // Wait for block 2
+
+	// Before activation, the parameter does not exist and should be an empty string
+	queryRes, err := PCA.QueryParam(PCA.LastBlockHeight(), blockSizeKey)
+	assert.Nil(t, err)
+	assert.Equal(t, "", queryRes.Value)
+
+	<-newBlockEventChan // Wait for block 3
+
+	// After activation, the parameter should be the default value
+	queryRes, err = PCA.QueryParam(PCA.LastBlockHeight(), blockSizeKey)
+	assert.Nil(t, err)
+	assert.Equal(t, "4000000", queryRes.Value)
+	assert.Equal(t, strconv.Itoa(int(pocketTypes.DefaultBlockByteSize)), queryRes.Value)
+
+	// Changing the parameter after activation
+	tx, err := gov.ChangeParamsTx(memCodec(), memCli, kb, daoAddr, blockSizeKey, newBlockSize, "test", 10000, false)
+	assert.Nil(t, err)
+	assert.NotNil(t, tx)
+	<-txEventChan // wait for change to take affect
+
+	// Parameter should be updated
+	queryRes, err = PCA.QueryParam(PCA.LastBlockHeight(), blockSizeKey)
+	assert.Nil(t, err)
+	assert.Equal(t, newBlockSize, queryRes.Value)
+
+	<-newBlockEventChan // Wait for block 4
+
+	// Verify the parameter change is stable
+	queryRes, err = PCA.QueryParam(PCA.LastBlockHeight(), blockSizeKey)
+	assert.Nil(t, err)
+	assert.Equal(t, newBlockSize, queryRes.Value)
+
+	<-newBlockEventChan // Wait for block 5
+
+	// Verify the parameter change is stable
+	queryRes, err = PCA.QueryParam(PCA.LastBlockHeight(), blockSizeKey)
+	assert.Nil(t, err)
+	assert.Equal(t, newBlockSize, queryRes.Value)
 }
+
+// NOTE: This is a hacky test prone to race conditions and global variable management to account for lack of
+// fine-grained control of Tendermint's consensus engine (which runs in the background).
+//
+// How it works:
+// 1. Configure the network & initialize block size updates
+// 2. Start a background process that keeps sending transactions
+// 3. Start a background process that doubles the block size every block
+// 4. Repeat (2) & (3) N times
+//
+// VERIFICATION: The assertions in the test do minimal verification but evaluating the logs provides an additional guarantee.
+// 1. Verify that smaller block sizes cannot be completely filled
+// 2. Verify a sufficiently large block includes the backlog of transactions
+// 3. Verify that at steady state (i.e. block is large enough to include all transactions), the number of txs in each block is the same
+// 4. Empirically, the steady state is approximately 50 txs per block given the configurations below; see #1538 for more details
+func TestBlockSize_ChangeAndFillBlockSize(t *testing.T) {
+	blockSizeKey := "pocketcore/BlockByteSize"
+
+	testModeTemp := codec.TestMode
+	upgradeHeightTemp := codec.UpgradeHeight
+
+	// Prepare network configs
+	codec.TestMode = -4                                   // Includes codec upgrade, validator split and non-custodial upgrade and block size reduction
+	codec.UpgradeHeight = -1                              // Height at which codec was upgraded from amino to proto
+	codec.UpgradeFeatureMap[codec.BlockSizeModifyKey] = 3 // Height at which to enable block size upgrades
+	resetTestACL()
+
+	// Pick a small initial genesis block size
+	blockParamsMaxBytes := int64(2000)
+
+	// Get the current global values used for testing
+	globalTendermintTimeoutCommit := tendermintTimeoutCommit
+
+	// On cleanup, revert global values so they are the same everywhere else
+	t.Cleanup(func() {
+		tendermintTimeoutCommit = globalTendermintTimeoutCommit
+		codec.TestMode = testModeTemp
+		codec.UpgradeHeight = upgradeHeightTemp
+	})
+
+	// Increase the Tendermint timeout commit: the min amount of time to wait between blocks.
+	// Needs to be increased so there's enough time to send & accumulate transactions that fill the block.
+	tendermintTimeoutCommit = time.Duration(5) * time.Second
+
+	// Prepare the test network
+	_, kb, cleanup := NewInMemoryTendermintNodeProto(t, oneAppTwoNodeGenesis())
+	defer cleanup()
+
+	// Wait for the first block
+	_, _, newBlockEventChan := subscribeTo(t, tmTypes.EventNewBlock)
+	<-newBlockEventChan // block 1
+	<-newBlockEventChan // block 2
+	<-newBlockEventChan // block 3
+
+	// Verify the block param is activated by comparing against the default genesis value
+	queryRes, err := PCA.QueryParam(PCA.LastBlockHeight(), blockSizeKey)
+	assert.Nil(t, err)
+	assert.Equal(t, strconv.Itoa(int(pocketTypes.DefaultBlockByteSize)), queryRes.Value)
+
+	// Get the address of the ACL owner (i.e. the DAO)
+	cb, err := kb.GetCoinbase()
+	assert.Nil(t, err)
+
+	// Set the block size to a small initial value
+	tx, err := gov.ChangeParamsTx(memCodec(), getInMemoryTMClient(), kb, cb.GetAddress(), blockSizeKey, fmt.Sprintf("%d", blockParamsMaxBytes), "test", 10000, false)
+	assert.Nil(t, err)
+	assert.NotNil(t, tx)
+
+	<-newBlockEventChan // block 4
+
+	// Verify the block size has been reduced
+	queryRes, err = PCA.QueryParam(PCA.LastBlockHeight(), blockSizeKey)
+	assert.Nil(t, err)
+	assert.Equal(t, strconv.Itoa(int(blockParamsMaxBytes)), queryRes.Value)
+
+	numBlockSizeDoubles := 15
+	wg := sync.WaitGroup{}
+	wg.Add(numBlockSizeDoubles) // 2kb, 4kb and 8kb, ...
+
+	// Start a background process that sends as many transactions as possible
+	txCtx, cancel := context.WithCancel(context.Background())
+	go func(ctx context.Context) {
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				// Create a new random keypair
+				kp, err := kb.Create("test")
+				assert.Nil(t, err)
+				// Send funds from the DAO to the new address
+				_, err = nodes.Send(memCodec(), getInMemoryTMClient(), kb, cb.GetAddress(), kp.GetAddress(), "test", sdk.NewInt(10000), false)
+				assert.Nil(t, err)
+			}
+		}
+	}(txCtx)
+	defer cancel()
+
+	// New blocks are created every `tendermintTimeoutCommit`.
+	// Need to asynchronously capture new blocks, while txs are being sent above, and process appropriately
+	newBlockCtx, cancel := context.WithCancel(context.Background())
+	go func(ctx context.Context) {
+		for {
+			// _, _, newBlockEventChan = subscribeTo(t, tmTypes.EventNewBlock)
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				<-newBlockEventChan // Wait for block
+
+				// Grab all the latest transactions from the block
+				height := PCA.LastBlockHeight()
+				res, err := PCA.QueryAllBlockTxs(height, 0, 1000) // we do not expect more than 1000 transactions to accumulate, hence one page is enough
+				assert.Nil(t, err)
+
+				// Count the size of all the transactions
+				// NB: `CreateProposalBlock` in `tendermint/state/execution.go` can be seen that not the entire block
+				// will be filled with transactions.
+				total := 0
+				for _, tx := range res.Txs {
+					total += len(tx.Tx)
+				}
+
+				// Current max value
+				queryRes, err := PCA.QueryParam(height, blockSizeKey)
+				assert.Nil(t, err)
+				t.Logf("Transactions accumulated at height=%d: totalTxBytes=%d, len(res.Txs)=%d, TotalTxCount=%d, blockSize=%s", height, total, len(res.Txs), res.TotalCount, queryRes.Value)
+
+				// Double the block size
+				blockParamsMaxBytes *= 2
+				tx, err := gov.ChangeParamsTx(memCodec(), getInMemoryTMClient(), kb, cb.GetAddress(), blockSizeKey, fmt.Sprintf("%d", blockParamsMaxBytes), "test", 10000, false)
+				assert.Nil(t, err)
+				assert.NotNil(t, tx)
+
+				wg.Done()
+			}
+		}
+	}(newBlockCtx)
+	defer cancel()
+
+	// Wait for numBlockSizeDoubles to finish
+	wg.Wait()
+}
+
 func TestChangepip22ParamsBeforeActivationHeight(t *testing.T) {
 
 	tt := []struct {
@@ -1007,52 +1184,6 @@ func TestChangepip22ParamsBeforeActivationHeight(t *testing.T) {
 	}
 }
 
-func TestChangeParamsMaxBlocksizeAfterActivationHeight(t *testing.T) {
-
-	tt := []struct {
-		name         string
-		memoryNodeFn func(t *testing.T, genesisState []byte) (tendermint *node.Node, keybase keys.Keybase, cleanup func())
-		*upgrades
-	}{
-		{name: "change MaxBlocksize parameter past activation height", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}}}, // TODO: FULL PROTO SCENARIO
-	}
-	for _, tc := range tt {
-		t.Run(tc.name, func(t *testing.T) {
-			codec.TestMode = -2
-			codec.UpgradeFeatureMap[codec.BlockSizeModifyKey] = tc.upgrades.codecUpgrade.height + 1
-			if tc.upgrades != nil { // NOTE: Use to perform neccesary upgrades for test
-				codec.UpgradeHeight = tc.upgrades.codecUpgrade.height
-				_ = memCodecMod(tc.upgrades.codecUpgrade.upgradeMod)
-			}
-			resetTestACL()
-			_, kb, cleanup := tc.memoryNodeFn(t, oneAppTwoNodeGenesis())
-			time.Sleep(1 * time.Second)
-			cb, err := kb.GetCoinbase()
-			assert.Nil(t, err)
-			_, err = kb.List()
-			assert.Nil(t, err)
-			_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-			<-evtChan // Wait for block
-			<-evtChan // Wait for another block
-			//After Activation of the parameter ACL should be created(allowing modifying the value) and parameter should have default value of 4000000
-			o, _ := PCA.QueryParam(PCA.LastBlockHeight(), "pocketcore/BlockByteSize")
-			assert.Equal(t, "4000000", o.Value)
-			memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
-			tx, err := gov.ChangeParamsTx(memCodec(), memCli, kb, cb.GetAddress(), "pocketcore/BlockByteSize", 9000000, "test", 10000, false)
-			assert.Nil(t, err)
-			assert.NotNil(t, tx)
-			select {
-			case _ = <-evtChan:
-				//fmt.Println(res)
-				assert.Nil(t, err)
-				o, _ := PCA.QueryParam(PCA.LastBlockHeight(), "pocketcore/BlockByteSize")
-				assert.Equal(t, "9000000", o.Value)
-				cleanup()
-				stopCli()
-			}
-		})
-	}
-}
 func TestChangeParamspip22afterActivationHeight(t *testing.T) {
 
 	tt := []struct {
