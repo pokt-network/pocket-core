@@ -47,13 +47,11 @@ type MeshConfig struct {
 	KeysHotReloadInterval   int `json:"keys_hot_reload_interval"`
 	ChainsHotReloadInterval int `json:"chains_hot_reload_interval"`
 
-	// Workers
-	ServicerWorkerStrategy     string `json:"servicer_worker_strategy"`
-	ServicerMaxWorkers         int    `json:"servicer_max_workers"`
-	ServicerMaxWorkersCapacity int    `json:"servicer_max_workers_capacity"`
-	ServicerWorkersIdleTimeout int    `json:"servicer_workers_idle_timeout"`
-
 	// Servicer
+	ServicerWorkerStrategy         string `json:"servicer_worker_strategy"`
+	ServicerMaxWorkers             int    `json:"servicer_max_workers"`
+	ServicerMaxWorkersCapacity     int    `json:"servicer_max_workers_capacity"`
+	ServicerWorkersIdleTimeout     int    `json:"servicer_workers_idle_timeout"`
 	ServicerPrivateKeyFile         string `json:"servicer_private_key_file"`
 	ServicerRPCTimeout             int64  `json:"servicer_rpc_timeout"`
 	ServicerRPCMaxIdleConnections  int    `json:"servicer_rpc_max_idle_connections"`
@@ -95,22 +93,22 @@ func defaultMeshConfig(dataDir string) MeshConfig {
 		ClientRPCReadTimeout:       60000,
 		ClientRPCReadHeaderTimeout: 50000,
 		ClientRPCWriteTimeout:      90000,
-		LogLevel:                   "*:info, *:error",
+		LogLevel:                   "*:error",
 		LogChainRequest:            false,
 		LogChainResponse:           false,
-		UserAgent:                  sdk.DefaultUserAgent,
+		UserAgent:                  "mesh-node",
 		AuthTokenFile:              "auth" + FS + "mesh.json",
 		JSONSortRelayResponses:     sdk.DefaultJSONSortRelayResponses,
 		// Chains
 		ChainsName:                  sdk.DefaultChainsName,
 		ChainsNameMap:               "",
 		RemoteChainsNameMap:         "",
-		ChainRPCTimeout:             sdk.DefaultRPCTimeout,
+		ChainRPCTimeout:             80000,
 		ChainRPCMaxIdleConnections:  2500,
 		ChainRPCMaxConnsPerHost:     2500,
 		ChainRPCMaxIdleConnsPerHost: 2500,
 		ChainDropConnections:        false,
-		ChainRequestPathCleanup:     false,
+		ChainRequestPathCleanup:     true,
 		// Relay Cache
 		RelayCacheFile:                         "data" + FS + "relays.pkt",
 		RelayCacheBackgroundSyncInterval:       3600,
@@ -120,14 +118,14 @@ func defaultMeshConfig(dataDir string) MeshConfig {
 		ChainsHotReloadInterval: 180000,
 		// Servicer
 		ServicerPrivateKeyFile:         "key" + FS + "key.json",
-		ServicerRPCTimeout:             sdk.DefaultRPCTimeout,
+		ServicerRPCTimeout:             60000,
 		ServicerRPCMaxIdleConnections:  2500,
 		ServicerRPCMaxConnsPerHost:     2500,
 		ServicerRPCMaxIdleConnsPerHost: 2500,
 		ServicerAuthTokenFile:          "auth" + FS + "servicer.json",
 		ServicerRetryMaxTimes:          10,
 		ServicerRetryWaitMin:           5,
-		ServicerRetryWaitMax:           180,
+		ServicerRetryWaitMax:           180000,
 		ServicerWorkerStrategy:         "balanced",
 		ServicerMaxWorkers:             50,
 		ServicerMaxWorkersCapacity:     50000,
@@ -142,7 +140,7 @@ func defaultMeshConfig(dataDir string) MeshConfig {
 		PrometheusMaxOpenfiles:     sdk.DefaultPrometheusMaxOpenFile,
 		MetricsMoniker:             "geo-mesh-node",
 		MetricsAttachServicerLabel: false,
-		MetricsWorkerStrategy:      "lazy",
+		MetricsWorkerStrategy:      "balanced",
 		MetricsMaxWorkers:          50,
 		MetricsMaxWorkersCapacity:  50000,
 		MetricsWorkersIdleTimeout:  10000,
