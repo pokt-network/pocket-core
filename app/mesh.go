@@ -108,7 +108,7 @@ func defaultMeshConfig(dataDir string) MeshConfig {
 		ChainRPCMaxConnsPerHost:     2500,
 		ChainRPCMaxIdleConnsPerHost: 2500,
 		ChainDropConnections:        false,
-		ChainRequestPathCleanup:     true,
+		ChainRequestPathCleanup:     false,
 		// Relay Cache
 		RelayCacheFile:                         "data" + FS + "relays.pkt",
 		RelayCacheBackgroundSyncInterval:       3600,

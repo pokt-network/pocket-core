@@ -137,7 +137,7 @@ This is just a basic sample, please refer to the full config details to extend a
   "chain_rpc_max_conns_per_host": 2500,
   "chain_rpc_max_idle_conns_per_host": 2500,
   "chain_drop_connections": false,
-  "chain_request_path_cleanup": true,
+  "chain_request_path_cleanup": false,
   "relay_cache_file": "data/relays.pkt",
   "relay_cache_background_sync_interval": 3600,
   "relay_cache_background_compaction_interval": 18000,
