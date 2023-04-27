@@ -138,7 +138,8 @@ make start
 
 - We are using the `homogenous` network is in `pokt-net`
 - You can update configs by modifying `pocket-e2e-stack/.playground.env`
-- You can further update configs by modifying `pocket-e2e-stack/playground/templates/config.template.json`
+- You can further update configs by modifying `pocket-e2e-stack/playground/templates/config.template.json` OR `.playground.env` for the variables that are templated (e.g. `BLOCK_TIME`)
+- You can update the genesis configurations at `stacks/pokt-net/shared/genesis.json`
 - Make sure to run `clean, scaffold & up` after changing configs
 
 ## TODO
