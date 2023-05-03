@@ -14,15 +14,25 @@ import (
 	"time"
 )
 
-// IsInvalidRelayCode - check if the error code is someone that block incoming relays for current session.
-func IsInvalidRelayCode(code sdk.CodeType) bool {
-	for _, c := range invalidCodes {
+// ShouldInvalidateSession - check if the error code is someone that block incoming relays for current session.
+func ShouldInvalidateSession(code sdk.CodeType) bool {
+	for _, c := range invalidSessionCode {
 		if c == code {
 			return true
 		}
 	}
 
 	return false
+}
+
+func IsRetryableRelayCode(code sdk.CodeType) bool {
+	for _, nonRetryableCode := range nonRetryableCodes {
+		if code == nonRetryableCode {
+			return false
+		}
+	}
+
+	return !ShouldInvalidateSession(code)
 }
 
 // GetRandomNode - return a random servicer object from the list load at the start
