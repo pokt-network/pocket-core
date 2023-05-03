@@ -96,6 +96,8 @@ var nonRetryableCodes = []sdk.CodeType{
 	pocketTypes.CodeUnsupportedBlockchainAppError,
 	pocketTypes.CodeUnsupportedBlockchainNodeError,
 	pocketTypes.CodeDuplicateProofError,
+	pocketTypes.CodeRequestHash,
+	pocketTypes.CodeInvalidBlockHeightError,
 }
 
 // StopRPC - stop http server
