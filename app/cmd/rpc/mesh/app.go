@@ -85,12 +85,10 @@ var (
 // 	CodeInvalidNodePubKeyError           = 34
 // 	CodeUnsupportedBlockchainAppError    = 13
 var invalidSessionCode = []sdk.CodeType{
-	pocketTypes.CodeRequestHash,
 	pocketTypes.CodeAppNotFoundError,
 	pocketTypes.CodeEvidenceSealed,
 	pocketTypes.CodeOverServiceError,
 	pocketTypes.CodeOutOfSyncRequestError,
-	pocketTypes.CodeInvalidBlockHeightError,
 }
 
 var nonRetryableCodes = []sdk.CodeType{
