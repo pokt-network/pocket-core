@@ -61,7 +61,7 @@ func deleteCacheRelay(relay *pocketTypes.Relay) {
 func evaluateServicerError(r *pocketTypes.Relay, err *SdkErrorResponse) (isSessionStillValid bool) {
 	hash := getSessionHashFromRelay(r)
 
-	isSessionStillValid = !IsInvalidRelayCode(err.Code) // we should not retry if is invalid
+	isSessionStillValid = !ShouldInvalidateSession(err.Code) // we should not retry if is invalid
 
 	if isSessionStillValid {
 		return isSessionStillValid

@@ -84,13 +84,20 @@ var (
 // 	CodeInvalidEntropyError              = 29
 // 	CodeInvalidNodePubKeyError           = 34
 // 	CodeUnsupportedBlockchainAppError    = 13
-var invalidCodes = []sdk.CodeType{
+var invalidSessionCode = []sdk.CodeType{
 	pocketTypes.CodeRequestHash,
 	pocketTypes.CodeAppNotFoundError,
 	pocketTypes.CodeEvidenceSealed,
 	pocketTypes.CodeOverServiceError,
 	pocketTypes.CodeOutOfSyncRequestError,
 	pocketTypes.CodeInvalidBlockHeightError,
+}
+
+var nonRetryableCodes = []sdk.CodeType{
+	pocketTypes.CodeUnsupportedBlockchainError,
+	pocketTypes.CodeUnsupportedBlockchainAppError,
+	pocketTypes.CodeUnsupportedBlockchainNodeError,
+	pocketTypes.CodeDuplicateProofError,
 }
 
 // StopRPC - stop http server

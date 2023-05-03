@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/julienschmidt/httprouter"
 	"github.com/pokt-network/pocket-core/app"
-	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/robfig/cron/v3"
 	"io"
 	log2 "log"
@@ -129,11 +128,7 @@ func retryRelaysPolicy(ctx context.Context, resp *http.Response, err error) (boo
 		ctxResult.Dispatch = result.Dispatch
 		ctxResult.Error = result.Error
 
-		if ctxResult.Error.Code == pocketTypes.CodeDuplicateProofError {
-			return false, nil
-		}
-
-		return !IsInvalidRelayCode(result.Error.Code), nil
+		return !IsRetryableRelayCode(result.Error.Code), nil
 	}
 
 	return false, nil
