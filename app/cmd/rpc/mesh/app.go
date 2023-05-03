@@ -26,7 +26,7 @@ const (
 	ServicerRelayEndpoint   = "/v1/private/mesh/relay"
 	ServicerSessionEndpoint = "/v1/private/mesh/session"
 	ServicerCheckEndpoint   = "/v1/private/mesh/check"
-	AppVersion              = "RC-0.3.0"
+	AppVersion              = "RC-0.3.1"
 )
 
 var (
