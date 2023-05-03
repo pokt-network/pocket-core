@@ -374,6 +374,10 @@ func ExecuteBlockchainHTTPRequest(payload, url, userAgent string, basicAuth pock
 	// execute the request
 	resp, err := chainsClient.Do(req)
 	if err != nil {
+		if os.IsTimeout(err) {
+			return "", err, 504
+		}
+
 		return "", err, 500
 	}
 	defer func(Body io.ReadCloser) {
