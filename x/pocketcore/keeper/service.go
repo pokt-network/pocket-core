@@ -69,10 +69,15 @@ func (k Keeper) HandleRelay(ctx sdk.Ctx, relay pc.Relay, isMesh bool) (*pc.Relay
 	}
 	// move this to a worker that will insert this proof in a serie style to avoid memory consumption and relay proof race conditions
 	// https://github.com/pokt-network/pocket-core/issues/1457
-	pc.GlobalEvidenceWorker.Submit(func() {
-		// store the proof before execution, because the proof corresponds to the previous relay
-		relay.Proof.Store(maxPossibleRelays, node.EvidenceStore)
-	})
+	if evidenceWorker, ok := pc.GlobalEvidenceWorkerMap.Load(nodeAddress.String()); ok {
+		ctx.Logger().Debug(fmt.Sprintf("adding relay to evidence worker for address=%s", nodeAddress.String()))
+		evidenceWorker.Submit(func() {
+			// store the proof before execution, because the proof corresponds to the previous relay
+			relay.Proof.Store(maxPossibleRelays, node.EvidenceStore)
+		})
+	} else {
+		ctx.Logger().Error(fmt.Sprintf("evidence worker not found for address=%s", nodeAddress.String()))
+	}
 
 	// store the proof before execution, because the proof corresponds to the previous relay
 	//relay.Proof.Store(maxPossibleRelays, node.EvidenceStore)

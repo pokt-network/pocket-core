@@ -806,7 +806,9 @@ func TestQueryRelay(t *testing.T) {
 			_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 			select {
 			case <-evtChan:
-				assert.Equal(t, uint64(1), types.GlobalEvidenceWorker.SuccessfulTasks())
+				evidenceWorker, ok := types.GlobalEvidenceWorkerMap.Load(validators[0].Address.String())
+				assert.Equal(t, true, ok) // should exist
+				assert.Equal(t, uint64(1), evidenceWorker.SuccessfulTasks())
 				inv, err := types.GetEvidence(types.SessionHeader{
 					ApplicationPubKey:  aat.ApplicationPublicKey,
 					Chain:              relay.Proof.Blockchain,
@@ -923,12 +925,15 @@ func TestQueryRelayMultipleNodes(t *testing.T) {
 
 			select {
 			case <-evtChan:
-				// verify that each store task was successful
-				assert.Equal(t, uint64(len(validators)), types.GlobalEvidenceWorker.SuccessfulTasks())
 				// check the evidence store of each node.
 				for _, v := range validators {
 					validatorAddress := sdk.GetAddress(v.PublicKey())
 					_node, nodeErr := types.GetPocketNodeByAddress(&validatorAddress)
+					// one worker per validator
+					evidenceWorker, ok := types.GlobalEvidenceWorkerMap.Load(validatorAddress.String())
+					assert.Equal(t, true, ok) // should exist
+					// verify that each store task was successful
+					assert.Equal(t, uint64(1), evidenceWorker.SuccessfulTasks())
 
 					assert.Nil(t, nodeErr)
 					inv, err := types.GetEvidence(types.SessionHeader{
