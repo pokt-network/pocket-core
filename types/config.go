@@ -18,43 +18,50 @@ type SDKConfig struct {
 	addressVerifier func([]byte) error
 }
 
+type EvidenceWorker struct {
+	MaxCapacity int    `json:"max_capacity"`
+	Strategy    string `json:"strategy"`
+	IdleTimeout int    `json:"idle_timeout"`
+}
+
 type PocketConfig struct {
-	DataDir                    string `json:"data_dir"`
-	GenesisName                string `json:"genesis_file"`
-	ChainsName                 string `json:"chains_name"`
-	EvidenceDBName             string `json:"evidence_db_name"`
-	TendermintURI              string `json:"tendermint_uri"`
-	KeybaseName                string `json:"keybase_name"`
-	RPCPort                    string `json:"rpc_port"`
-	ClientBlockSyncAllowance   int    `json:"client_block_sync_allowance"`
+	DataDir                    string         `json:"data_dir"`
+	GenesisName                string         `json:"genesis_file"`
+	ChainsName                 string         `json:"chains_name"`
+	EvidenceDBName             string         `json:"evidence_db_name"`
+	TendermintURI              string         `json:"tendermint_uri"`
+	KeybaseName                string         `json:"keybase_name"`
+	RPCPort                    string         `json:"rpc_port"`
+	ClientBlockSyncAllowance   int            `json:"client_block_sync_allowance"`
 	ClientSessionSyncAllowance int64  `json:"client_session_sync_allowance"`
-	MaxEvidenceCacheEntires    int    `json:"max_evidence_cache_entries"`
-	MaxSessionCacheEntries     int    `json:"max_session_cache_entries"`
-	JSONSortRelayResponses     bool   `json:"json_sort_relay_responses"`
-	RemoteCLIURL               string `json:"remote_cli_url"`
-	UserAgent                  string `json:"user_agent"`
-	ValidatorCacheSize         int64  `json:"validator_cache_size"`
-	ApplicationCacheSize       int64  `json:"application_cache_size"`
-	RPCTimeout                 int64  `json:"rpc_timeout"`
-	RPCMaxIdleConns           int    `json:"rpc_max_idle_conns"`
-	RPCMaxConnsPerHost        int    `json:"rpc_max_conns_per_host"`
-	RPCMaxIdleConnsPerHost    int    `json:"rpc_max_idle_conns_per_host"`
-	PrometheusAddr             string `json:"pocket_prometheus_port"`
-	PrometheusMaxOpenfiles     int    `json:"prometheus_max_open_files"`
-	MaxClaimAgeForProofRetry   int    `json:"max_claim_age_for_proof_retry"`
-	ProofPrevalidation         bool   `json:"proof_prevalidation"`
-	CtxCacheSize               int    `json:"ctx_cache_size"`
-	ABCILogging                bool   `json:"abci_logging"`
-	RelayErrors                bool   `json:"show_relay_errors"`
-	DisableTxEvents            bool   `json:"disable_tx_events"`
-	Cache                      bool   `json:"-"`
-	IavlCacheSize              int64  `json:"iavl_cache_size"`
-	ChainsHotReload            bool   `json:"chains_hot_reload"`
-	GenerateTokenOnStart       bool   `json:"generate_token_on_start"`
-	LeanPocket                 bool   `json:"lean_pocket"`
-	LeanPocketUserKeyFileName  string `json:"lean_pocket_user_key_file"`
+	MaxEvidenceCacheEntires    int            `json:"max_evidence_cache_entries"`
+	MaxSessionCacheEntries     int            `json:"max_session_cache_entries"`
+	JSONSortRelayResponses     bool           `json:"json_sort_relay_responses"`
+	RemoteCLIURL               string         `json:"remote_cli_url"`
+	UserAgent                  string         `json:"user_agent"`
+	ValidatorCacheSize         int64          `json:"validator_cache_size"`
+	ApplicationCacheSize       int64          `json:"application_cache_size"`
+	RPCTimeout                 int64          `json:"rpc_timeout"`
+	RPCMaxIdleConns           int            `json:"rpc_max_idle_conns"`
+	RPCMaxConnsPerHost        int            `json:"rpc_max_conns_per_host"`
+	RPCMaxIdleConnsPerHost    int            `json:"rpc_max_idle_conns_per_host"`
+	PrometheusAddr             string         `json:"pocket_prometheus_port"`
+	PrometheusMaxOpenfiles     int            `json:"prometheus_max_open_files"`
+	MaxClaimAgeForProofRetry   int            `json:"max_claim_age_for_proof_retry"`
+	ProofPrevalidation         bool           `json:"proof_prevalidation"`
+	CtxCacheSize               int            `json:"ctx_cache_size"`
+	ABCILogging                bool           `json:"abci_logging"`
+	RelayErrors                bool           `json:"show_relay_errors"`
+	DisableTxEvents            bool           `json:"disable_tx_events"`
+	Cache                      bool           `json:"-"`
+	IavlCacheSize              int64          `json:"iavl_cache_size"`
+	ChainsHotReload            bool           `json:"chains_hot_reload"`
+	GenerateTokenOnStart       bool           `json:"generate_token_on_start"`
+	LeanPocket                 bool           `json:"lean_pocket"`
+	LeanPocketUserKeyFileName  string         `json:"lean_pocket_user_key_file"`
 	PreventNegativeRewardClaim bool   `json:"prevent_negative_reward_claim"`
-	MeshNode                  bool   `json:"mesh_node"`
+	MeshNode                  bool           `json:"mesh_node"`
+	EvidenceWorker            EvidenceWorker `json:"evidence_worker"`
 }
 
 func (c PocketConfig) GetLeanPocketUserKeyFilePath() string {
@@ -123,6 +130,9 @@ const (
 	DefaultLeanPocket                  = false
 	DefaultLeanPocketUserKeyFileName   = "lean_nodes_keys.json"
 	DefaultMeshNode                    = false
+	DefaultEvidenceWorkerMaxCapacity   = 1000
+	DefaultEvidenceWorkerStrategy      = "balanced"
+	DefaultEvidenceWorkerIdleTimeout   = 15000
 )
 
 func DefaultConfig(dataDir string) Config {
@@ -163,6 +173,11 @@ func DefaultConfig(dataDir string) Config {
 			LeanPocket:                 DefaultLeanPocket,
 			LeanPocketUserKeyFileName:  DefaultLeanPocketUserKeyFileName,
 			MeshNode:                  DefaultMeshNode,
+			EvidenceWorker: EvidenceWorker{
+				MaxCapacity: DefaultEvidenceWorkerMaxCapacity,
+				Strategy:    DefaultEvidenceWorkerStrategy,
+				IdleTimeout: DefaultEvidenceWorkerIdleTimeout,
+			},
 		},
 	}
 	c.TendermintConfig.LevelDBOptions = config.DefaultLevelDBOpts()
