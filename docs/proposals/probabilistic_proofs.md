@@ -28,6 +28,7 @@ This is a specification & proposal that will be submitted to [forum.pokt.network
   - [Parameter Usage](#parameter-usage)
   - [Flow](#flow)
   - [Scaling Benefits](#scaling-benefits)
+    - [Block Data Verification](#block-data-verification)
 - [Attack Modelling](#attack-modelling)
   - [Approach](#approach)
   - [Definitions](#definitions)
@@ -117,10 +118,19 @@ Assuming the majority of the block space is taken up by Proofs, The number of re
 - `ProofRequestProbability` = 0.25 -> 4x scale (~12B relays)
 - `ProofRequestProbability` = 0.1 -> 10x scale (~30B relays)
 
-**Side benefit**: It has been shown that the majority of block verification time is spent validating the Proofs, so there would also be an upside on resource consumption.
+**Side benefit**: It has been shown that the majority of block verification time is spent validating the Proofs, so there would also be an upside on resource consumption. Showing backing data for this is outside the scope of this document.
 
-_TODO(olshansky): Collect & provide data showing that the majority of the block space is taken up by proofs._
-_OPTIONAL-TODO(olshansky): Collect & provide data showing that the majority of block verification._
+#### Block Data Verification
+
+The [notebook here](./Pocket_Network_Statistical_Proofs.ipynb) originally authored by @RawthiL in [this gist](https://gist.github.com/RawthiL/05fbfaf76ddc199eda4a303559bff0b3) captures the that the Block Size composition is approximately:
+
+- Proofs : 67.06 %
+- Claims : 21.64 %
+
+This goes to show that reducing the number of Proofs & Claims submitted on-chain would increase the capacity of the network.
+
+![img2](https://user-images.githubusercontent.com/1892194/236548602-bb6cbc2a-aa2a-4b92-ae75-d40eda80685f.png)
+![img1](https://user-images.githubusercontent.com/1892194/236548608-be569088-a19a-4759-8d7b-2c4f8c5e7ae8.png)
 
 ## Attack Modelling
 
