@@ -51,7 +51,7 @@ graph TD
 
 At a high level, the generation of the MSI tree is the aggregation of Relay Proofs from the applicable Session, where each Relay Proof is used as a leaf to build the Merkle Tree.
 
-By building a tree out of the Relay Proofs, the protocol is able to verify a single leaf of the tree with a succinct _O(log(n))_ Merkle Proof. Only the data in red in the diagram below must be supplied to verify the proof for a leaf; everything else may be computed by the verifier.\_
+By building a tree out of the Relay Proofs, the protocol is able to verify a single leaf of the tree with a succinct _O(log(n))_ Merkle Proof. Only the data in red in the diagram below must be supplied to verify the proof for a leaf; everything else may be computed by the verifier.
 
 ```mermaid
 graph TB
@@ -93,7 +93,7 @@ graph TB
 
 It is essential to understand the nuances of an MSI Tree and why this specific _flavour_ of Merkle Tree was chosen.
 
-The MSI Tree is based on [Plasma Core's Merkle Sum Tree](https://plasma-core.readthedocs.io/en/latest/specs/sum-tree.html). It was primarily select due to having the [following property](allows us to calculate):
+The MSI Tree is based on [Plasma Core's Merkle Sum Tree](https://plasma-core.readthedocs.io/en/latest/specs/sum-tree.html). It was primarily select due to having the [following property](https://plasma-core.readthedocs.io/en/latest/specs/sum-tree.html#calculating-a-branch-s-range):
 
 > [...] it allows us to calculate a specific range which a branch describes, and be 100% confident that no other valid branches exist which overlap that range.
 
@@ -134,6 +134,8 @@ graph TB
     style C fill:#A020F0
     style D fill:#A020F0
 ```
+
+Note that because [IAVL](https://github.com/cosmos/iavl) Merkle Tree implementation is used, the tree handles rotations and is always balanced (i.e. complete).
 
 ### The `Index` in a `Merkle Sum Index` Tree
 
