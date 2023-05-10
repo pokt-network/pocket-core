@@ -8,10 +8,12 @@ import (
 )
 
 var (
-	InternalStatusType  = "internal"
-	NotifyStatusType    = "notify"
-	ChainStatusType     = "chain"
-	AuthorizationHeader = "Authorization"
+	InternalStatusType         = "internal"
+	ChainNotFoundStatusType    = "chain_not_found"
+	ServicerNotFoundStatusType = "servicer_not_found"
+	NotifyStatusType           = "notify"
+	ChainStatusType            = "chain"
+	AuthorizationHeader        = "Authorization"
 )
 
 // SdkErrorResponse - response error format for re-implemented endpoints.

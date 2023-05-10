@@ -15,7 +15,6 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"strings"
 )
 
 // ++++++++++++++++++++ MESH CLIENT - PUBLIC ROUTES ++++++++++++++++++++
@@ -83,11 +82,6 @@ func meshSimulateRelay(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 		return
 	}
 
-	_url := strings.Trim(chain.URL, `/`)
-	if len(params.Payload.Path) > 0 {
-		_url = _url + "/" + strings.Trim(params.Payload.Path, `/`)
-	}
-
 	mesh.GetLogger().Debug(
 		fmt.Sprintf(
 			"executing simulated relay of chain %s",
@@ -95,10 +89,7 @@ func meshSimulateRelay(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 		),
 	)
 	// do basic http request on the relay
-	res, er, _ := mesh.ExecuteBlockchainHTTPRequest(
-		params.Payload.Data, _url, app.GlobalMeshConfig.UserAgent,
-		chain.BasicAuth, params.Payload.Method, params.Payload.Headers,
-	)
+	res, er, _ := mesh.ExecuteBlockchainHTTPRequest(params.Payload, chain)
 	if er != nil {
 		WriteErrorResponse(w, 400, er.Error())
 		return
