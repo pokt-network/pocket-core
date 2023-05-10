@@ -328,39 +328,47 @@ func initChainsHotReload() {
 }
 
 // ExecuteBlockchainHTTPRequest - run the non-native blockchain http request reusing chains http client.
-func ExecuteBlockchainHTTPRequest(payload, url, userAgent string, basicAuth pocketTypes.BasicAuth, method string, headers map[string]string) (string, error, int) {
+func ExecuteBlockchainHTTPRequest(payload pocketTypes.Payload, chain pocketTypes.HostedBlockchain) (string, error, int) {
+	data := payload.Data
+	_url := strings.Trim(chain.URL, `/`)
+
+	if len(payload.Path) > 0 {
+		_url = _url + "/" + strings.Trim(payload.Path, `/`)
+	}
+
 	var m string
-	if method == "" {
+	if payload.Method == "" {
 		m = pocketTypes.DEFAULTHTTPMETHOD
 	} else {
-		m = method
+		m = payload.Method
 	}
 
 	if app.GlobalMeshConfig.ChainRequestPathCleanup {
-		url = strings.Map(func(r rune) rune {
+		_url = strings.Map(func(r rune) rune {
 			if unicode.IsGraphic(r) {
 				return r
 			}
 			return -1
-		}, url)
+		}, _url)
 	}
 
 	// generate an http request
-	req, err := http.NewRequest(m, url, bytes.NewBuffer([]byte(payload)))
-	if err != nil {
-		return "", err, 500
+	req, e1 := http.NewRequest(m, _url, bytes.NewBuffer([]byte(data)))
+	if e1 != nil {
+		logger.Error("unable to create blockchain request ", "err", e1.Error())
+		return "", errors.New("unable to process blockchain request"), 500
 	}
-	if basicAuth.Username != "" {
-		req.SetBasicAuth(basicAuth.Username, basicAuth.Password)
+	if chain.BasicAuth.Username != "" {
+		req.SetBasicAuth(chain.BasicAuth.Username, chain.BasicAuth.Password)
 	}
-	if userAgent != "" {
-		req.Header.Set("User-Agent", userAgent)
+	if app.GlobalMeshConfig.UserAgent != "" {
+		req.Header.Set("User-Agent", app.GlobalMeshConfig.UserAgent)
 	}
 	// add headers if needed
-	if len(headers) == 0 {
+	if len(payload.Headers) == 0 {
 		req.Header.Set("Content-Type", "application/json")
 	} else {
-		for k, v := range headers {
+		for k, v := range payload.Headers {
 			req.Header.Set(k, v)
 		}
 	}
@@ -372,37 +380,59 @@ func ExecuteBlockchainHTTPRequest(payload, url, userAgent string, basicAuth pock
 	}
 
 	// execute the request
-	resp, err := chainsClient.Do(req)
-	if err != nil {
-		if os.IsTimeout(err) {
-			return "", err, 504
+	resp, e2 := chainsClient.Do(req)
+	if e2 != nil {
+		if os.IsTimeout(e2) {
+			logStr := fmt.Sprintf(
+				"request timeout for CHAIN=%s PATH=%s METHOD=%s",
+				chain.ID, payload.Path, m,
+			)
+			logger.Error("blockchain call timeout: ", e2.Error())
+			return "", errors.New(logStr), 504
 		}
 
-		return "", err, 500
+		logStr := fmt.Sprintf(
+			"blockchain request for CHAIN=%s PATH=%s METHOD=%s",
+			chain.ID, payload.Path, m,
+		)
+
+		if app.GlobalMeshConfig.LogChainRequest {
+			logStr = logStr + " " + fmt.Sprintf("REQ=%s", data)
+		}
+
+		logger.Error(fmt.Sprintf("blockchain call error: %v", e2))
+		return "", errors.New(logStr), 500
 	}
 	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
+		e3 := Body.Close()
+		if e3 != nil {
 
 		}
 	}(resp.Body)
+
+	// this log remains local.
+	logStr := fmt.Sprintf(
+		"executing blockchain request for CHAIN=%s CHAIN_URL=%s PATH=%s METHOD=%s STATUS=%d PARSE_URL=%s",
+		chain.ID, chain.URL, payload.Path, m, resp.StatusCode, _url,
+	)
+
 	// read all bz
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", err, 500
+	body, e4 := ioutil.ReadAll(resp.Body)
+	if e4 != nil {
+		logger.Error("unable to process blockchain response payload ", " error ", e4.Error())
+		return "", errors.New("unable to process blockchain response payload"), 500
 	}
+
 	if app.GlobalMeshConfig.JSONSortRelayResponses {
 		body = []byte(sortJSONResponse(string(body)))
 	}
 
-	logStr := fmt.Sprintf("executing blockchain request:\nURL=%s\nMETHOD=%s\nSTATUS=%d\n", url, m, resp.StatusCode)
-
 	if app.GlobalMeshConfig.LogChainRequest {
-		logStr = logStr + fmt.Sprintf("REQ=%s\n", payload)
+		logStr = logStr + " " + fmt.Sprintf("REQ=%s", data)
 	}
 
 	if app.GlobalMeshConfig.LogChainResponse {
-		logStr = logStr + fmt.Sprintf("RES=%s\n", string(body))
+		logStr = logStr + " " + fmt.Sprintf("RES=%s", string(body))
 	}
 
 	if resp.StatusCode >= 400 {
