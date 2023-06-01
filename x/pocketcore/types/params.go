@@ -12,12 +12,13 @@ import (
 const (
 	// DefaultParamspace for params keeper
 	DefaultParamspace                 = ModuleName
-	DefaultSessionNodeCount           = int64(5)       // default number of nodes in a session
-	DefaultClaimSubmissionWindow      = int64(3)       // default sessions to submit a claim
-	DefaultClaimExpiration            = int64(100)     // default sessions to expire claims
-	DefaultReplayAttackBurnMultiplier = int64(3)       // default replay attack burn multiplier
-	DefaultMinimumNumberOfProofs      = int64(5)       // default minimum number of proofs
-	DefaultBlockByteSize              = int64(4000000) // default block size in bytes at genesis; 4MB
+	DefaultSessionNodeCount           = int64(5)   // default number of nodes in a session
+	DefaultClaimSubmissionWindow      = int64(3)   // default sessions to submit a claim
+	DefaultClaimExpiration            = int64(100) // default sessions to expire claims
+	DefaultReplayAttackBurnMultiplier = int64(3)   // default replay attack burn multiplier
+	DefaultMinimumNumberOfProofs      = int64(5)   // default minimum number of proofs
+	// DefaultBlockByteSize              = int64(4000000) // default block size in bytes at genesis; 4MB
+	DefaultBlockByteSize = int64(100000) // default block size in bytes at genesis; 0.1MB
 
 )
 

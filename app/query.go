@@ -582,6 +582,7 @@ func (app PocketCoreApp) HandleChallenge(c pocketTypes.ChallengeProofInvalidData
 }
 
 func (app PocketCoreApp) HandleDispatch(header pocketTypes.SessionHeader) (res *pocketTypes.DispatchResponse, err error) {
+	fmt.Println("OLSH4")
 	ctx, err := app.NewContext(app.LastBlockHeight())
 	if err != nil {
 		return nil, err

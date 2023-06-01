@@ -2,7 +2,7 @@ module github.com/pokt-network/pocket-core
 
 go 1.18
 
-replace github.com/tendermint/tendermint => github.com/pokt-network/tendermint v0.32.11-0.20230405220629-96c095f0058d
+replace github.com/tendermint/tendermint => /go/src/github.com/pokt-network/tendermint
 
 replace github.com/tendermint/tm-db => github.com/pokt-network/tm-db v0.5.2-0.20220118210553-9b2300f289ba
 

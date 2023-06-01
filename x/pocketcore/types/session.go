@@ -4,10 +4,11 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"log"
+
 	sdk "github.com/pokt-network/pocket-core/types"
 	appexported "github.com/pokt-network/pocket-core/x/apps/exported"
 	"github.com/pokt-network/pocket-core/x/nodes/exported"
-	"log"
 )
 
 // "Session" - The relationship between an application and the pocket network
@@ -23,12 +24,16 @@ func (s Session) HashString() string {
 // "NewSession" - create a new session from seed data
 func NewSession(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, sessionHeader SessionHeader, blockHash string, sessionNodesCount int) (Session, sdk.Error) {
 	// first generate session key
+	fmt.Println("OLS A A")
 	sessionKey, err := NewSessionKey(sessionHeader.ApplicationPubKey, sessionHeader.Chain, blockHash)
+	fmt.Println("OLS A B")
 	if err != nil {
 		return Session{}, err
 	}
 	// then generate the service nodes for that session
+	fmt.Println("OLS A C")
 	sessionNodes, err := NewSessionNodes(sessionCtx, ctx, keeper, sessionHeader.Chain, sessionKey, sessionNodesCount)
+	fmt.Println("OLS A D", err)
 	if err != nil {
 		return Session{}, err
 	}

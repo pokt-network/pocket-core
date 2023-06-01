@@ -1447,7 +1447,7 @@ func newBody(params interface{}) io.Reader {
 }
 
 func newCORSRequest(query string, body io.Reader) *http.Request {
-	req, err := http.NewRequest("OPTIONS", "localhost:8081/v1/client/"+query, body)
+	req, err := http.NewRequest("OPTIONS", "http://localhost:8081/v1/client/"+query, body)
 	if err != nil {
 		panic("could not create request: %v")
 	}
@@ -1455,7 +1455,7 @@ func newCORSRequest(query string, body io.Reader) *http.Request {
 }
 
 func newClientRequest(query string, body io.Reader) *http.Request {
-	req, err := http.NewRequest("POST", "localhost:8081/v1/client/"+query, body)
+	req, err := http.NewRequest("POST", "http://localhost:8081/v1/client/"+query, body)
 	if err != nil {
 		panic("could not create request: %v")
 	}
@@ -1463,7 +1463,7 @@ func newClientRequest(query string, body io.Reader) *http.Request {
 }
 
 func newQueryRequest(query string, body io.Reader) *http.Request {
-	req, err := http.NewRequest("POST", "localhost:8081/v1/query/"+query, body)
+	req, err := http.NewRequest("POST", "http://localhost:8081/v1/query/"+query, body)
 	if err != nil {
 		panic("could not create request: %v")
 	}

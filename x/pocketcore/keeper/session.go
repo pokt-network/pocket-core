@@ -2,6 +2,8 @@ package keeper
 
 import (
 	"encoding/hex"
+	"fmt"
+
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/nodes/exported"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
@@ -9,40 +11,49 @@ import (
 
 // "HandleDispatch" - Handles a client request for their session information
 func (k Keeper) HandleDispatch(ctx sdk.Ctx, header types.SessionHeader) (*types.DispatchResponse, sdk.Error) {
+	fmt.Println("OLSH5")
 	// retrieve the latest session block height
 	latestSessionBlockHeight := k.GetLatestSessionBlockHeight(ctx)
 	// set the session block height
 	header.SessionBlockHeight = latestSessionBlockHeight
 	// validate the header
+	fmt.Println("OLSH6")
 	err := header.ValidateHeader()
 	if err != nil {
 		return nil, err
 	}
 	// get the session context
+	fmt.Println("OLSH7")
 	sessionCtx, er := ctx.PrevCtx(latestSessionBlockHeight)
 	if er != nil {
 		return nil, sdk.ErrInternal(er.Error())
 	}
+	fmt.Println("OLSH8")
 	// check cache
 	session, found := types.GetSession(header, types.GlobalSessionCache)
 	// if not found generate the session
 	if !found {
+		fmt.Println("OLSH9")
 		var err sdk.Error
 		blockHashBz, er := sessionCtx.BlockHash(k.Cdc, sessionCtx.BlockHeight())
 		if er != nil {
 			return nil, sdk.ErrInternal(er.Error())
 		}
+		fmt.Println("OLSH10")
 		session, err = types.NewSession(sessionCtx, ctx, k.posKeeper, header, hex.EncodeToString(blockHashBz), int(k.SessionNodeCount(sessionCtx)))
 		if err != nil {
 			return nil, err
 		}
+		fmt.Println("OLSH11")
 		// add to cache
 		types.SetSession(session, types.GlobalSessionCache)
 	}
+	fmt.Println("OLSH12")
 	actualNodes := make([]exported.ValidatorI, len(session.SessionNodes))
 	for i, addr := range session.SessionNodes {
 		actualNodes[i], _ = k.GetNode(sessionCtx, addr)
 	}
+	fmt.Println("OLSH13")
 	return &types.DispatchResponse{Session: types.DispatchSession{
 		SessionHeader: session.SessionHeader,
 		SessionKey:    session.SessionKey,

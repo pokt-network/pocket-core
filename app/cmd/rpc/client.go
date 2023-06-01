@@ -5,12 +5,13 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	nodesTypes "github.com/pokt-network/pocket-core/x/nodes/types"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
 	"time"
+
+	nodesTypes "github.com/pokt-network/pocket-core/x/nodes/types"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/pokt-network/pocket-core/app"
@@ -24,16 +25,19 @@ func Dispatch(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	}
 	d := types.SessionHeader{}
 	if err := PopModel(w, r, ps, &d); err != nil {
+		fmt.Println("OLSH1")
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
 	res, err := app.PCA.HandleDispatch(d)
 	if err != nil {
+		fmt.Println("OLSH2")
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
 	j, er := json.Marshal(res)
 	if er != nil {
+		fmt.Println("OLSH3")
 		WriteErrorResponse(w, 400, er.Error())
 		return
 	}
