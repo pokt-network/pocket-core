@@ -41,11 +41,18 @@ var (
 )
 
 const (
-	UpgradeCodecHeight           = int64(30024)
-	CodecChainHaltHeight         = int64(30334)
-	ValidatorSplitHeight         = int64(45353)
-	NonCustodial1RollbackHeight  = int64(69583)
-	NonCustodial2AllowanceHeight = int64(74622)
+	// UpgradeCodecHeight           = int64(30024)
+	// CodecChainHaltHeight         = int64(30334)
+	// ValidatorSplitHeight         = int64(45353)
+	// NonCustodial1RollbackHeight  = int64(69583)
+	// NonCustodial2AllowanceHeight = int64(74622)
+	// June30Fork = int64(30040) // 30040 in mainnet
+	UpgradeCodecHeight           = int64(3)
+	CodecChainHaltHeight         = int64(4)
+	ValidatorSplitHeight         = int64(6)
+	NonCustodial1RollbackHeight  = int64(6)
+	NonCustodial2AllowanceHeight = int64(7)
+	June30Fork                   = int64(8)
 	UpgradeCodecUpdateKey        = "CODEC"
 	ValidatorSplitUpdateKey      = "SPLIT"
 	NonCustodialUpdateKey        = "NCUST"

@@ -344,7 +344,7 @@ func (k Keeper) EditStakeValidator(ctx sdk.Ctx, currentValidator, updatedValidat
 	// save the validator by chains
 	k.SetStakedValidatorByChains(ctx, currentValidator)
 	// patch for june 30 fork
-	if ctx.BlockHeight() >= 30040 {
+	if ctx.BlockHeight() >= codec.June30Fork {
 		// reset signing info
 		k.ResetValidatorSigningInfo(ctx, currentValidator.Address)
 	}
