@@ -44,28 +44,29 @@ func (k Keeper) HandleRelay(ctx sdk.Ctx, relay pc.Relay, isMesh bool) (*pc.Relay
 	// retrieve the nonNative blockchains your node is hosting
 	hostedBlockchains := k.GetHostedBlockchains()
 	// ensure the validity of the relay
-	maxPossibleRelays, err := relay.Validate(ctx, k.posKeeper, k.appKeeper, k, hostedBlockchains, sessionBlockHeight, node)
-	if err != nil {
+	maxPossibleRelays, e1 := relay.Validate(ctx, k.posKeeper, k.appKeeper, k, hostedBlockchains, sessionBlockHeight, node)
+	if e1 != nil {
 		if pc.GlobalPocketConfig.RelayErrors {
 			ctx.Logger().Error(
-				fmt.Sprintf("could not validate relay for app: %s for chainID: %v with error: %s",
-					relay.Proof.ServicerPubKey,
+				fmt.Sprintf("could not validate relay for app: %s for chainID: %v on node %s with error: %s",
+					relay.Proof.Token.ApplicationPublicKey,
 					relay.Proof.Blockchain,
-					err.Error(),
+					nodeAddress.String(),
+					e1.Error(),
 				),
 			)
 			ctx.Logger().Debug(
 				fmt.Sprintf(
 					"could not validate relay for app: %s, for chainID %v on node %s, at session height: %v, with error: %s",
-					relay.Proof.ServicerPubKey,
+					relay.Proof.Token.ApplicationPublicKey,
 					relay.Proof.Blockchain,
 					nodeAddress.String(),
 					sessionBlockHeight,
-					err.Error(),
+					e1.Error(),
 				),
 			)
 		}
-		return nil, err
+		return nil, e1
 	}
 	// move this to a worker that will insert this proof in a serie style to avoid memory consumption and relay proof race conditions
 	// https://github.com/pokt-network/pocket-core/issues/1457
@@ -216,13 +217,13 @@ func (k Keeper) HandleMeshSession(ctx sdk.Ctx, session pc.MeshSession) (*pc.Mesh
 
 	if pc.GlobalPocketConfig.LeanPocket {
 		// if lean pocket enabled, grab the targeted servicer through the relay proof
-		servicerRelayPublicKey, err := crypto.NewPublicKey(session.ServicerPubKey)
-		if err != nil {
+		servicerRelayPublicKey, e1 := crypto.NewPublicKey(session.ServicerPubKey)
+		if e1 != nil {
 			return nil, sdk.ErrInternal("Could not convert servicer hex to public key")
 		}
 		nodeAddress = sdk.GetAddress(servicerRelayPublicKey)
-		node, err = pc.GetPocketNodeByAddress(&nodeAddress)
-		if err != nil {
+		node, e1 = pc.GetPocketNodeByAddress(&nodeAddress)
+		if e1 != nil {
 			return nil, sdk.ErrInternal("Failed to find correct servicer PK")
 		}
 	} else {
@@ -234,31 +235,36 @@ func (k Keeper) HandleMeshSession(ctx sdk.Ctx, session pc.MeshSession) (*pc.Mesh
 	// retrieve the nonNative blockchains your node is hosting
 	hostedBlockchains := k.GetHostedBlockchains()
 	// ensure the validity of the relay
-	remainingRelays, err := session.Validate(ctx, k.posKeeper, k.appKeeper, k, hostedBlockchains, sessionBlockHeight, node)
-	if err != nil {
+	remainingRelays, e2 := session.Validate(ctx, k.posKeeper, k.appKeeper, k, hostedBlockchains, sessionBlockHeight, node)
+	if e2 != nil {
 		if pc.GlobalPocketConfig.RelayErrors {
 			ctx.Logger().Error(
-				fmt.Sprintf("could not validate relay for app: %s for chainID: %v with error: %s",
-					session.ServicerPubKey,
+				fmt.Sprintf("could not validate relay for app: %s for chainID: %v on node %s with error: %s",
+					session.ApplicationPubKey,
 					session.Blockchain,
-					err.Error(),
+					nodeAddress.String(),
+					e2.Error(),
 				),
 			)
 			ctx.Logger().Debug(
 				fmt.Sprintf(
 					"could not validate relay for app: %s, for chainID %v on node %s, at session height: %v, with error: %s",
-					session.ServicerPubKey,
+					session.ApplicationPubKey,
 					session.Blockchain,
 					nodeAddress.String(),
 					sessionBlockHeight,
-					err.Error(),
+					e2.Error(),
 				),
 			)
 		}
-		return nil, err
+		return nil, e2
 	}
 
-	dispatch, err := k.HandleDispatch(ctx, session.SessionHeader)
+	dispatch, e3 := k.HandleDispatch(ctx, session.SessionHeader)
+
+	if e3 != nil {
+		return nil, e3
+	}
 
 	return &pc.MeshSessionResponse{
 		Session:         *dispatch,

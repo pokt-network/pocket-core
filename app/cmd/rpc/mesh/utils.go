@@ -173,3 +173,7 @@ func NewWorkerPool(name string, strategyName string, maxWorkers, maxCapacity, id
 		pond.Strategy(strategy),
 	)
 }
+
+func IsAtStartOfSession(blockHeight int64) bool {
+	return blockHeight%4 == 1
+}

@@ -1,7 +1,6 @@
 package mesh
 
 import (
-	"encoding/hex"
 	"fmt"
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/pokt-network/pocket-core/app"
@@ -13,34 +12,9 @@ import (
 
 // Servicer - represents a staked address read from servicer_private_key_file
 type servicer struct {
-	SessionCache *xsync.MapOf[string, *AppSessionCache]
-	PrivateKey   crypto.PrivateKey
-	Address      sdk.Address
-	Node         *fullNode
-}
-
-// LoadAppSession - retrieve from cache (memory or persistent) an app session cache
-func (s *servicer) LoadAppSession(hash []byte) (*AppSessionCache, bool) {
-	sHash := hex.EncodeToString(hash)
-	if v, ok := s.SessionCache.Load(sHash); ok {
-		return v, ok
-	}
-
-	return nil, false
-}
-
-// StoreAppSession - store in cache (memory and persistent) an appCache
-func (s *servicer) StoreAppSession(hash []byte, appSession *AppSessionCache) {
-	hashString := hex.EncodeToString(hash)
-	s.SessionCache.Store(hashString, appSession)
-
-	return
-}
-
-// DeleteAppSession - delete an app session from cache (memory and persistent)
-func (s *servicer) DeleteAppSession(hash []byte) {
-	sHash := hex.EncodeToString(hash)
-	s.SessionCache.Delete(sHash)
+	PrivateKey crypto.PrivateKey
+	Address    sdk.Address
+	Node       *fullNode
 }
 
 // reloadServicers - read key file again and manipulate current state after detect differences (add/remove)

@@ -93,10 +93,9 @@ func loadServicersFromFile() (nodes *xsync.MapOf[string, *fullNode], servicers *
 						node.Servicers.Store(addressStr, s)
 					} else {
 						newServicer := &servicer{
-							SessionCache: xsync.NewMapOf[*AppSessionCache](),
-							PrivateKey:   pk,
-							Address:      address,
-							Node:         node,
+							PrivateKey: pk,
+							Address:    address,
+							Node:       node,
 						}
 						servicers.Store(addressStr, newServicer)
 						node.Servicers.Store(addressStr, newServicer)
@@ -138,10 +137,9 @@ func loadServicersFromFile() (nodes *xsync.MapOf[string, *fullNode], servicers *
 				node.Servicers.Store(addressStr, s)
 			} else {
 				newServicer := &servicer{
-					SessionCache: xsync.NewMapOf[*AppSessionCache](),
-					PrivateKey:   pk,
-					Address:      address,
-					Node:         node,
+					PrivateKey: pk,
+					Address:    address,
+					Node:       node,
 				}
 				servicers.Store(addressStr, newServicer)
 				node.Servicers.Store(addressStr, newServicer)

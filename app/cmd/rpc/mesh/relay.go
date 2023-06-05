@@ -58,28 +58,30 @@ func deleteCacheRelay(relay *pocketTypes.Relay) {
 
 // evaluateServicerError - this will change internalCache[hash].IsValid bool depending on the result of the evaluation
 func evaluateServicerError(r *pocketTypes.Relay, err *SdkErrorResponse) (isSessionStillValid bool) {
-	hash := getSessionHashFromRelay(r)
-
 	isSessionStillValid = !ShouldInvalidateSession(err.Code) // we should not retry if is invalid
 
 	if isSessionStillValid {
 		return isSessionStillValid
 	}
 
-	servicerNode := getServicerFromPubKey(r.Proof.ServicerPubKey)
+	session, e1 := sessionStorage.GetSession(r)
 
-	if appSession, ok := servicerNode.LoadAppSession(hash); ok {
-		appSession.IsValid = isSessionStillValid
-		appSession.Error = err
-		servicerNode.StoreAppSession(hash, appSession)
-	} else {
+	if e1 != nil {
+		servicerAddress, _ := GetAddressFromPubKeyAsString(r.Proof.ServicerPubKey)
 		logger.Error(
 			fmt.Sprintf(
-				"missing session hash=%s from cache; it should be there but if u see this after a restart it's ok.",
-				hex.EncodeToString(hash),
+				"failure getting session from storage app=%s chain=%s servicer=%s err=%s",
+				r.Proof.Token.ApplicationPublicKey,
+				r.Proof.Blockchain,
+				servicerAddress,
+				e1.Error,
 			),
 		)
+		// todo: should we invalidate here if we are not sure what is going on?
+		return
 	}
+
+	session.InvalidateNodeSession(r.Proof.ServicerPubKey, err)
 
 	return
 }
@@ -96,7 +98,7 @@ func notifyServicer(r *pocketTypes.Relay) {
 	if err != nil {
 		logger.Error(
 			fmt.Sprintf(
-				"error encoding relay %s for servicer: %s",
+				"error encoding relay hash=%s err=%s",
 				r.RequestHashString(),
 				err.Error(),
 			),
@@ -109,8 +111,11 @@ func notifyServicer(r *pocketTypes.Relay) {
 	if err != nil {
 		logger.Error(
 			fmt.Sprintf(
-				"unable to decode service public key from relay %s to address",
-				r.RequestHashString(),
+				"unable to decode servicer publicKey=%s to address from relay of app=%s chain=%s sessionHeight=%d",
+				r.Proof.ServicerPubKey,
+				r.Proof.Token.ApplicationPublicKey,
+				r.Proof.Blockchain,
+				r.Proof.SessionBlockHeight,
 			),
 		)
 		return
@@ -118,8 +123,10 @@ func notifyServicer(r *pocketTypes.Relay) {
 
 	logger.Debug(
 		fmt.Sprintf(
-			"delivery relay %s notification to servicer %s",
-			r.RequestHashString(),
+			"delivering relay notification of app=%s chain=%s sessionHeight=%d servicer=%s",
+			r.Proof.Token.ApplicationPublicKey,
+			r.Proof.Blockchain,
+			r.Proof.SessionBlockHeight,
 			servicerAddress,
 		),
 	)
@@ -129,9 +136,11 @@ func notifyServicer(r *pocketTypes.Relay) {
 	if !ok {
 		logger.Error(
 			fmt.Sprintf(
-				"unable to find servicer with address=%s to notify relay %s",
+				"unable to find servicer=%s to notify relay of app=%s chain=%s sessionHeight=%d",
 				servicerAddress,
-				r.RequestHashString(),
+				r.Proof.Token.ApplicationPublicKey,
+				r.Proof.Blockchain,
+				r.Proof.SessionBlockHeight,
 			),
 		)
 		return
@@ -161,7 +170,17 @@ func notifyServicer(r *pocketTypes.Relay) {
 	req, err := retryablehttp.NewRequestWithContext(ctx, "POST", requestURL, bytes.NewBuffer(jsonData))
 	req.Header.Set(AuthorizationHeader, servicerAuthToken.Value)
 	if err != nil {
-		logger.Error(fmt.Sprintf("error formatting Servicer URL: %s", err.Error()))
+		logger.Error(
+			fmt.Sprintf(
+				"error formatting url to notify servicer=%s for relay of app=%s chain=%s sessionHeight=%d at url=%s with err=%s",
+				servicerAddress,
+				r.Proof.Token.ApplicationPublicKey,
+				r.Proof.Blockchain,
+				r.Proof.SessionBlockHeight,
+				requestURL,
+				err.Error(),
+			),
+		)
 		servicerNode.Node.MetricsWorker.AddServiceMetricErrorFor(r.Proof.Blockchain, &servicerNode.Address, true, NotifyStatusType, "500")
 		return
 	}
@@ -173,7 +192,15 @@ func notifyServicer(r *pocketTypes.Relay) {
 	resp, err := relaysClient.Do(req)
 
 	if err != nil {
-		logger.Error(fmt.Sprintf("error dispatching relay to Servicer: %s", err.Error()))
+		logger.Error(
+			fmt.Sprintf(
+				"error dispatching relay to app=%s chain=%s servicer=%s err=%s",
+				r.Proof.Token.ApplicationPublicKey,
+				r.Proof.Blockchain,
+				servicerAddress,
+				err.Error(),
+			),
+		)
 		servicerNode.Node.MetricsWorker.AddServiceMetricErrorFor(r.Proof.Blockchain, &servicerNode.Address, true, NotifyStatusType, "500")
 		return
 	}
@@ -189,7 +216,15 @@ func notifyServicer(r *pocketTypes.Relay) {
 	// read the body just to allow http 1.x be able to reuse the connection
 	_, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
-		logger.Error("Couldn't parse response body.", "err", err)
+		logger.Error(
+			fmt.Sprintf(
+				"couldn't parse response body app=%s chain=%s servicer=%s err=%s",
+				r.Proof.Token.ApplicationPublicKey,
+				r.Proof.Blockchain,
+				servicerAddress,
+				err.Error(),
+			),
+		)
 		servicerNode.Node.MetricsWorker.AddServiceMetricErrorFor(r.Proof.Blockchain, &servicerNode.Address, true, NotifyStatusType, fmt.Sprintf("%d", resp.StatusCode))
 		return
 	}
@@ -213,37 +248,43 @@ func notifyServicer(r *pocketTypes.Relay) {
 	} else {
 		logger.Debug(fmt.Sprintf("servicer processed relay %s successfully", r.RequestHashString()))
 
-		header := pocketTypes.SessionHeader{
-			ApplicationPubKey:  r.Proof.Token.ApplicationPublicKey,
-			Chain:              r.Proof.Blockchain,
-			SessionBlockHeight: r.Proof.SessionBlockHeight,
+		ns, e1 := sessionStorage.GetNodeSession(r)
+
+		if e1 != nil {
+			logger.Error(
+				fmt.Sprintf(
+					"error getting session from storage for app=%s chain=%s servicer=%s err=%s",
+					r.Proof.Token.ApplicationPublicKey,
+					r.Proof.Blockchain,
+					servicerAddress,
+					e1.Error,
+				),
+			)
+			servicerNode.Node.MetricsWorker.AddServiceMetricErrorFor(r.Proof.Blockchain, &servicerNode.Address, true, NotifyStatusType, "500")
+			return
 		}
 
-		hash := header.Hash()
-		if appSession, ok := servicerNode.LoadAppSession(hash); ok {
-			appSession.RemainingRelays -= 1
+		_, exhausted := ns.CountRelay()
+
+		if exhausted {
 			logger.Debug(
 				fmt.Sprintf(
-					"servicer %s has %d remaining relays to process for app %s at blockchain %s",
+					"servicer %s exhaust relays for app %s at blockchain %s",
 					servicerNode.Address.String(),
-					appSession.RemainingRelays,
 					r.Proof.Token.ApplicationPublicKey,
 					r.Proof.Blockchain,
 				),
 			)
-			if appSession.RemainingRelays <= 0 {
-				logger.Debug(
-					fmt.Sprintf(
-						"servicer %s exhaust relays for app %s at blockchain %s",
-						servicerNode.Address.String(),
-						r.Proof.Token.ApplicationPublicKey,
-						r.Proof.Blockchain,
-					),
-				)
-				appSession.IsValid = false
-				appSession.Error = NewSdkErrorFromPocketSdkError(pocketTypes.NewOverServiceError(ModuleName))
-			}
-			servicerNode.StoreAppSession(hash, appSession)
+		} else {
+			logger.Debug(
+				fmt.Sprintf(
+					"servicer %s has %d remaining relays to process for app %s at blockchain %s",
+					servicerNode.Address.String(),
+					ns.RemainingRelays,
+					r.Proof.Token.ApplicationPublicKey,
+					r.Proof.Blockchain,
+				),
+			)
 		}
 
 		// track the notify relay time
@@ -361,53 +402,60 @@ func validate(r *pocketTypes.Relay) sdk.Error {
 		return pocketTypes.NewInvalidSessionError(ModuleName)
 	}
 
-	header := pocketTypes.SessionHeader{
-		ApplicationPubKey:  r.Proof.Token.ApplicationPublicKey,
-		Chain:              r.Proof.Blockchain,
-		SessionBlockHeight: r.Proof.SessionBlockHeight,
+	session, e1 := sessionStorage.GetSession(r)
+
+	if e1 != nil {
+		logger.Error(
+			fmt.Sprintf(
+				"failure getting session information for app=%s chain=%s servicer=%s err=%s",
+				r.Proof.Token.ApplicationPublicKey,
+				r.Proof.Blockchain,
+				servicerAddress,
+				e1.Error,
+			),
+		)
+		return pocketTypes.NewInvalidSessionKeyError(ModuleName, errors.New(e1.Error))
 	}
 
-	hash := header.Hash()
-
-	servicerNode := getServicerFromPubKey(r.Proof.ServicerPubKey)
-
-	if appSession, ok := servicerNode.LoadAppSession(hash); !ok {
-		result := &RPCSessionResult{}
-		e2 := getAppSession(r, result)
+	if session != nil {
+		nodeSession, e2 := session.GetNodeSessionByPubKey(r.Proof.ServicerPubKey)
 
 		if e2 != nil {
-			logger.Error("Failure getting session information", "err", e2)
-			return NewPocketSdkErrorFromSdkError(e2)
+			logger.Error(
+				fmt.Sprintf(
+					"failure getting session information for app=%s chain=%s servicer=%s err=%s",
+					r.Proof.Token.ApplicationPublicKey,
+					r.Proof.Blockchain,
+					servicerAddress,
+					e2.Error(),
+				),
+			)
+			return pocketTypes.NewInvalidSessionKeyError(ModuleName, e2)
 		}
 
-		if !result.Success {
-			logger.Error("Failure getting session information", "result", result)
-			if result.Error != nil {
-				return NewPocketSdkErrorFromSdkError(result.Error)
-			}
-			return pocketTypes.NewInvalidBlockHeightError(ModuleName)
-		}
-
-		remainingRelays, _ := result.RemainingRelays.Int64()
-
-		isValid := result.Success && remainingRelays > 0 && result.Error == nil
-
-		servicerNode.StoreAppSession(header.Hash(), &AppSessionCache{
-			PublicKey:       header.ApplicationPubKey,
-			Chain:           header.Chain,
-			Dispatch:        result.Dispatch,
-			RemainingRelays: remainingRelays,
-			IsValid:         isValid,
-			Error:           result.Error,
-		})
-	} else {
-		if !appSession.IsValid {
-			if appSession.Error != nil {
-				return NewPocketSdkErrorFromSdkError(appSession.Error)
+		if !nodeSession.IsValid {
+			if nodeSession.Error != nil {
+				return NewPocketSdkErrorFromSdkError(nodeSession.Error)
 			} else {
-				return sdk.ErrInternal("invalid session")
+				err := errors.New(fmt.Sprintf(
+					"invalid session for app=%s chain=%s servicer=%s",
+					r.Proof.Token.ApplicationPublicKey,
+					r.Proof.Blockchain,
+					servicerAddress,
+				))
+				logger.Error(err.Error())
+				return pocketTypes.NewInvalidSessionKeyError(ModuleName, err)
 			}
 		}
+	} else {
+		err := errors.New(fmt.Sprintf(
+			"session not found for app=%s chain=%s servicer=%s ",
+			r.Proof.Token.ApplicationPublicKey,
+			r.Proof.Blockchain,
+			servicerAddress,
+		))
+		logger.Error(err.Error())
+		return pocketTypes.NewInvalidSessionKeyError(ModuleName, err)
 	}
 
 	// is needed we call the node and validate if there is not a validation already in place get done by the cron?
@@ -464,40 +512,32 @@ func HandleRelay(r *pocketTypes.Relay) (res *pocketTypes.RelayResponse, dispatch
 	res, err = processRelay(r)
 
 	if err != nil && pocketTypes.ErrorWarrantsDispatch(err) {
-		header := pocketTypes.SessionHeader{
-			ApplicationPubKey:  r.Proof.Token.ApplicationPublicKey,
-			Chain:              r.Proof.Blockchain,
-			SessionBlockHeight: r.Proof.SessionBlockHeight,
-		}
 
-		hash := header.Hash()
+		session, e1 := sessionStorage.GetSession(r)
 
-		if appSession, ok := servicerNode.LoadAppSession(hash); !ok {
-			response := RPCSessionResult{}
-			err1 := getAppSession(r, &response)
-			if err1 != nil {
-				logger.Error(
-					fmt.Sprintf(
-						"error getting app %s session; hash %s",
-						r.Proof.Token.ApplicationPublicKey,
-						hash,
-					),
-				)
-			} else {
-				dispatch = response.Dispatch
-			}
+		if e1 != nil {
+			logger.Error(
+				fmt.Sprintf(
+					"error getting session for app=%s chain=%s servicer=%s sessionHeight=%d",
+					r.Proof.Token.ApplicationPublicKey,
+					r.Proof.Blockchain,
+					servicerAddress,
+					r.Proof.SessionBlockHeight,
+				),
+			)
 		} else {
-			dispatch = appSession.Dispatch
+			dispatch = session.Dispatch
 		}
 	}
 
 	// add to task group pool
 	if servicerNode.Node.Worker.Stopped() {
 		// this should not happen, but just in case avoid a panic here.
-		logger.Error(fmt.Sprintf("Worker of node %s was already stopped", servicerNode.Node.URL))
+		logger.Error(fmt.Sprintf("worker of node=%s was already stopped", servicerNode.Node.URL))
 		return
 	}
 
+	// 50k - 50
 	servicerNode.Node.Worker.Submit(func() {
 		notifyServicer(r)
 	})

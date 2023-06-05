@@ -113,12 +113,12 @@ func (r *Relay) Validate(ctx sdk.Ctx, posKeeper PosKeeper, appsKeeper AppsKeeper
 		SessionBlockHeight: r.Proof.SessionBlockHeight,
 	}
 	// validate unique relay
-	evidence, totalRelays := GetTotalProofs(header, RelayEvidence, maxPossibleRelays, node.EvidenceStore)
-	if node.EvidenceStore.IsSealed(evidence) {
+	ev, totalRelays := GetTotalProofs(header, RelayEvidence, maxPossibleRelays, node.EvidenceStore)
+	if node.EvidenceStore.IsSealed(ev) {
 		return sdk.ZeroInt(), NewSealedEvidenceError(ModuleName)
 	}
 	// get evidence key by proof
-	if !IsUniqueProof(r.Proof, evidence) {
+	if !IsUniqueProof(r.Proof, ev) {
 		return sdk.ZeroInt(), NewDuplicateProofError(ModuleName)
 	}
 	// validate not over service
@@ -175,8 +175,8 @@ func (r *Relay) Validate(ctx sdk.Ctx, posKeeper PosKeeper, appsKeeper AppsKeeper
 
 func (ms *MeshSession) Validate(ctx sdk.Ctx, posKeeper PosKeeper, appsKeeper AppsKeeper, pocketKeeper PocketKeeper, hb *HostedBlockchains, sessionBlockHeight int64, node *PocketNode) (remainingRelays sdk.BigInt, err sdk.Error) {
 	// validate the metadata
-	if err := ms.Meta.Validate(ctx); err != nil {
-		return sdk.ZeroInt(), err
+	if e1 := ms.Meta.Validate(ctx); err != nil {
+		return sdk.ZeroInt(), e1
 	}
 	// ensure the blockchain is supported locally
 	if !hb.Contains(ms.Blockchain) {
@@ -219,22 +219,22 @@ func (ms *MeshSession) Validate(ctx sdk.Ctx, posKeeper PosKeeper, appsKeeper App
 	session, found := GetSession(header, node.SessionStore)
 	// if not found generate the session
 	if !found {
-		bh, err := sessionCtx.BlockHash(pocketKeeper.Codec(), sessionCtx.BlockHeight())
-		if err != nil {
-			return sdk.ZeroInt(), sdk.ErrInternal(err.Error())
+		bh, e2 := sessionCtx.BlockHash(pocketKeeper.Codec(), sessionCtx.BlockHeight())
+		if e2 != nil {
+			return sdk.ZeroInt(), sdk.ErrInternal(e2.Error())
 		}
-		var er sdk.Error
-		session, er = NewSession(sessionCtx, ctx, posKeeper, header, hex.EncodeToString(bh), int(sessionNodeCount))
-		if er != nil {
-			return sdk.ZeroInt(), er
+		var e3 sdk.Error
+		session, e3 = NewSession(sessionCtx, ctx, posKeeper, header, hex.EncodeToString(bh), int(sessionNodeCount))
+		if e3 != nil {
+			return sdk.ZeroInt(), e3
 		}
 		// add to cache
 		SetSession(session, node.SessionStore)
 	}
 	// validate the session
-	err = session.Validate(node.GetAddress(), app, int(sessionNodeCount))
-	if err != nil {
-		return sdk.ZeroInt(), err
+	e4 := session.Validate(node.GetAddress(), app, int(sessionNodeCount))
+	if e4 != nil {
+		return sdk.ZeroInt(), e4
 	}
 
 	remainingRelays = maxPossibleRelays.Sub(sdk.NewInt(totalRelays))

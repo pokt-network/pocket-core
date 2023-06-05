@@ -383,7 +383,29 @@ func meshServicerNodeCheck(w http.ResponseWriter, r *http.Request, ps httprouter
 	}
 
 	chainsMap, err := app.PCA.QueryHostedChains()
+	if err != nil {
+		WriteErrorResponse(w, 400, err.Error())
+		return
+	}
+
 	health := app.PCA.QueryHealth(APIVersion)
+	latestHeight, err := app.PCA.QueryHeight()
+	if err != nil {
+		WriteErrorResponse(w, 400, err.Error())
+		return
+	}
+
+	paramReturn, err := app.PCA.QueryParam(latestHeight, "pos/BlocksPerSession")
+	if err != nil {
+		WriteErrorResponse(w, 400, err.Error())
+		return
+	}
+
+	blocksPerSession, err := strconv.ParseInt(paramReturn.Value, 10, 0)
+	if err != nil {
+		WriteErrorResponse(w, 400, err.Error())
+		return
+	}
 
 	if err != nil {
 		response := mesh.RPCSessionResult{
@@ -396,12 +418,13 @@ func meshServicerNodeCheck(w http.ResponseWriter, r *http.Request, ps httprouter
 	}
 
 	response := mesh.CheckResponse{
-		Success:        true,
-		Status:         health,
-		Servicers:      true,
-		Chains:         true,
-		WrongServicers: make([]string, 0),
-		WrongChains:    make([]string, 0),
+		Success:          true,
+		Status:           health,
+		Servicers:        true,
+		Chains:           true,
+		BlocksPerSession: blocksPerSession,
+		WrongServicers:   make([]string, 0),
+		WrongChains:      make([]string, 0),
 	}
 
 	for _, address := range checkPayload.Servicers {

@@ -21,13 +21,14 @@ import (
 
 // fullNode - represent the pocket client instance running that could handle 1 or N addresses (lean)
 type fullNode struct {
-	Name          string
-	URL           string
-	Servicers     *xsync.MapOf[string, *servicer]
-	Status        *app.HealthResponse
-	Worker        *pond.WorkerPool
-	MetricsWorker *Metrics
-	Crons         *cron.Cron
+	Name             string
+	URL              string
+	Servicers        *xsync.MapOf[string, *servicer]
+	Status           *app.HealthResponse
+	BlocksPerSession int64
+	Worker           *pond.WorkerPool
+	MetricsWorker    *Metrics
+	Crons            *cron.Cron
 }
 
 // NewWorker - generate a new worker.
@@ -196,6 +197,7 @@ func (node *fullNode) runCheck() error {
 	}
 
 	node.Status = &res.Status
+	node.BlocksPerSession = res.BlocksPerSession
 
 	if len(res.WrongChains) > 0 {
 		return errors.New(fmt.Sprintf("unable to validate following chains: %s", strings.Join(res.WrongChains[:], ",")))
@@ -228,6 +230,22 @@ func (node *fullNode) scheduleNodeChecks() {
 	}
 }
 
+// GetLatestSessionBlockHeight - same as pocket core code, just a reimplementation base on the info return by fullNode check call.
+func (node *fullNode) GetLatestSessionBlockHeight() (sessionBlockHeight int64) {
+	// get the latest block height
+	blockHeight := node.Status.Height
+	// get the blocks per session
+	blocksPerSession := node.BlocksPerSession
+	// if block height / blocks per session remainder is zero, just subtract blocks per session and add 1
+	if blockHeight%blocksPerSession == 0 {
+		sessionBlockHeight = blockHeight - node.BlocksPerSession + 1
+	} else {
+		// calculate the latest session block height by diving the current block height by the blocksPerSession
+		sessionBlockHeight = (blockHeight/blocksPerSession)*blocksPerSession + 1
+	}
+	return
+}
+
 // createNode - returns a fullNode instance
 func createNode(urlStr, name string) *fullNode {
 	nodeCronJobsWorker := cron.New()
@@ -249,7 +267,10 @@ func createNode(urlStr, name string) *fullNode {
 		URL:       urlStr,
 		Servicers: xsync.NewMapOf[*servicer](),
 		Status:    nil,
-		Crons:     nodeCronJobsWorker,
+		// just a default because on each check request the node will return the right value for the height returned
+		// TODO: implement a default from config as "fallback" before get the real node value
+		BlocksPerSession: 4,
+		Crons:            nodeCronJobsWorker,
 	}
 
 	node.scheduleNodeChecks()
