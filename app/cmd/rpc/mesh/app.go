@@ -161,6 +161,8 @@ func StartRPC(router *httprouter.Router) {
 	totalNodes, totalServicers := loadServicerNodes()
 	// check servicers are reachable at required endpoints
 	connectivityChecks(mapset.NewSet[string]())
+	// initialize session storage
+	InitializeSessionStorage()
 	// initialize crons
 	initCrons()
 	// bootstrap cache

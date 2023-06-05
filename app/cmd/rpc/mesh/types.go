@@ -60,11 +60,12 @@ type CheckPayload struct {
 
 // CheckResponse - response payload of /v1/private/mesh/check
 type CheckResponse struct {
-	Success        bool               `json:"success"`
-	Error          *SdkErrorResponse  `json:"error"`
-	Status         app.HealthResponse `json:"status"`
-	Servicers      bool               `json:"servicers"`
-	Chains         bool               `json:"Chains"`
-	WrongServicers []string           `json:"wrong_servicers"`
-	WrongChains    []string           `json:"wrong_chains"`
+	Success          bool               `json:"success"`
+	Error            *SdkErrorResponse  `json:"error"`
+	Status           app.HealthResponse `json:"status"`
+	BlocksPerSession int64              `json:"blocks_per_session"`
+	Servicers        bool               `json:"servicers"`
+	Chains           bool               `json:"chains"`
+	WrongServicers   []string           `json:"wrong_servicers"`
+	WrongChains      []string           `json:"wrong_chains"`
 }
