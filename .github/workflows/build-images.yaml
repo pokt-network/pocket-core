@@ -6,9 +6,9 @@ name: Build and push images
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [staging]
   pull_request:
-    branches: [main]
+    branches: [staging]
   release:
     types: [published]
 
