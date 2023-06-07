@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"runtime"
 	"strconv"
+	"strings"
 	"time"
 
 	dbm "github.com/tendermint/tm-db"
@@ -153,4 +154,46 @@ func ContainsString(s []string, e string) bool {
 		}
 	}
 	return false
+}
+
+func CompareVersionStrings(verStr1, verStr2 string) (int, error) {
+	ver1 := strings.Split(verStr1, ".")
+	ver2 := strings.Split(verStr2, ".")
+	lenVer1 := len(ver1)
+	lenVer2 := len(ver2)
+
+	numChunks := lenVer1
+	if lenVer2 < numChunks {
+		numChunks = lenVer2
+	}
+
+	for i := 0; i < numChunks; i++ {
+		verNum1, err := strconv.Atoi(ver1[i])
+		if err != nil {
+			return 0, err
+		}
+
+		verNum2, err := strconv.Atoi(ver2[i])
+		if err != nil {
+			return 0, err
+		}
+
+		if verNum1 < verNum2 {
+			return -1, nil
+		}
+
+		if verNum1 > verNum2 {
+			return 1, nil
+		}
+	}
+
+	if lenVer2 > numChunks {
+		return -1, nil
+	}
+
+	if lenVer1 > numChunks {
+		return 1, nil
+	}
+
+	return 0, nil
 }
