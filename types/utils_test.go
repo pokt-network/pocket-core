@@ -65,10 +65,14 @@ func TestTimeFormatAndParse(t *testing.T) {
 		require.Equal(t, timeFromRFC.Format(SortableTimeFormat), tc.SDKSortableTimeStr)
 	}
 }
-func Test_compareVersionStrings(t *testing.T) {
+func Test_CompareVersionStrings(t *testing.T) {
 	comp, err := CompareVersionStrings("0.9.1.1", "0.10.0")
 	assert.Nil(t, err)
 	assert.Equal(t, comp, -1)
+
+	comp, err = CompareVersionStrings("0.10.0", "0.9.2")
+	assert.Nil(t, err)
+	assert.Equal(t, comp, 1)
 
 	comp, err = CompareVersionStrings("1.0", "0.9.9")
 	assert.Nil(t, err)
