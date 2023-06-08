@@ -5,13 +5,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/syndtr/goleveldb/leveldb/opt"
 	"log"
 	"regexp"
 	"runtime"
 	"strconv"
+	"strings"
 	"time"
 
+	"github.com/syndtr/goleveldb/leveldb/opt"
 	dbm "github.com/tendermint/tm-db"
 )
 
@@ -153,4 +154,53 @@ func ContainsString(s []string, e string) bool {
 		}
 	}
 	return false
+}
+
+// Compares two version strings, which are expected to be dot-delimited
+// integers like "1.2.3.4".  The result is similar to strcmp in C, negative
+// if the first version string is considered to be earlier, positive if the
+// second version string is considered to be earlier, and zero if both version
+// strings are the same.  If any of the given version strings is not
+// dot-delimited, the function returns an error.
+// For more details, see Test_CompareVersionStrings in utils_test.go.
+func CompareVersionStrings(verStr1, verStr2 string) (int, error) {
+	ver1 := strings.Split(verStr1, ".")
+	ver2 := strings.Split(verStr2, ".")
+	lenVer1 := len(ver1)
+	lenVer2 := len(ver2)
+
+	numChunks := lenVer1
+	if lenVer2 < numChunks {
+		numChunks = lenVer2
+	}
+
+	for i := 0; i < numChunks; i++ {
+		verNum1, err := strconv.Atoi(ver1[i])
+		if err != nil {
+			return 0, err
+		}
+
+		verNum2, err := strconv.Atoi(ver2[i])
+		if err != nil {
+			return 0, err
+		}
+
+		if verNum1 < verNum2 {
+			return -1, nil
+		}
+
+		if verNum1 > verNum2 {
+			return 1, nil
+		}
+	}
+
+	if lenVer2 > numChunks {
+		return -1, nil
+	}
+
+	if lenVer1 > numChunks {
+		return 1, nil
+	}
+
+	return 0, nil
 }

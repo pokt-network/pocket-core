@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -63,4 +64,31 @@ func TestTimeFormatAndParse(t *testing.T) {
 		require.True(t, timeFromRFC.Equal(timeFromSDKFormat))
 		require.Equal(t, timeFromRFC.Format(SortableTimeFormat), tc.SDKSortableTimeStr)
 	}
+}
+func Test_CompareVersionStrings(t *testing.T) {
+	comp, err := CompareVersionStrings("0.9.1.1", "0.10.0")
+	assert.Nil(t, err)
+	assert.Equal(t, comp, -1)
+
+	comp, err = CompareVersionStrings("0.10.0", "0.9.2")
+	assert.Nil(t, err)
+	assert.Equal(t, comp, 1)
+
+	comp, err = CompareVersionStrings("1.0", "0.9.9")
+	assert.Nil(t, err)
+	assert.Equal(t, comp, 1)
+
+	comp, err = CompareVersionStrings("0.0.0.1", "0.0.0.1")
+	assert.Nil(t, err)
+	assert.Equal(t, comp, 0)
+
+	comp, err = CompareVersionStrings("0.0.0.1.0", "0.0.0.1")
+	assert.Nil(t, err)
+	assert.Equal(t, comp, 1)
+
+	comp, err = CompareVersionStrings("v0.9.1.1", "0.10.0")
+	assert.NotNil(t, err)
+
+	comp, err = CompareVersionStrings("", "1")
+	assert.NotNil(t, err)
 }

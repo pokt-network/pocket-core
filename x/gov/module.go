@@ -135,8 +135,18 @@ func (am AppModule) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) {
 
 	u := am.keeper.GetUpgrade(ctx)
 
+	verComp, err := sdk.CompareVersionStrings(ctx.AppVersion(), u.Version)
+	if err != nil {
+		ctx.Logger().Error("INVALID VERSION STRING",
+			"ctx", ctx.AppVersion(),
+			"upgrade", u.Version,
+			"err", err.Error(),
+		)
+		os.Exit(1)
+	}
+
 	// We have an issue if the context version is behind the upgrade version but the context block height is ahead of the upgrade height
-	if ctx.AppVersion() < u.Version && ctx.BlockHeight() >= u.UpgradeHeight() && ctx.BlockHeight() != 0 {
+	if verComp < 0 && ctx.BlockHeight() >= u.UpgradeHeight() && ctx.BlockHeight() != 0 {
 		ctx.Logger().Error("MUST UPGRADE TO NEXT VERSION: ", u.Version)
 		ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventMustUpgrade, sdk.NewAttribute("VERSION:", u.UpgradeVersion())))
 
