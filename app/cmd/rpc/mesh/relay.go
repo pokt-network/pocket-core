@@ -137,6 +137,26 @@ func notifyServicer(r *pocketTypes.Relay) {
 		return
 	}
 
+	sessionHash := getSessionHashFromRelay(r)
+
+	if appSession, ok := servicerNode.LoadAppSession(sessionHash); ok {
+		if !appSession.IsValid {
+			logger.Error(
+				fmt.Sprintf(
+					"relay for app=%s chain=%s servicer=%s was not able to be delivered because session is already invalidated",
+					r.Proof.Token.ApplicationPublicKey,
+					r.Proof.Blockchain,
+					servicerAddress,
+				),
+			)
+			if appSession.Error != nil {
+				return
+			} else {
+				return
+			}
+		}
+	}
+
 	requestURL := fmt.Sprintf(
 		"%s%s?chain=%s&app=%s",
 		servicerNode.Node.URL,

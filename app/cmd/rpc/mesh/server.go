@@ -128,7 +128,7 @@ func retryRelaysPolicy(ctx context.Context, resp *http.Response, err error) (boo
 		ctxResult.Dispatch = result.Dispatch
 		ctxResult.Error = result.Error
 
-		return !IsRetryableRelayCode(result.Error.Code), nil
+		return IsRetryableRelayCode(result.Error.Code), nil
 	}
 
 	return false, nil
