@@ -133,7 +133,9 @@ func (ns *NodeSession) CountRelay() bool {
 	)
 
 	ns.IsValid = false
-	ns.Error = NewSdkErrorFromPocketSdkError(pocketTypes.NewOverServiceError(ModuleName))
+	// this is what pocket core return on their code, should 1 time they maybe return over-service but then all the next
+	// request will be sealed evidence.
+	ns.Error = NewSdkErrorFromPocketSdkError(pocketTypes.NewSealedEvidenceError(ModuleName))
 
 	return false
 }
@@ -155,7 +157,7 @@ func (ns *NodeSession) ReScheduleValidationTask(session *Session, servicerPubKey
 		ns.Error = NewSdkErrorFromPocketSdkError(
 			sdk.ErrInternal(
 				fmt.Sprintf(
-					"unable to verify session=%s app=%s chain=%s blockHeight=%s servicer=%s",
+					"unable to verify session=%s app=%s chain=%s blockHeight=%d servicer=%s",
 					session.Hash,
 					session.AppPublicKey,
 					session.Chain,
@@ -567,13 +569,23 @@ func (ss *SessionStorage) AddSessionToValidate(relay *pocketTypes.Relay) (*Sessi
 	return session, nil
 }
 
+// ShouldAssumeOptimisticSession - This will evaluate if the node is 1 block behind (at the end of the latest session he knows)
+// and the received relay is on the immediate next session.
 func (ss *SessionStorage) ShouldAssumeOptimisticSession(relay *pocketTypes.Relay, servicerNode *fullNode) bool {
-	sessionBlockHeight := relay.Proof.SessionBlockHeight
+	dispatcherSessionBlockHeight := relay.Proof.SessionBlockHeight
 	fullNodeHeight := servicerNode.Status.Height
 	blocksPerSession := servicerNode.BlocksPerSession
-	return (sessionBlockHeight >= fullNodeHeight &&
-		(fullNodeHeight%blocksPerSession == 0 || fullNodeHeight%blocksPerSession == 1)) &&
-		relay.Proof.SessionBlockHeight-servicerNode.GetLatestSessionBlockHeight() <= 1
+	servicerNodeSessionBlockHeight := servicerNode.GetLatestSessionBlockHeight()
+
+	// check if the relay is on a "future" session in relation to the latest known block of the node
+	isDispatcherAhead := dispatcherSessionBlockHeight >= fullNodeHeight
+	// check if not is at the end of his session
+	isFullNodeAtEndOfSession := (fullNodeHeight % blocksPerSession) == 0
+	// check if the difference between fullNode and the relay session height is really close to avoid someone could abuse
+	// of this optimistic approach.
+	isDispatcherWithinTolerance := (dispatcherSessionBlockHeight - servicerNodeSessionBlockHeight) <= blocksPerSession
+
+	return isDispatcherAhead && isFullNodeAtEndOfSession && isDispatcherWithinTolerance
 }
 
 // cleanOldSessions - clean up sessions that are longer than 50 blocks (just to be sure they are not needed)
