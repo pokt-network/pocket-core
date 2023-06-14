@@ -412,14 +412,20 @@ func validate(r *pocketTypes.Relay) sdk.Error {
 	if r.Proof.RequestHash != r.RequestHashString() {
 		return pocketTypes.NewRequestHashError(ModuleName)
 	}
+	// ensure the blockchain is supported locally
+	if !chains.Contains(r.Proof.Blockchain) {
+		return pocketTypes.NewUnsupportedBlockchainNodeError(ModuleName)
+	}
 	// validate servicer public key
 	servicerAddress, e := GetAddressFromPubKeyAsString(r.Proof.ServicerPubKey)
 	if e != nil {
 		return sdk.ErrInternal("could not convert servicer hex to public key")
 	}
 	// load servicer from servicer map, if not there maybe the servicer is pk is not loaded
-	if _, ok := servicerMap.Load(servicerAddress); !ok {
-		return pocketTypes.NewInvalidSessionError(ModuleName)
+	if servicerNode, ok := servicerMap.Load(servicerAddress); !ok {
+		return sdk.ErrInternal("Failed to find correct servicer PK")
+	} else if servicerNode.Node.GetLatestSessionBlockHeight() != r.Proof.SessionBlockHeight {
+		return pocketTypes.NewInvalidBlockHeightError(ModuleName)
 	}
 
 	session, e1 := sessionStorage.GetSession(r)
