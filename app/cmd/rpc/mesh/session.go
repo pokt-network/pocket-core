@@ -114,9 +114,8 @@ func (ns *NodeSession) CountRelay() bool {
 		return true
 	}
 
-	ns.RemainingRelays -= 1
-
 	if ns.RemainingRelays > 0 {
+		ns.RemainingRelays -= 1
 		return true // still can send relays
 	}
 
@@ -476,9 +475,11 @@ func (ss *SessionStorage) GetSession(relay *pocketTypes.Relay) (*Session, *SdkEr
 			nodeSession.IsValid = result.Success && remainingRelays > 0
 		} else {
 			nodeSession.IsValid = !ShouldInvalidateSession(result.Error.Code)
+			nodeSession.Error = result.Error
 		}
 	} else if result.Error != nil {
 		nodeSession.IsValid = !ShouldInvalidateSession(result.Error.Code)
+		nodeSession.Error = result.Error
 	}
 
 	// return session as it is read, could be or not a valid one.
@@ -526,6 +527,7 @@ func (ss *SessionStorage) NewSessionFromRelay(relay *pocketTypes.Relay) *Session
 		Error:           nil,
 		Session:         &session,
 	})
+	ss.Sessions.Store(hash, &session)
 
 	return &session
 }
