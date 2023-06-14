@@ -19,6 +19,13 @@ import (
 	"time"
 )
 
+const (
+	MarshallingError = iota
+	NewRequestError
+	ExecuteRequestError
+	ReadAllBodyError
+)
+
 // DispatchSessionNode - app session node structure
 type DispatchSessionNode struct {
 	Address       string          `json:"address"`
@@ -101,16 +108,16 @@ type NodeSession struct {
 	Session         *Session
 }
 
-func (ns *NodeSession) CountRelay() (*NodeSession, bool) {
+func (ns *NodeSession) CountRelay() bool {
 	if !ns.Validated {
 		// if this session is not validated yet, will keep been optimistic
-		return ns, true
+		return true
 	}
 
 	ns.RemainingRelays -= 1
 
 	if ns.RemainingRelays > 0 {
-		return ns, true // still can send relays
+		return true // still can send relays
 	}
 
 	address, _ := GetAddressFromPubKeyAsString(ns.PubKey)
@@ -128,7 +135,7 @@ func (ns *NodeSession) CountRelay() (*NodeSession, bool) {
 	ns.IsValid = false
 	ns.Error = NewSdkErrorFromPocketSdkError(pocketTypes.NewOverServiceError(ModuleName))
 
-	return ns, false
+	return false
 }
 
 // Session - Contains general app session information
@@ -142,7 +149,7 @@ type Session struct {
 }
 
 func (ns *NodeSession) ReScheduleValidationTask(session *Session, servicerPubKey string) {
-	if ns.RetryTimes > 20 {
+	if ns.RetryTimes > app.GlobalMeshConfig.SessionStorageValidateRetryMaxTimes {
 		// todo: what other thing we can do here?
 		ns.IsValid = false
 		ns.Error = NewSdkErrorFromPocketSdkError(
@@ -206,7 +213,7 @@ func (s *Session) ValidateSessionTask(servicerPubKey string) func() {
 			// -5 = read body issue
 			// StatusOK = 200
 			// StatusUnauthorized = 401 - maybe after few retries node runner fix the issue and this will move? should we retry this?
-			if statusCode == -5 || statusCode == http.StatusOK || statusCode == http.StatusUnauthorized {
+			if statusCode == ReadAllBodyError || statusCode == http.StatusOK || statusCode == http.StatusUnauthorized {
 				// this will re queue this.
 				nodeSession.ReScheduleValidationTask(s, servicerPubKey)
 			}
@@ -266,7 +273,7 @@ func (s *Session) GetDispatch(nodeSession *NodeSession) (result *RPCSessionResul
 	)
 	jsonData, e1 := json.Marshal(payload)
 	if e1 != nil {
-		statusCode = -2
+		statusCode = MarshallingError
 		e = e1
 		return
 	}
@@ -279,7 +286,7 @@ func (s *Session) GetDispatch(nodeSession *NodeSession) (result *RPCSessionResul
 	req, e2 := http.NewRequest("POST", requestURL, bytes.NewBuffer(jsonData))
 	if e2 != nil {
 		// should we retry? because here exists for sure a "config" setup issue with the requestURL
-		statusCode = -3
+		statusCode = NewRequestError
 		e = errors.New(fmt.Sprintf(
 			"error creating check session request app=%s chain=%s blockHeight=%d servicer=%s err=%s",
 			s.AppPublicKey, s.Chain, s.BlockHeight, servicerAddress, e1.Error(),
@@ -295,7 +302,7 @@ func (s *Session) GetDispatch(nodeSession *NodeSession) (result *RPCSessionResul
 
 	resp, e3 := servicerClient.Do(req)
 	if e3 != nil {
-		statusCode = -4
+		statusCode = ExecuteRequestError
 		e = errors.New(fmt.Sprintf(
 			"error calling check session request app=%s chain=%s blockHeight=%d servicer=%s err=%s",
 			s.AppPublicKey, s.Chain, s.BlockHeight, servicerAddress, e2.Error(),
@@ -316,7 +323,7 @@ func (s *Session) GetDispatch(nodeSession *NodeSession) (result *RPCSessionResul
 	body, e4 := ioutil.ReadAll(resp.Body)
 
 	if e4 != nil {
-		statusCode = -5 // override this to allow caller know when the error was
+		statusCode = ReadAllBodyError // override this to allow caller know when the error was
 		e = errors.New(fmt.Sprintf(
 			"error reading check session response body app=%s chain=%s blockHeight=%d servicer=%s err=%s",
 			s.AppPublicKey, s.Chain, s.BlockHeight, servicerAddress, e3.Error(),
@@ -389,16 +396,19 @@ func InitializeSessionStorage() {
 	NewWorkerPoolMetrics(name, sessionStorage.ValidationWorker)
 }
 
-func (ss *SessionStorage) GetSession(relay *pocketTypes.Relay) (*Session, *SdkErrorResponse) {
-	servicerAddress, _ := GetAddressFromPubKeyAsString(relay.Proof.ServicerPubKey)
-
+func (ss *SessionStorage) GetSessionHashFromRelay(relay *pocketTypes.Relay) []byte {
 	sessionHeader := pocketTypes.SessionHeader{
 		ApplicationPubKey:  relay.Proof.Token.ApplicationPublicKey,
 		Chain:              relay.Proof.Blockchain,
 		SessionBlockHeight: relay.Proof.SessionBlockHeight,
 	}
+	return sessionHeader.Hash()
+}
 
-	sessionHash := hex.EncodeToString(sessionHeader.Hash())
+func (ss *SessionStorage) GetSession(relay *pocketTypes.Relay) (*Session, *SdkErrorResponse) {
+	servicerAddress, _ := GetAddressFromPubKeyAsString(relay.Proof.ServicerPubKey)
+
+	sessionHash := hex.EncodeToString(ss.GetSessionHashFromRelay(relay))
 
 	// if the session is already here
 	if s, sOk := ss.Sessions.Load(sessionHash); sOk {

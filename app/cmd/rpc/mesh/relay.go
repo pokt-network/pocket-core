@@ -146,9 +146,23 @@ func notifyServicer(r *pocketTypes.Relay) {
 		return
 	}
 
-	sessionHash := getSessionHashFromRelay(r)
+	nodeSession, e := sessionStorage.GetNodeSession(r)
 
-	if appSession, ok := servicerNode.LoadAppSession(sessionHash); ok && !appSession.IsValid {
+	if e != nil || (nodeSession.Validated && !nodeSession.IsValid) {
+		if e != nil {
+			// just to have a different text that provide better understanding of what is going on on the logs.
+			logger.Error(
+				fmt.Sprintf(
+					"relay for app=%s chain=%s servicer=%s was not able to be delivered because we encounter an error getting session from session storage error=%s",
+					r.Proof.Token.ApplicationPublicKey,
+					r.Proof.Blockchain,
+					servicerAddress,
+					e.Error,
+				),
+			)
+			return
+		}
+
 		logger.Error(
 			fmt.Sprintf(
 				"relay for app=%s chain=%s servicer=%s was not able to be delivered because session is already invalidated",
@@ -264,7 +278,7 @@ func notifyServicer(r *pocketTypes.Relay) {
 			return
 		}
 
-		_, exhausted := ns.CountRelay()
+		exhausted := ns.CountRelay()
 
 		if exhausted {
 			logger.Debug(

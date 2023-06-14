@@ -63,10 +63,11 @@ type MeshConfig struct {
 	ServicerRetryWaitMax           int    `json:"servicer_retry_wait_max"`
 
 	// Session Storage
-	SessionStorageWorkerStrategy     string `json:"session_storage_worker_strategy"`
-	SessionStorageMaxWorkers         int    `json:"session_storage_max_workers"`
-	SessionStorageMaxWorkersCapacity int    `json:"session_storage_max_workers_capacity"`
-	SessionStorageWorkersIdleTimeout int    `json:"session_storage_workers_idle_timeout"`
+	SessionStorageWorkerStrategy        string `json:"session_storage_worker_strategy"`
+	SessionStorageMaxWorkers            int    `json:"session_storage_max_workers"`
+	SessionStorageMaxWorkersCapacity    int    `json:"session_storage_max_workers_capacity"`
+	SessionStorageWorkersIdleTimeout    int    `json:"session_storage_workers_idle_timeout"`
+	SessionStorageValidateRetryMaxTimes int    `json:"session_storage_validate_retry_max_times"`
 
 	// Node Health check interval (seconds)
 	NodeCheckInterval int `json:"node_check_interval"`
@@ -137,10 +138,11 @@ func defaultMeshConfig(dataDir string) MeshConfig {
 		ServicerMaxWorkersCapacity:     50000,
 		ServicerWorkersIdleTimeout:     10000,
 		// Session Storage
-		SessionStorageWorkerStrategy:     "lazy",
-		SessionStorageMaxWorkers:         5,
-		SessionStorageMaxWorkersCapacity: 10000,
-		SessionStorageWorkersIdleTimeout: 30000,
+		SessionStorageWorkerStrategy:        "lazy",
+		SessionStorageMaxWorkers:            5,
+		SessionStorageMaxWorkersCapacity:    10000,
+		SessionStorageWorkersIdleTimeout:    30000,
+		SessionStorageValidateRetryMaxTimes: 10,
 		// Node Check
 		NodeCheckInterval: 60,
 		// Session cache (in-memory) clean up interval (seconds)
