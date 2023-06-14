@@ -90,7 +90,7 @@ type MeshConfig struct {
 	MetricsReportInterval int `json:"metrics_report_interval"`
 }
 
-func defaultMeshConfig(dataDir string) MeshConfig {
+func DefaultMeshConfig(dataDir string) MeshConfig {
 	c := MeshConfig{
 		// Mesh Node
 		DataDir: dataDir,
@@ -175,7 +175,7 @@ func InitMeshConfig(datadir string) {
 		datadir = home + FS + sdk.DefaultDDName
 		log2.Println("datadir = " + datadir)
 	}
-	c := defaultMeshConfig(datadir)
+	c := DefaultMeshConfig(datadir)
 	// read from ccnfig file
 	configFilepath := datadir + FS + sdk.ConfigDirName + FS + sdk.ConfigFileName
 	if _, err := os.Stat(configFilepath); os.IsNotExist(err) {

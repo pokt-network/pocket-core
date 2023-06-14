@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/alitto/pond"
-	"github.com/pokt-network/pocket-core/app"
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
 	log2 "log"
@@ -139,7 +138,7 @@ func NewWorkerPool(name string, strategyName string, maxWorkers, maxCapacity, id
 
 	var strategy pond.ResizingStrategy
 
-	switch app.GlobalMeshConfig.ServicerWorkerStrategy {
+	switch strategyName {
 	case "lazy":
 		strategy = pond.Lazy()
 		break

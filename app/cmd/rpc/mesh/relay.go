@@ -172,6 +172,12 @@ func notifyServicer(r *pocketTypes.Relay) {
 			),
 		)
 		return
+	} else if !nodeSession.Validated {
+		// we should re-schedule it to later on the session is validated, or even validated but invalid to be discarded.
+		servicerNode.Node.Worker.Submit(func() {
+			notifyServicer(r)
+		})
+		return
 	}
 
 	requestURL := fmt.Sprintf(
