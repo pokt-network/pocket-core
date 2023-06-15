@@ -7,10 +7,9 @@ on:
   workflow_dispatch:
   push:
     branches: [staging]
+    tags: ['*']
   pull_request:
     branches: [staging]
-  release:
-    types: [published]
 
 jobs:
   build-images:
