@@ -148,7 +148,7 @@ func notifyServicer(r *pocketTypes.Relay) {
 
 	nodeSession, e := sessionStorage.GetNodeSession(r)
 
-	if e != nil || (nodeSession.Validated && !nodeSession.IsValid) {
+	if e != nil || (nodeSession.Queried && !nodeSession.IsValid) {
 		if e != nil {
 			// just to have a different text that provide better understanding of what is going on on the logs.
 			logger.Error(
@@ -172,11 +172,28 @@ func notifyServicer(r *pocketTypes.Relay) {
 			),
 		)
 		return
-	} else if !nodeSession.Validated {
+	} else if !nodeSession.Queried {
 		// we should re-schedule it to later on the session is validated, or even validated but invalid to be discarded.
+		logger.Debug(fmt.Sprintf(
+			"requeuing relay session=%s servicer=%s to be notified",
+			sessionStorage.GetSessionHashFromRelay(r),
+			servicerNode.Address.String(),
+		))
 		servicerNode.Node.Worker.Submit(func() {
 			notifyServicer(r)
 		})
+		return
+	}
+
+	if servicerNode.Node.GetLatestSessionBlockHeight() != r.Proof.SessionBlockHeight {
+		logger.Error(
+			fmt.Sprintf(
+				"relay for app=%s chain=%s servicer=%s was not able to be delivered because node already move to next session (will be fixed on RC-0.10 of Pocket Core)",
+				r.Proof.Token.ApplicationPublicKey,
+				r.Proof.Blockchain,
+				servicerAddress,
+			),
+		)
 		return
 	}
 
@@ -316,7 +333,17 @@ func notifyServicer(r *pocketTypes.Relay) {
 }
 
 // execute - Attempts to do a request on the non-native blockchain specified
-func execute(r *pocketTypes.Relay, hostedBlockchains *pocketTypes.HostedBlockchains, address *sdk.Address) (string, sdk.Error) {
+func execute(r *pocketTypes.Relay, hostedBlockchains *pocketTypes.HostedBlockchains, servicerNode *servicer) (string, sdk.Error) {
+	address := &servicerNode.Address
+	start := time.Now()
+	code := 0
+	defer func(c string, t time.Time, code *int, s *servicer) {
+		if *code == 0 {
+			// omit metric on non-called chains.
+			return
+		}
+		s.Node.MetricsWorker.AddChainMetricFor(c, time.Since(t), *code)
+	}(r.Proof.Blockchain, start, &code, servicerNode)
 	node := GetNodeFromAddress(address.String())
 
 	if node == nil {
@@ -333,12 +360,14 @@ func execute(r *pocketTypes.Relay, hostedBlockchains *pocketTypes.HostedBlockcha
 	}
 
 	// do basic http request on the relay
-	res, er, code := ExecuteBlockchainHTTPRequest(r.Payload, chain)
+	res, er, c := ExecuteBlockchainHTTPRequest(r.Payload, chain)
 	if er != nil {
 		// metric track
 		node.MetricsWorker.AddServiceMetricErrorFor(r.Proof.Blockchain, address, false, ChainStatusType, fmt.Sprintf("%d", code))
 		return res, pocketTypes.NewHTTPExecutionError(ModuleName, er)
 	}
+
+	code = c
 
 	if code >= 400 {
 		node.MetricsWorker.AddServiceMetricErrorFor(r.Proof.Blockchain, address, false, ChainStatusType, fmt.Sprintf("%d", code))
@@ -349,11 +378,9 @@ func execute(r *pocketTypes.Relay, hostedBlockchains *pocketTypes.HostedBlockcha
 
 // processRelay - call execute and create RelayResponse or Error in case. Also trigger relay metrics.
 func processRelay(relay *pocketTypes.Relay) (*pocketTypes.RelayResponse, sdk.Error) {
-	relayTimeStart := time.Now()
 	logger.Debug(fmt.Sprintf("processing relay %s", relay.RequestHashString()))
 
 	servicerAddress, e := GetAddressFromPubKeyAsString(relay.Proof.ServicerPubKey)
-
 	if e != nil {
 		return nil, sdk.ErrInternal("could not convert servicer hex to public key")
 	}
@@ -364,11 +391,12 @@ func processRelay(relay *pocketTypes.Relay) (*pocketTypes.RelayResponse, sdk.Err
 	}
 
 	// attempt to execute
-	respPayload, err := execute(relay, chains, &servicerNode.Address)
+	respPayload, err := execute(relay, chains, servicerNode)
 	if err != nil {
 		logger.Error(fmt.Sprintf("could not send relay %s with error: %s", relay.RequestHashString(), err.Error()))
 		return nil, err
 	}
+
 	// generate response object
 	resp := &pocketTypes.RelayResponse{
 		Response: respPayload,
@@ -386,10 +414,6 @@ func processRelay(relay *pocketTypes.Relay) (*pocketTypes.RelayResponse, sdk.Err
 	}
 	// attach the signature in hex to the response
 	resp.Signature = hex.EncodeToString(sig)
-	// track the relay time
-	relayTimeDuration := time.Since(relayTimeStart)
-	// queue metric of relay
-	servicerNode.Node.MetricsWorker.AddServiceMetricRelayFor(relay, &servicerNode.Address, relayTimeDuration, false)
 	return resp, nil
 }
 
@@ -490,6 +514,7 @@ func validate(r *pocketTypes.Relay) sdk.Error {
 
 // HandleRelay - evaluate node status, validate relay payload and call processRelay
 func HandleRelay(r *pocketTypes.Relay) (res *pocketTypes.RelayResponse, dispatch *DispatchResponse, err error) {
+	relayTimeStart := time.Now()
 	servicerAddress, e := GetAddressFromPubKeyAsString(r.Proof.ServicerPubKey)
 
 	if e != nil {
@@ -535,7 +560,9 @@ func HandleRelay(r *pocketTypes.Relay) (res *pocketTypes.RelayResponse, dispatch
 	// if process is shutdown
 	storeRelay(r)
 
+	blockChainCallStart := time.Now()
 	res, err = processRelay(r)
+	blockChainCallEnd := time.Since(blockChainCallStart)
 
 	if err != nil && pocketTypes.ErrorWarrantsDispatch(err) {
 
@@ -568,5 +595,16 @@ func HandleRelay(r *pocketTypes.Relay) (res *pocketTypes.RelayResponse, dispatch
 		notifyServicer(r)
 	})
 
+	// track the relay time (with chain)
+	relayTimeDuration := time.Since(relayTimeStart)
+	// queue metric of relay
+	servicerNode.Node.MetricsWorker.AddServiceMetricRelayFor(r, &servicerNode.Address, relayTimeDuration, false)
+	// handler time without call blockchain duration
+	servicerNode.Node.MetricsWorker.AddServiceHandlerMetricRelayFor(
+		r,
+		&servicerNode.Address,
+		relayTimeDuration-blockChainCallEnd,
+		false,
+	)
 	return
 }

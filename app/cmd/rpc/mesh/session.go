@@ -101,7 +101,7 @@ type NodeSession struct {
 	// ^^ that could work with problem, just few "free relays"
 	RemainingRelays int64
 	RelayMeta       *pocketTypes.RelayMeta
-	Validated       bool
+	Queried         bool
 	RetryTimes      int
 	IsValid         bool
 	Error           *SdkErrorResponse
@@ -109,7 +109,7 @@ type NodeSession struct {
 }
 
 func (ns *NodeSession) CountRelay() bool {
-	if !ns.Validated {
+	if !ns.Queried {
 		// if this session is not validated yet, will keep been optimistic
 		return true
 	}
@@ -149,7 +149,7 @@ type Session struct {
 	Nodes        *xsync.MapOf[string, *NodeSession]
 }
 
-func (ns *NodeSession) ReScheduleValidationTask(session *Session, servicerPubKey string) {
+func (ns *NodeSession) ReScheduleValidationTask(session *Session) {
 	if ns.RetryTimes > app.GlobalMeshConfig.SessionStorageValidateRetryMaxTimes {
 		// todo: what other thing we can do here?
 		ns.IsValid = false
@@ -161,14 +161,17 @@ func (ns *NodeSession) ReScheduleValidationTask(session *Session, servicerPubKey
 					session.AppPublicKey,
 					session.Chain,
 					session.BlockHeight,
-					servicerPubKey,
+					ns.PubKey,
 				),
 			),
 		)
 		return
 	}
 
-	sessionStorage.ValidationWorker.Submit(session.ValidateSessionTask(servicerPubKey))
+	address, _ := GetAddressFromPubKeyAsString(ns.PubKey)
+
+	sessionStorage.Metrics.AddSessionStorageMetricQueueFor(session, address, true)
+	sessionStorage.ValidationWorker.Submit(session.ValidateSessionTask(ns.PubKey))
 }
 
 func (s *Session) GetNodeSessionByPubKey(servicerPubKey string) (*NodeSession, error) {
@@ -192,37 +195,86 @@ func (s *Session) GetNodeSessionByPubKey(servicerPubKey string) (*NodeSession, e
 
 func (s *Session) ValidateSessionTask(servicerPubKey string) func() {
 	return func() {
+		logger.Debug(fmt.Sprintf(
+			"running an optimistic session validation for app=%s chain=%s session_height=%d servicer=%s",
+			s.AppPublicKey,
+			s.Chain,
+			s.BlockHeight,
+			servicerPubKey,
+		))
+
 		nodeSession, e := s.GetNodeSessionByPubKey(servicerPubKey)
 		if e != nil {
 			// in theory this should never be hit
-			logger.Error(e.Error())
+			logger.Error(fmt.Sprintf(
+				"error=%s getting servicer=%s on session for app=%s chain=%s session_height=%d",
+				e.Error(),
+				servicerPubKey,
+				s.AppPublicKey,
+				s.Chain,
+				s.BlockHeight,
+			))
+			return
+		}
+
+		if nodeSession == nil {
+			logger.Error(
+				fmt.Sprintf(
+					"servicer=%s not found with ValidateSessionTask.GetNodeSessionByPubKey for session hash=%s app=%s chain=%s session_height=%d",
+					servicerPubKey,
+					s.Hash,
+					s.AppPublicKey,
+					s.Chain,
+					s.BlockHeight,
+				))
 			return
 		}
 
 		servicerNode := getServicerFromPubKey(nodeSession.PubKey)
 
+		if servicerNode == nil {
+			logger.Error(
+				fmt.Sprintf(
+					"servicer=%s not found with ValidateSessionTask.getServicerFromPubKey for session hash=%s app=%s chain=%s session_height=%d",
+					servicerPubKey,
+					s.Hash,
+					s.AppPublicKey,
+					s.Chain,
+					s.BlockHeight,
+				))
+			return
+		}
+
 		if s.BlockHeight > servicerNode.Node.Status.Height {
 			// reschedule this session check because the node is not still on the expected block
-			nodeSession.ReScheduleValidationTask(s, servicerPubKey)
+			logger.Debug(
+				fmt.Sprintf(
+					"servicer=%s session_height=%d greater than servicer node last know height=%d so this validation will be requeue.",
+					servicerNode.Address.String(),
+					s.BlockHeight,
+					servicerNode.Node.Status.Height,
+				))
+			nodeSession.ReScheduleValidationTask(s)
 			return
 		}
 
 		result, statusCode, e := s.GetDispatch(nodeSession)
 
 		if e != nil {
-			logger.Error(e.Error())
+			logger.Error(fmt.Sprintf("error getting session disatch err=%s", e.Error()))
 			// -5 = read body issue
 			// StatusOK = 200
 			// StatusUnauthorized = 401 - maybe after few retries node runner fix the issue and this will move? should we retry this?
 			if statusCode == ReadAllBodyError || statusCode == http.StatusOK || statusCode == http.StatusUnauthorized {
 				// this will re queue this.
-				nodeSession.ReScheduleValidationTask(s, servicerPubKey)
+				nodeSession.ReScheduleValidationTask(s)
 			}
 			return
 		}
 
 		isSuccess := statusCode == 200
-		nodeSession.Validated = true // no mater result, this was checked among the fullNode
+		nodeSession.Queried = true // no mater result, this was checked among the fullNode
+		logger.Debug(fmt.Sprintf("session=%s servicer=%s queried done", s.Hash, servicerNode.Address.String()))
 
 		if isSuccess {
 			// dispatch response about session - across nodes
@@ -241,7 +293,7 @@ func (s *Session) ValidateSessionTask(servicerPubKey string) func() {
 		} else if result.Error != nil {
 			nodeSession.IsValid = !ShouldInvalidateSession(result.Error.Code)
 		} else {
-			nodeSession.ReScheduleValidationTask(s, ServicerSessionEndpoint)
+			nodeSession.ReScheduleValidationTask(s)
 		}
 	}
 }
@@ -365,7 +417,7 @@ func (s *Session) NewNodeFromRelay(relay *pocketTypes.Relay) *NodeSession {
 		RemainingRelays: -1, // means that is unlimited until check it
 		RelayMeta:       &relay.Meta,
 		IsValid:         true, // true until node say the opposite
-		Validated:       false,
+		Queried:         false,
 		Error:           nil,
 		Session:         s,
 	}
@@ -374,6 +426,7 @@ func (s *Session) NewNodeFromRelay(relay *pocketTypes.Relay) *NodeSession {
 type SessionStorage struct {
 	Sessions         *xsync.MapOf[string, *Session]
 	ValidationWorker *pond.WorkerPool
+	Metrics          *Metrics
 }
 
 var (
@@ -394,22 +447,28 @@ func InitializeSessionStorage() {
 	}
 
 	// add metrics worker and session storage pool metrics to monitor it and understand how is working.
-	NewWorkerPoolMetrics(name, sessionStorage.ValidationWorker)
+	sessionStorage.Metrics = NewWorkerPoolMetrics(name, sessionStorage.ValidationWorker)
+	sessionStorage.Metrics.Start()
 }
 
-func (ss *SessionStorage) GetSessionHashFromRelay(relay *pocketTypes.Relay) []byte {
+func (ss *SessionStorage) Stop() {
+	sessionStorage.ValidationWorker.Stop()
+	sessionStorage.Metrics.Stop()
+}
+
+func (ss *SessionStorage) GetSessionHashFromRelay(relay *pocketTypes.Relay) string {
 	sessionHeader := pocketTypes.SessionHeader{
 		ApplicationPubKey:  relay.Proof.Token.ApplicationPublicKey,
 		Chain:              relay.Proof.Blockchain,
 		SessionBlockHeight: relay.Proof.SessionBlockHeight,
 	}
-	return sessionHeader.Hash()
+	return hex.EncodeToString(sessionHeader.Hash())
 }
 
 func (ss *SessionStorage) GetSession(relay *pocketTypes.Relay) (*Session, *SdkErrorResponse) {
 	servicerAddress, _ := GetAddressFromPubKeyAsString(relay.Proof.ServicerPubKey)
 
-	sessionHash := hex.EncodeToString(ss.GetSessionHashFromRelay(relay))
+	sessionHash := ss.GetSessionHashFromRelay(relay)
 
 	// if the session is already here
 	if s, sOk := ss.Sessions.Load(sessionHash); sOk {
@@ -417,11 +476,11 @@ func (ss *SessionStorage) GetSession(relay *pocketTypes.Relay) (*Session, *SdkEr
 		servicerInSession := hasDispatch && s.Dispatch.Contains(servicerAddress)
 		_, servicerInLocalSession := s.Nodes.Load(relay.Proof.ServicerPubKey)
 
-		if hasDispatch && servicerInSession || !hasDispatch && servicerInSession {
+		if (hasDispatch && servicerInSession) || servicerInLocalSession {
 			if !servicerInLocalSession {
 				nodeSession := s.NewNodeFromRelay(relay)
 				s.Nodes.Store(relay.Proof.ServicerPubKey, nodeSession)
-				s.ValidateSessionTask(relay.Proof.ServicerPubKey)
+				ss.ValidationWorker.Submit(s.ValidateSessionTask(relay.Proof.ServicerPubKey))
 			}
 			return s, nil
 		} else if hasDispatch && !servicerInSession {
@@ -434,18 +493,20 @@ func (ss *SessionStorage) GetSession(relay *pocketTypes.Relay) (*Session, *SdkEr
 
 	servicerNode := getServicerFromPubKey(relay.Proof.ServicerPubKey)
 
+	// 1. Optimistic:
 	// check if the relay is at the behind of a session
 	// check if the session block height is +1 than our node, if yes that mean our node is not still on the height,
 	// so we will be optimistic about this session and trust on the incoming relay, this session anyway will be moved to a validation
 	// worker well it will keep checking the node status height so once the node is on the same or greater height it will check
 	// the validity on the received session.
-	if ss.ShouldAssumeOptimisticSession(relay, servicerNode.Node) {
+	// 2. Current Session:
+	// allow it trusting that is a good session, so we lower the latency on the behind of a session.
+	if ss.ShouldAssumeOptimisticSession(relay, servicerNode.Node) || servicerNode.Node.GetLatestSessionBlockHeight() == relay.Proof.SessionBlockHeight {
 		// be optimistic about this session
 		s, e := ss.AddSessionToValidate(relay)
 		if e != nil {
 			return nil, NewSdkErrorFromPocketSdkError(sdk.ErrInternal(e.Error()))
 		}
-
 		return s, nil
 	}
 
@@ -463,7 +524,7 @@ func (ss *SessionStorage) GetSession(relay *pocketTypes.Relay) (*Session, *SdkEr
 	}
 
 	isSuccess := statusCode == 200
-	nodeSession.Validated = true // no mater result, this was checked among the fullNode
+	nodeSession.Queried = true // no mater result, this was checked among the fullNode
 
 	if isSuccess {
 		// dispatch response about session - across nodes
@@ -523,7 +584,7 @@ func (ss *SessionStorage) NewSessionFromRelay(relay *pocketTypes.Relay) *Session
 		RemainingRelays: -1, // means that is unlimited until check it
 		RelayMeta:       &relay.Meta,
 		IsValid:         true, // true until node say the opposite
-		Validated:       false,
+		Queried:         false,
 		Error:           nil,
 		Session:         &session,
 	})
@@ -542,6 +603,7 @@ func (ss *SessionStorage) AddSessionToValidate(relay *pocketTypes.Relay) (*Sessi
 	var session *Session
 	hash := hex.EncodeToString(sessionHeader.Hash())
 
+	logger.Debug(fmt.Sprintf("adding session=%s to validate", hash))
 	if v, ok := ss.Sessions.Load(hash); ok {
 		session = v
 		// add node to session if not there, but we already have the session
@@ -554,7 +616,7 @@ func (ss *SessionStorage) AddSessionToValidate(relay *pocketTypes.Relay) (*Sessi
 				PubKey:          relay.Proof.ServicerPubKey,
 				RemainingRelays: -1, // means that is unlimited until check it
 				RelayMeta:       &relay.Meta,
-				Validated:       false, // mean this was not checked with fullnode yet
+				Queried:         false, // mean this was not checked with fullnode yet
 				IsValid:         true,  // true until node say the opposite
 				Error:           nil,
 				Session:         session,
@@ -565,9 +627,11 @@ func (ss *SessionStorage) AddSessionToValidate(relay *pocketTypes.Relay) (*Sessi
 		sessionStorage.Sessions.Store(hash, session)
 	}
 
+	servicerAddress, _ := GetAddressFromPubKeyAsString(relay.Proof.ServicerPubKey)
+
 	// add this node/app/session relation to validate
 	ss.ValidationWorker.Submit(session.ValidateSessionTask(relay.Proof.ServicerPubKey))
-
+	sessionStorage.Metrics.AddSessionStorageMetricQueueFor(session, servicerAddress, false)
 	return session, nil
 }
 

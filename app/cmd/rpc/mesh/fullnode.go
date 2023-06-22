@@ -124,7 +124,7 @@ func (node *fullNode) runCheck() error {
 		return errors.New(fmt.Sprintf("node %s has 0 servicers load.", node.URL))
 	}
 
-	logger.Debug(fmt.Sprintf("checking node %s connectivity", node.URL))
+	//logger.Debug(fmt.Sprintf("checking node %s connectivity", node.URL))
 	servicers := make([]string, 0)
 
 	node.Servicers.Range(func(key string, s *servicer) bool {
@@ -182,9 +182,9 @@ func (node *fullNode) runCheck() error {
 
 	if resp.StatusCode != 200 || !strings.Contains(resp.Header.Get("Content-Type"), "application/json") {
 		if resp.StatusCode != 200 {
-			err = errors.New(fmt.Sprintf("node is returning a non 200 code response from %s", requestURL))
+			err = errors.New(fmt.Sprintf("node is returning a non 200 code response from %s. code=%d err=%s", requestURL, resp.StatusCode, string(body)))
 		} else {
-			err = errors.New(fmt.Sprintf("node is returning a non json response from %s", requestURL))
+			err = errors.New(fmt.Sprintf("node is returning a non json response from %s. code=%d err=%s", requestURL, resp.StatusCode, string(body)))
 		}
 
 		return err

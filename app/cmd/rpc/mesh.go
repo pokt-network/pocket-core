@@ -389,11 +389,7 @@ func meshServicerNodeCheck(w http.ResponseWriter, r *http.Request, ps httprouter
 	}
 
 	health := app.PCA.QueryHealth(APIVersion)
-	latestHeight, err := app.PCA.QueryHeight()
-	if err != nil {
-		WriteErrorResponse(w, 400, err.Error())
-		return
-	}
+	latestHeight := app.PCA.BaseApp.LastBlockHeight()
 
 	paramReturn, err := app.PCA.QueryParam(latestHeight, "pos/BlocksPerSession")
 	if err != nil {
