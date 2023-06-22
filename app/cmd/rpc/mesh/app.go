@@ -131,6 +131,10 @@ func StopRPC() {
 	cronJobs.Stop()
 	logger.Info("clean session job stopped!")
 
+	logger.Info("stopping session storage")
+	sessionStorage.Stop()
+	logger.Info("session storage stopped!")
+
 	// Stop prometheus server
 	StopPrometheusServer()
 }

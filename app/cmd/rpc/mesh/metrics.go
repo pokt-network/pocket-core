@@ -16,30 +16,36 @@ import (
 )
 
 var (
-	ServiceMetricsNamespace = "geo_mesh"
-	StatTypeLabel           = "stat_type"
-	NodeNameLabel           = "node_name"
-	ServicerLabel           = "servicer_address"
-	ChainIDLabel            = "chain_id"
-	ChainNameLabel          = "chain_name"
-	NotifyLabel             = "is_notify"
-	StatusTypeLabel         = "status_type"
-	StatusCodeLabel         = "status_code"
-	InstanceMoniker         = "moniker"
+	ServiceMetricsNamespace   = "geo_mesh"
+	StatTypeLabel             = "stat_type"
+	NodeNameLabel             = "node_name"
+	ServicerLabel             = "servicer_address"
+	ChainIDLabel              = "chain_id"
+	ChainNameLabel            = "chain_name"
+	SessionHeightLabel        = "session_height"
+	ApplicationPublicKeyLabel = "application_public_key"
+	ReQueueLabel              = "requeue"
+	NotifyLabel               = "is_notify"
+	StatusTypeLabel           = "status_type"
+	StatusCodeLabel           = "status_code"
+	InstanceMoniker           = "moniker"
 
-	runningWorkers      *stdPrometheus.GaugeVec
-	idleWorkers         *stdPrometheus.GaugeVec
-	tasksSubmittedTotal *stdPrometheus.GaugeVec
-	tasksWaitingTotal   *stdPrometheus.GaugeVec
-	successTasksTotal   *stdPrometheus.GaugeVec
-	failedTasksTotal    *stdPrometheus.GaugeVec
-	completedTasksTotal *stdPrometheus.GaugeVec
-	minWorker           *stdPrometheus.GaugeVec
-	maxWorker           *stdPrometheus.GaugeVec
-	maxCapacity         *stdPrometheus.GaugeVec
-	relayCounter        *stdPrometheus.CounterVec
-	relayTime           *stdPrometheus.HistogramVec
-	errCounter          *stdPrometheus.CounterVec
+	runningWorkers                *stdPrometheus.GaugeVec
+	idleWorkers                   *stdPrometheus.GaugeVec
+	tasksSubmittedTotal           *stdPrometheus.GaugeVec
+	tasksWaitingTotal             *stdPrometheus.GaugeVec
+	successTasksTotal             *stdPrometheus.GaugeVec
+	failedTasksTotal              *stdPrometheus.GaugeVec
+	completedTasksTotal           *stdPrometheus.GaugeVec
+	minWorker                     *stdPrometheus.GaugeVec
+	maxWorker                     *stdPrometheus.GaugeVec
+	maxCapacity                   *stdPrometheus.GaugeVec
+	relayCounter                  *stdPrometheus.CounterVec
+	relayTime                     *stdPrometheus.HistogramVec
+	relayHandlerTime              *stdPrometheus.HistogramVec
+	errCounter                    *stdPrometheus.CounterVec
+	chainTime                     *stdPrometheus.HistogramVec
+	optimisticSessionQueueCounter *stdPrometheus.CounterVec
 )
 
 type ServiceMetric struct {
@@ -63,6 +69,19 @@ func getErrorLabelSignature() []string {
 
 func getLabelSignature() []string {
 	baseLabels := []string{InstanceMoniker, ChainIDLabel, ChainNameLabel, NotifyLabel}
+	if app.GlobalMeshConfig.MetricsAttachServicerLabel {
+		baseLabels = append(baseLabels, ServicerLabel)
+	}
+	return baseLabels
+}
+
+func getChainLabelSignature() []string {
+	baseLabels := []string{InstanceMoniker, ChainIDLabel, ChainNameLabel, StatusCodeLabel}
+	return baseLabels
+}
+
+func getSessionStorageLabelSignature() []string {
+	baseLabels := []string{InstanceMoniker, ChainIDLabel, ChainNameLabel, SessionHeightLabel, ApplicationPublicKeyLabel, ReQueueLabel}
 	if app.GlobalMeshConfig.MetricsAttachServicerLabel {
 		baseLabels = append(baseLabels, ServicerLabel)
 	}
@@ -110,12 +129,54 @@ func getErrorLabel(nodeAddress *sdk.Address, chainID string, notify bool, status
 	return labels
 }
 
+func getChainLabel(chainID string, code int) map[string]string {
+	labels := map[string]string{
+		// useful to identify different mesh instances against many writing to same prometheus like cross region.
+		InstanceMoniker: app.GlobalMeshConfig.MetricsMoniker,
+		ChainIDLabel:    chainID,
+		StatusCodeLabel: fmt.Sprintf("%d", code),
+	}
+
+	if name, ok := ChainNameMap.Load(chainID); ok {
+		labels[ChainNameLabel] = name
+	} else {
+		// fallback
+		labels[ChainNameLabel] = chainID
+	}
+
+	return labels
+}
+
 func getMetricLabel(statType, name string) map[string]string {
 	return map[string]string{
 		InstanceMoniker: app.GlobalMeshConfig.MetricsMoniker,
 		StatTypeLabel:   statType,
 		NodeNameLabel:   name,
 	}
+}
+
+func getSessionStorageLabel(nodeAddress string, chainID string, applicationPubKey string, sessionHeight int64, isRequeue bool) map[string]string {
+	labels := map[string]string{
+		// useful to identify different mesh instances against many writing to same prometheus like cross region.
+		InstanceMoniker:           app.GlobalMeshConfig.MetricsMoniker,
+		ChainIDLabel:              chainID,
+		ApplicationPublicKeyLabel: applicationPubKey,
+		SessionHeightLabel:        fmt.Sprintf("%d", sessionHeight),
+		ReQueueLabel:              fmt.Sprintf("%v", isRequeue),
+	}
+
+	if name, ok := ChainNameMap.Load(chainID); ok {
+		labels[ChainNameLabel] = name
+	} else {
+		// fallback
+		labels[ChainNameLabel] = chainID
+	}
+
+	if app.GlobalMeshConfig.MetricsAttachServicerLabel {
+		labels[ServicerLabel] = nodeAddress
+	}
+
+	return labels
 }
 
 // addRelayFor - accumulate a relay on servicer and per chain counters.
@@ -126,11 +187,31 @@ func addRelayFor(chainID string, relayDuration float64, nodeAddress *sdk.Address
 	relayTime.With(labels).Observe(relayDuration)
 }
 
+// addHandlerRelayFor - accumulate a handler relay on servicer and per chain counters. (without chain)
+func addHandlerRelayFor(chainID string, relayDuration float64, nodeAddress *sdk.Address, notify bool) {
+	// add relay to accumulated count
+	labels := getLabel(nodeAddress, chainID, notify)
+	relayHandlerTime.With(labels).Observe(relayDuration)
+}
+
+// addChainTimeFor - add chain call time metric
+func addChainTimeFor(chainID string, duration float64, statusCode int) {
+	// add relay to accumulated count
+	labels := getChainLabel(chainID, statusCode)
+	chainTime.With(labels).Observe(duration)
+}
+
 // addErrorFor - accumulate a relay on servicer and per chain counters.
 func addErrorFor(chainID string, nodeAddress *sdk.Address, notify bool, statusType, statusCode string) {
 	// add relay to accumulated count
 	labels := getErrorLabel(nodeAddress, chainID, notify, statusType, statusCode)
 	errCounter.With(labels).Add(1)
+}
+
+// addQueueCountFor - accumulate session storage queue counts for optimistic sessions
+func addQueueCountFor(session *Session, nodeAddress string, isRequeue bool) {
+	labels := getSessionStorageLabel(nodeAddress, session.Chain, session.AppPublicKey, session.BlockHeight, isRequeue)
+	optimisticSessionQueueCounter.With(labels).Add(1)
 }
 
 type Metrics struct {
@@ -190,6 +271,34 @@ func (m *Metrics) AddServiceMetricRelayFor(relay *pocketTypes.Relay, address *sd
 			address,
 			notify,
 		)
+	})
+}
+
+// AddServiceHandlerMetricRelayFor - add metrics of the handler of a relay (without chain execution)
+func (m *Metrics) AddServiceHandlerMetricRelayFor(relay *pocketTypes.Relay, address *sdk.Address, relayTime time.Duration, notify bool) {
+	m.worker.Submit(func() {
+		logger.Debug(fmt.Sprintf("adding handler metric for relay %s", relay.RequestHashString()))
+		addHandlerRelayFor(
+			relay.Proof.Blockchain,
+			float64(relayTime.Milliseconds()),
+			address,
+			notify,
+		)
+	})
+}
+
+// AddChainMetricFor - add metrics for chain call time
+func (m *Metrics) AddChainMetricFor(chain string, duration time.Duration, statusCode int) {
+	m.worker.Submit(func() {
+		addChainTimeFor(chain, float64(duration.Milliseconds()), statusCode)
+	})
+}
+
+// AddSessionStorageMetricQueueFor - add metrics for optimistic sessions queue/requeue jobs
+func (m *Metrics) AddSessionStorageMetricQueueFor(session *Session, address string, isRequeue bool) {
+	m.worker.Submit(func() {
+		logger.Debug("adding metric for optimistic session")
+		addQueueCountFor(session, address, isRequeue)
 	})
 }
 
@@ -341,13 +450,25 @@ func RegisterMetrics() {
 		},
 		getLabelSignature(),
 	)
-	// Avg relay time histogram metric
+	// Avg relay time histogram metric (include chain execution)
 	relayTime = stdPrometheus.NewHistogramVec(
 		stdPrometheus.HistogramOpts{
 			Namespace:   ModuleName,
 			Subsystem:   ServiceMetricsNamespace,
 			Name:        "relay_time",
-			Help:        "Relay duration in milliseconds",
+			Help:        "Relay duration in milliseconds (with chain call)",
+			ConstLabels: nil,
+			Buckets:     stdPrometheus.LinearBuckets(1, 20, 20),
+		},
+		getLabelSignature(),
+	)
+	// Avg relay time histogram metric (without chain execution)
+	relayHandlerTime = stdPrometheus.NewHistogramVec(
+		stdPrometheus.HistogramOpts{
+			Namespace:   ModuleName,
+			Subsystem:   ServiceMetricsNamespace,
+			Name:        "relay_handler_time",
+			Help:        "Relay duration in milliseconds (without chain call)",
 			ConstLabels: nil,
 			Buckets:     stdPrometheus.LinearBuckets(1, 20, 20),
 		},
@@ -362,6 +483,30 @@ func RegisterMetrics() {
 			Help:      "Number of errors resulting from relays (mesh or chain)",
 		},
 		getErrorLabelSignature(),
+	)
+
+	// Avg chain execute time histogram metric
+	chainTime = stdPrometheus.NewHistogramVec(
+		stdPrometheus.HistogramOpts{
+			Namespace:   ModuleName,
+			Subsystem:   ServiceMetricsNamespace,
+			Name:        "chain_time",
+			Help:        "Chain call duration in milliseconds",
+			ConstLabels: nil,
+			Buckets:     stdPrometheus.LinearBuckets(1, 20, 20),
+		},
+		getChainLabelSignature(),
+	)
+
+	// optimistic session queue counter
+	optimisticSessionQueueCounter = stdPrometheus.NewCounterVec(
+		stdPrometheus.CounterOpts{
+			Namespace: ModuleName,
+			Subsystem: ServiceMetricsNamespace,
+			Name:      "optimistic_session_queue_count",
+			Help:      "Number of optimistic sessions delivered to queue to be validated",
+		},
+		getSessionStorageLabelSignature(),
 	)
 
 	stdPrometheus.MustRegister(
@@ -379,7 +524,12 @@ func RegisterMetrics() {
 		// servicer
 		relayCounter,
 		relayTime,
+		relayHandlerTime,
 		errCounter,
+		// chain
+		chainTime,
+		// session storage
+		optimisticSessionQueueCounter,
 	)
 }
 
