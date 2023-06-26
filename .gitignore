@@ -36,3 +36,5 @@ app/data/*
 **/.DS_Store
 
 output_*.dlv
+
+.env
