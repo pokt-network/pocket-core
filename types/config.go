@@ -84,7 +84,7 @@ const (
 	DefaultMaxEvidenceCacheEntries     = 500
 	DefaultListenAddr                  = "tcp://0.0.0.0:"
 	DefaultClientBlockSyncAllowance    = 10
-	DefaultSessionSyncAllowance        = 1 // 1 session (irrespective of num blocks per session)
+	DefaultSessionSyncAllowance        = 0 // This config represents a session unit (irrespective of num blocks per session)
 	DefaultJSONSortRelayResponses      = true
 	DefaultTxIndexer                   = "kv"
 	DefaultRPCDisableTransactionEvents = true
