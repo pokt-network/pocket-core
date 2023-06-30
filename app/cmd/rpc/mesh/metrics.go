@@ -209,8 +209,8 @@ func addErrorFor(chainID string, nodeAddress *sdk.Address, notify bool, statusTy
 }
 
 // addQueueCountFor - accumulate session storage queue counts for optimistic sessions
-func addQueueCountFor(session *Session, nodeAddress string, isRequeue bool) {
-	labels := getSessionStorageLabel(nodeAddress, session.Chain, session.AppPublicKey, session.BlockHeight, isRequeue)
+func addQueueCountFor(ns *NodeSession, isRequeue bool) {
+	labels := getSessionStorageLabel(ns.ServicerAddress, ns.Chain, ns.AppPubKey, ns.BlockHeight, isRequeue)
 	optimisticSessionQueueCounter.With(labels).Add(1)
 }
 
@@ -295,10 +295,14 @@ func (m *Metrics) AddChainMetricFor(chain string, duration time.Duration, status
 }
 
 // AddSessionStorageMetricQueueFor - add metrics for optimistic sessions queue/requeue jobs
-func (m *Metrics) AddSessionStorageMetricQueueFor(session *Session, address string, isRequeue bool) {
+func (m *Metrics) AddSessionStorageMetricQueueFor(ns *NodeSession, isRequeue bool) {
 	m.worker.Submit(func() {
-		logger.Debug("adding metric for optimistic session")
-		addQueueCountFor(session, address, isRequeue)
+		logger.Debug(fmt.Sprintf(
+			"adding metric for optimistic session=%s app=%s chain=%s session_height=%d servicer=%s",
+			ns.Key, ns.AppPubKey, ns.Chain,
+			ns.BlockHeight, ns.ServicerAddress,
+		))
+		addQueueCountFor(ns, isRequeue)
 	})
 }
 

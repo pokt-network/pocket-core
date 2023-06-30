@@ -6,6 +6,7 @@ import (
 	"github.com/go-kit/kit/log/term"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/pokt-network/pocket-core/app"
+	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/tendermint/tendermint/libs/cli/flags"
 	"github.com/tendermint/tendermint/libs/log"
 	log2 "log"
@@ -16,6 +17,12 @@ import (
 type LevelHTTPLogger struct {
 	retryablehttp.LeveledLogger
 }
+
+var (
+	LogLvlInfo  = "info"
+	LogLvlError = "error"
+	LogLvlDebug = "debug"
+)
 
 // fields - mutate interface to key/value object to be print on stdout
 func (l *LevelHTTPLogger) fields(keysAndValues ...interface{}) map[string]interface{} {
@@ -88,6 +95,35 @@ func (l *LevelHTTPLogger) Warn(msg string, keysAndValues ...interface{}) {
 	logger.Debug(msg, l.fields(keysAndValues...))
 }
 
+// Log - log base on level
+func Log(msg string, level string) {
+	switch level {
+	case LogLvlInfo:
+		logger.Info(msg)
+	case LogLvlDebug:
+		logger.Debug(msg)
+	case LogLvlError:
+		logger.Error(msg)
+	default:
+		logger.Info(msg)
+	}
+}
+
+func relayToString(relay *pocketTypes.Relay) string {
+	sessionHash := sessionStorage.GetSessionHashFromRelay(relay)
+	servicerAddress, _ := GetAddressFromPubKeyAsString(relay.Proof.ServicerPubKey)
+	return fmt.Sprintf(
+		"session_hash=%s session_height=%d app=%s chain=%s servicer=%s",
+		sessionHash, relay.Proof.SessionBlockHeight,
+		relay.Proof.Token.ApplicationPublicKey, relay.Proof.Blockchain,
+		servicerAddress,
+	)
+}
+
+func LogRelay(relay *pocketTypes.Relay, msg, level string) {
+	Log(fmt.Sprintf("msg=%s %s", msg, relayToString(relay)), level)
+}
+
 // initLogger - initialize logger
 func initLogger() (logger log.Logger) {
 	logger = log.NewTMLoggerWithColorFn(log.NewSyncWriter(os.Stdout), func(keyvals ...interface{}) term.FgBgColor {
@@ -96,14 +132,14 @@ func initLogger() (logger log.Logger) {
 			log2.Fatal(1)
 		}
 		switch keyvals[1].(kitlevel.Value).String() {
-		case "info":
+		case LogLvlInfo:
 			return term.FgBgColor{Fg: term.Green}
-		case "debug":
+		case LogLvlDebug:
 			return term.FgBgColor{Fg: term.DarkBlue}
-		case "error":
+		case LogLvlError:
 			return term.FgBgColor{Fg: term.Red}
 		default:
-			return term.FgBgColor{}
+			return term.FgBgColor{Fg: term.Green}
 		}
 	})
 	l, err := flags.ParseLogLevel(app.GlobalMeshConfig.LogLevel, logger, "info")

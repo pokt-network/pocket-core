@@ -250,8 +250,8 @@ func initCache() {
 		relay := decodeCacheRelay(val)
 
 		if relay != nil {
-			servicerAddress, err := GetAddressFromPubKeyAsString(relay.Proof.ServicerPubKey)
-			if err != nil {
+			servicerAddress, e1 := GetAddressFromPubKeyAsString(relay.Proof.ServicerPubKey)
+			if e1 != nil {
 				logger.Debug(
 					fmt.Sprintf(
 						"removing relay hash=%s from cache because was unable decode pk from pk file",
