@@ -19,16 +19,16 @@ import (
 // storeRelay - persist relay to disk
 func storeRelay(relay *pocketTypes.Relay) {
 	hash := relay.RequestHash()
-	logger.Debug(fmt.Sprintf("storing relay %s", relay.RequestHashString()))
+	LogRelay(relay, "storing relay", LogLvlDebug)
 	rb, err := json.Marshal(relay)
 	if err != nil {
-		logger.Error(err.Error())
+		LogRelay(relay, fmt.Sprintf("error=%s marshaling relay", err.Error()), LogLvlError)
 		return
 	}
 
 	err = relaysCacheDb.Put(hash, rb)
 	if err != nil {
-		logger.Error(fmt.Sprintf("error adding relay %s to cache. %s", relay.RequestHashString(), err.Error()))
+		LogRelay(relay, fmt.Sprintf("error=%s adding relay to cache", err.Error()), LogLvlError)
 	}
 
 	return
@@ -37,8 +37,9 @@ func storeRelay(relay *pocketTypes.Relay) {
 // decodeCacheRelay - decode []byte relay from cache to pocketTypes.Relay
 func decodeCacheRelay(body []byte) (relay *pocketTypes.Relay) {
 	if err := json.Unmarshal(body, &relay); err != nil {
-		logger.Error("error decoding cache relay")
+		LogRelay(relay, fmt.Sprintf("error=%s decoding cache relay", err.Error()), LogLvlError)
 		// todo: delete key from cache?
+		deleteCacheRelay(relay) // because is malformed, probably.
 		return nil
 	}
 	return
@@ -49,7 +50,7 @@ func deleteCacheRelay(relay *pocketTypes.Relay) {
 	hash := relay.RequestHash()
 	err := relaysCacheDb.Delete(hash)
 	if err != nil {
-		logger.Error("error deleting relay from cache %s", hex.EncodeToString(hash))
+		LogRelay(relay, fmt.Sprintf("error=%s deleting relay from cache", err.Error()), LogLvlError)
 		return
 	}
 
@@ -64,269 +65,169 @@ func evaluateServicerError(r *pocketTypes.Relay, err *SdkErrorResponse) (isSessi
 		return isSessionStillValid
 	}
 
-	session, e1 := sessionStorage.GetSession(r)
-
-	if e1 != nil {
-		servicerAddress, _ := GetAddressFromPubKeyAsString(r.Proof.ServicerPubKey)
-		logger.Error(
-			fmt.Sprintf(
-				"failure getting session from storage app=%s chain=%s servicer=%s err=%s",
-				r.Proof.Token.ApplicationPublicKey,
-				r.Proof.Blockchain,
-				servicerAddress,
-				e1.Error,
-			),
-		)
-		// todo: should we invalidate here if we are not sure what is going on?
-		return
-	}
-
-	session.InvalidateNodeSession(r.Proof.ServicerPubKey, err)
+	sessionStorage.InvalidateNodeSession(r, err)
 
 	return
+}
+
+// addRelayToQueue - add relay to worker queue to be notified
+func addRelayToQueue(r *pocketTypes.Relay) func() {
+	return func() {
+		notifyServicer(r)
+	}
 }
 
 // notifyServicer - call servicer to ack about the processed relay.
 func notifyServicer(r *pocketTypes.Relay) {
 	relayTimeStart := time.Now()
+	requeue := false
 	// discard this relay at the end of this function, to end this function the servicer will be retried N times
-	defer deleteCacheRelay(r)
+	defer func(_r *pocketTypes.Relay, requeue *bool) {
+		if *requeue {
+			LogRelay(r, "avoid deleting relay from cache because it is re-queued", LogLvlInfo)
+			return
+		}
+		LogRelay(r, "deleting relay from cache", LogLvlInfo)
+		deleteCacheRelay(r)
+	}(r, &requeue)
 
 	result := RPCRelayResponse{}
 	ctx := context.WithValue(context.Background(), "result", &result)
-	jsonData, err := json.Marshal(r)
-	if err != nil {
-		logger.Error(
-			fmt.Sprintf(
-				"error encoding relay hash=%s err=%s",
-				r.RequestHashString(),
-				err.Error(),
-			),
-		)
+	jsonData, e1 := json.Marshal(r)
+	if e1 != nil {
+		LogRelay(r, fmt.Sprintf("notify - error=%s encoding relay", e1.Error()), LogLvlError)
 		return
 	}
 
-	servicerAddress, err := GetAddressFromPubKeyAsString(r.Proof.ServicerPubKey)
+	ns, e2 := sessionStorage.GetSession(r)
 
-	if err != nil {
-		logger.Error(
-			fmt.Sprintf(
-				"unable to decode servicer publicKey=%s to address from relay of app=%s chain=%s sessionHeight=%d",
-				r.Proof.ServicerPubKey,
-				r.Proof.Token.ApplicationPublicKey,
-				r.Proof.Blockchain,
-				r.Proof.SessionBlockHeight,
-			),
+	if e2 != nil {
+		// just to have a different text that provide better understanding of what is going on the logs.
+		LogRelay(r, fmt.Sprintf("notify - unable to notify due to error=%s getting session", e2.Error), LogLvlError)
+		ns.ServicerNode.Node.MetricsWorker.AddServiceMetricErrorFor(
+			r.Proof.Blockchain, &ns.ServicerNode.Address,
+			true, GetSessionErrorType, "500",
 		)
 		return
-	}
-
-	logger.Debug(
-		fmt.Sprintf(
-			"delivering relay notification of app=%s chain=%s sessionHeight=%d servicer=%s",
-			r.Proof.Token.ApplicationPublicKey,
-			r.Proof.Blockchain,
-			r.Proof.SessionBlockHeight,
-			servicerAddress,
-		),
-	)
-
-	servicerNode, ok := servicerMap.Load(servicerAddress)
-
-	if !ok {
-		logger.Error(
-			fmt.Sprintf(
-				"unable to find servicer=%s to notify relay of app=%s chain=%s sessionHeight=%d",
-				servicerAddress,
-				r.Proof.Token.ApplicationPublicKey,
-				r.Proof.Blockchain,
-				r.Proof.SessionBlockHeight,
-			),
+	} else if ns.Queried && !ns.IsValid {
+		LogRelay(r, fmt.Sprintf("notify - unable to notify because session was invalidated with error=%s", e1.Error()), LogLvlError)
+		ns.ServicerNode.Node.MetricsWorker.AddServiceMetricErrorFor(
+			r.Proof.Blockchain, &ns.ServicerNode.Address,
+			true, InvalidSessionType, fmt.Sprintf("%d", ns.Error.Code),
 		)
 		return
-	}
-
-	nodeSession, e := sessionStorage.GetNodeSession(r)
-
-	if e != nil || (nodeSession.Queried && !nodeSession.IsValid) {
-		if e != nil {
-			// just to have a different text that provide better understanding of what is going on on the logs.
-			logger.Error(
-				fmt.Sprintf(
-					"relay for app=%s chain=%s servicer=%s was not able to be delivered because we encounter an error getting session from session storage error=%s",
-					r.Proof.Token.ApplicationPublicKey,
-					r.Proof.Blockchain,
-					servicerAddress,
-					e.Error,
-				),
-			)
-			return
-		}
-
-		logger.Error(
-			fmt.Sprintf(
-				"relay for app=%s chain=%s servicer=%s was not able to be delivered because session is already invalidated",
-				r.Proof.Token.ApplicationPublicKey,
-				r.Proof.Blockchain,
-				servicerAddress,
-			),
-		)
-		return
-	} else if !nodeSession.Queried {
+	} else if !ns.Queried && !ns.Queue {
 		// we should re-schedule it to later on the session is validated, or even validated but invalid to be discarded.
-		logger.Debug(fmt.Sprintf(
-			"requeuing relay session=%s servicer=%s to be notified",
-			sessionStorage.GetSessionHashFromRelay(r),
-			servicerNode.Address.String(),
-		))
-		servicerNode.Node.Worker.Submit(func() {
-			notifyServicer(r)
-		})
+		LogRelay(r, "notify - relay re-queued because session is not queried and not in queue neither", LogLvlInfo)
+		requeue = true
+		ns.ServicerNode.Node.Worker.Submit(addRelayToQueue(r))
 		return
 	}
 
-	if servicerNode.Node.GetLatestSessionBlockHeight() != r.Proof.SessionBlockHeight {
-		logger.Error(
-			fmt.Sprintf(
-				"relay for app=%s chain=%s servicer=%s was not able to be delivered because node already move to next session (will be fixed on RC-0.10 of Pocket Core)",
-				r.Proof.Token.ApplicationPublicKey,
-				r.Proof.Blockchain,
-				servicerAddress,
-			),
+	// todo: this could be "tune" once RC-0.10.0 is released because fullNode will allow "old" session relays.
+	if ns.ServicerNode.Node.GetLatestSessionBlockHeight() != r.Proof.SessionBlockHeight {
+		LogRelay(r, fmt.Sprintf(
+			"notify - unable to delivery because relay session height is different from fullNode session_height=%d",
+			ns.ServicerNode.Node.GetLatestSessionBlockHeight(),
+		), LogLvlError)
+		ns.ServicerNode.Node.MetricsWorker.AddServiceMetricErrorFor(
+			r.Proof.Blockchain, &ns.ServicerNode.Address,
+			true, SessionHeightOutOfRangeType, fmt.Sprintf("%d", ns.Error.Code),
 		)
 		return
 	}
 
 	requestURL := fmt.Sprintf(
 		"%s%s?chain=%s&app=%s",
-		servicerNode.Node.URL,
+		ns.ServicerNode.Node.URL,
 		ServicerRelayEndpoint,
 		r.Proof.Blockchain,
 		r.Proof.Token.ApplicationPublicKey,
 	)
-	req, err := retryablehttp.NewRequestWithContext(ctx, "POST", requestURL, bytes.NewBuffer(jsonData))
+	req, e3 := retryablehttp.NewRequestWithContext(ctx, "POST", requestURL, bytes.NewBuffer(jsonData))
 	req.Header.Set(AuthorizationHeader, servicerAuthToken.Value)
-	if err != nil {
-		logger.Error(
-			fmt.Sprintf(
-				"error formatting url to notify servicer=%s for relay of app=%s chain=%s sessionHeight=%d at url=%s with err=%s",
-				servicerAddress,
-				r.Proof.Token.ApplicationPublicKey,
-				r.Proof.Blockchain,
-				r.Proof.SessionBlockHeight,
-				requestURL,
-				err.Error(),
-			),
+	if e3 != nil {
+		LogRelay(r, fmt.Sprintf("notify - error=%s formatting url to call fullNode of servicer", e3.Error()), LogLvlError)
+		ns.ServicerNode.Node.MetricsWorker.AddServiceMetricErrorFor(
+			r.Proof.Blockchain, &ns.ServicerNode.Address,
+			true, NotifyRequestErrorType, "500",
 		)
-		servicerNode.Node.MetricsWorker.AddServiceMetricErrorFor(r.Proof.Blockchain, &servicerNode.Address, true, NotifyStatusType, "500")
 		return
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set(ServicerHeader, servicerAddress)
+	req.Header.Set(ServicerHeader, ns.ServicerAddress)
 	if app.GlobalMeshConfig.UserAgent != "" {
 		req.Header.Set("User-Agent", app.GlobalMeshConfig.UserAgent)
 	}
-	resp, err := relaysClient.Do(req)
+	resp, e4 := relaysClient.Do(req)
 
-	if err != nil {
-		logger.Error(
-			fmt.Sprintf(
-				"error dispatching relay to app=%s chain=%s servicer=%s err=%s",
-				r.Proof.Token.ApplicationPublicKey,
-				r.Proof.Blockchain,
-				servicerAddress,
-				err.Error(),
-			),
+	if e4 != nil {
+		LogRelay(r, fmt.Sprintf("notify - error=%s dispatching relay to fullNode", e4.Error()), LogLvlError)
+		ns.ServicerNode.Node.MetricsWorker.AddServiceMetricErrorFor(
+			r.Proof.Blockchain, &ns.ServicerNode.Address,
+			true, NotifyRequestErrorType, "500",
 		)
-		servicerNode.Node.MetricsWorker.AddServiceMetricErrorFor(r.Proof.Blockchain, &servicerNode.Address, true, NotifyStatusType, "500")
 		return
 	}
 
 	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			logger.Error(err.Error())
+		e5 := Body.Close()
+		if e5 != nil {
+			LogRelay(r, fmt.Sprintf(
+				"notify - error=%s closing dispatch notification response body",
+				e5.Error(),
+			), LogLvlError)
 			return
 		}
 	}(resp.Body)
 
 	// read the body just to allow http 1.x be able to reuse the connection
-	_, err = ioutil.ReadAll(resp.Body)
-	if err != nil {
-		logger.Error(
-			fmt.Sprintf(
-				"couldn't parse response body app=%s chain=%s servicer=%s err=%s",
-				r.Proof.Token.ApplicationPublicKey,
-				r.Proof.Blockchain,
-				servicerAddress,
-				err.Error(),
-			),
+	_, e6 := ioutil.ReadAll(resp.Body)
+	if e6 != nil {
+		LogRelay(r, fmt.Sprintf(
+			"notify - error=%s parsing response from endpoint=%s at fullNode",
+			e1.Error(), ServicerRelayEndpoint,
+		), LogLvlError)
+		ns.ServicerNode.Node.MetricsWorker.AddServiceMetricErrorFor(
+			r.Proof.Blockchain, &ns.ServicerNode.Address,
+			true, NotifyResponseErrorType, fmt.Sprintf("%d", resp.StatusCode),
 		)
-		servicerNode.Node.MetricsWorker.AddServiceMetricErrorFor(r.Proof.Blockchain, &servicerNode.Address, true, NotifyStatusType, fmt.Sprintf("%d", resp.StatusCode))
 		return
 	}
 
 	isSuccess := resp.StatusCode == 200
 
-	if result.Dispatch != nil && result.Dispatch.BlockHeight > servicerNode.Node.Status.Height {
-		servicerNode.Node.Status.Height = result.Dispatch.BlockHeight
+	if result.Dispatch != nil && result.Dispatch.BlockHeight > ns.ServicerNode.Node.Status.Height {
+		ns.ServicerNode.Node.Status.Height = result.Dispatch.BlockHeight
 	}
 
 	if !isSuccess {
-		logger.Debug(
-			fmt.Sprintf(
-				"servicer %s reject relay %s\n: CODE=%d\nCODESPACE=%s\nMESSAGE=%s",
-				servicerAddress, r.RequestHashString(),
-				result.Error.Code, result.Error.Codespace, result.Error.Error,
-			),
+		LogRelay(r, fmt.Sprintf(
+			"notify - relay rejected by fullNode with message=%s code=%d codespace=%s",
+			result.Error.Error, result.Error.Code, result.Error.Codespace,
+		), LogLvlError)
+		ns.ServicerNode.Node.MetricsWorker.AddServiceMetricErrorFor(
+			r.Proof.Blockchain, &ns.ServicerNode.Address,
+			true, NotifyResponseErrorType, fmt.Sprintf("%d", resp.StatusCode),
 		)
-		servicerNode.Node.MetricsWorker.AddServiceMetricErrorFor(r.Proof.Blockchain, &servicerNode.Address, true, NotifyStatusType, fmt.Sprintf("%d", resp.StatusCode))
 		evaluateServicerError(r, result.Error)
 	} else {
-		logger.Debug(fmt.Sprintf("servicer processed relay %s successfully", r.RequestHashString()))
-
-		ns, e1 := sessionStorage.GetNodeSession(r)
-
-		if e1 != nil {
-			logger.Error(
-				fmt.Sprintf(
-					"error getting session from storage for app=%s chain=%s servicer=%s err=%s",
-					r.Proof.Token.ApplicationPublicKey,
-					r.Proof.Blockchain,
-					servicerAddress,
-					e1.Error,
-				),
-			)
-			servicerNode.Node.MetricsWorker.AddServiceMetricErrorFor(r.Proof.Blockchain, &servicerNode.Address, true, NotifyStatusType, "500")
-			return
-		}
+		LogRelay(r, "notify - servicer processed relay successfully", LogLvlDebug)
 
 		exhausted := ns.CountRelay()
 
 		if exhausted {
-			logger.Debug(
-				fmt.Sprintf(
-					"servicer %s exhaust relays for app %s at blockchain %s",
-					servicerNode.Address.String(),
-					r.Proof.Token.ApplicationPublicKey,
-					r.Proof.Blockchain,
-				),
-			)
+			LogRelay(r, "notify - servicer exhaust relays", LogLvlDebug)
 		} else {
-			logger.Debug(
-				fmt.Sprintf(
-					"servicer %s has %d remaining relays to process for app %s at blockchain %s",
-					servicerNode.Address.String(),
-					ns.RemainingRelays,
-					r.Proof.Token.ApplicationPublicKey,
-					r.Proof.Blockchain,
-				),
-			)
+			LogRelay(r, fmt.Sprintf("notify - servicer has %d remaining relays", ns.RemainingRelays), LogLvlDebug)
 		}
 
 		// track the notify relay time
 		relayDuration := time.Since(relayTimeStart)
-		servicerNode.Node.MetricsWorker.AddServiceMetricRelayFor(r, &servicerNode.Address, relayDuration, true)
+		ns.ServicerNode.Node.MetricsWorker.AddServiceMetricRelayFor(
+			r, &ns.ServicerNode.Address,
+			relayDuration, true,
+		)
 	}
 
 	return
@@ -348,7 +249,7 @@ func execute(r *pocketTypes.Relay, hostedBlockchains *pocketTypes.HostedBlockcha
 
 	if node == nil {
 		node.MetricsWorker.AddServiceMetricErrorFor(r.Proof.Blockchain, address, false, ServicerNotFoundStatusType, "500")
-		return "", sdk.ErrInternal("Failed to find correct servicer PK")
+		return "", sdk.ErrInternal("failed to find correct servicer PK")
 	}
 
 	// retrieve the hosted blockchain url requested
@@ -378,7 +279,7 @@ func execute(r *pocketTypes.Relay, hostedBlockchains *pocketTypes.HostedBlockcha
 
 // processRelay - call execute and create RelayResponse or Error in case. Also trigger relay metrics.
 func processRelay(relay *pocketTypes.Relay) (*pocketTypes.RelayResponse, sdk.Error) {
-	logger.Debug(fmt.Sprintf("processing relay %s", relay.RequestHashString()))
+	LogRelay(relay, "handler - processing relay", LogLvlDebug)
 
 	servicerAddress, e := GetAddressFromPubKeyAsString(relay.Proof.ServicerPubKey)
 	if e != nil {
@@ -393,7 +294,7 @@ func processRelay(relay *pocketTypes.Relay) (*pocketTypes.RelayResponse, sdk.Err
 	// attempt to execute
 	respPayload, err := execute(relay, chains, servicerNode)
 	if err != nil {
-		logger.Error(fmt.Sprintf("could not send relay %s with error: %s", relay.RequestHashString(), err.Error()))
+		LogRelay(relay, fmt.Sprintf("handler - call blockchain return error=%s", err.Error()), LogLvlError)
 		return nil, err
 	}
 
@@ -406,10 +307,7 @@ func processRelay(relay *pocketTypes.Relay) (*pocketTypes.RelayResponse, sdk.Err
 	// sign the response
 	sig, er := servicerNode.PrivateKey.Sign(resp.Hash())
 	if er != nil {
-		logger.Error(
-			fmt.Sprintf("could not sign response for address: %s with hash: %v, with error: %s",
-				servicerAddress, resp.HashString(), er.Error()),
-		)
+		LogRelay(relay, fmt.Sprintf("handler - unable to sign relay response due to error=%s", err.Error()), LogLvlError)
 		return nil, pocketTypes.NewKeybaseError(pocketTypes.ModuleName, er)
 	}
 	// attach the signature in hex to the response
@@ -447,56 +345,34 @@ func validate(r *pocketTypes.Relay) sdk.Error {
 	}
 	// load servicer from servicer map, if not there maybe the servicer is pk is not loaded
 	if servicerNode, ok := servicerMap.Load(servicerAddress); !ok {
-		return sdk.ErrInternal("Failed to find correct servicer PK")
+		return sdk.ErrInternal("failed to find correct servicer PK")
 	} else if servicerNode.Node.GetLatestSessionBlockHeight() != r.Proof.SessionBlockHeight {
 		return pocketTypes.NewInvalidBlockHeightError(ModuleName)
 	}
 
-	session, e1 := sessionStorage.GetSession(r)
+	ns, e1 := sessionStorage.GetSession(r)
 
 	if e1 != nil {
-		logger.Error(
-			fmt.Sprintf(
-				"failure getting session information for app=%s chain=%s servicer=%s err=%s",
-				r.Proof.Token.ApplicationPublicKey,
-				r.Proof.Blockchain,
-				servicerAddress,
-				e1.Error,
-			),
-		)
+		LogRelay(r, "handler - unable to get session from session storage", LogLvlError)
 		return pocketTypes.NewInvalidSessionKeyError(ModuleName, errors.New(e1.Error))
 	}
 
-	if session != nil {
-		nodeSession, e2 := session.GetNodeSessionByPubKey(r.Proof.ServicerPubKey)
-
-		if e2 != nil {
-			logger.Error(
-				fmt.Sprintf(
-					"failure getting session information for app=%s chain=%s servicer=%s err=%s",
-					r.Proof.Token.ApplicationPublicKey,
-					r.Proof.Blockchain,
-					servicerAddress,
-					e2.Error(),
-				),
-			)
+	if ns != nil && !ns.IsValid {
+		if ns.Error != nil {
+			return NewPocketSdkErrorFromSdkError(ns.Error)
+		} else {
+			e2 := errors.New(fmt.Sprintf(
+				"invalid session=%s session_height=%d for app=%s chain=%s servicer=%s",
+				ns.Key,
+				ns.BlockHeight,
+				r.Proof.Token.ApplicationPublicKey,
+				r.Proof.Blockchain,
+				ns.ServicerAddress,
+			))
 			return pocketTypes.NewInvalidSessionKeyError(ModuleName, e2)
 		}
-
-		if !nodeSession.IsValid {
-			if nodeSession.Error != nil {
-				return NewPocketSdkErrorFromSdkError(nodeSession.Error)
-			} else {
-				err := errors.New(fmt.Sprintf(
-					"invalid session for app=%s chain=%s servicer=%s",
-					r.Proof.Token.ApplicationPublicKey,
-					r.Proof.Blockchain,
-					servicerAddress,
-				))
-				logger.Error(err.Error())
-				return pocketTypes.NewInvalidSessionKeyError(ModuleName, err)
-			}
-		}
+	} else if ns.IsValid {
+		return nil
 	} else {
 		err := errors.New(fmt.Sprintf(
 			"session not found for app=%s chain=%s servicer=%s ",
@@ -504,12 +380,9 @@ func validate(r *pocketTypes.Relay) sdk.Error {
 			r.Proof.Blockchain,
 			servicerAddress,
 		))
-		logger.Error(err.Error())
+		LogRelay(r, "handler - session not found", LogLvlError)
 		return pocketTypes.NewInvalidSessionKeyError(ModuleName, err)
 	}
-
-	// is needed we call the node and validate if there is not a validation already in place get done by the cron?
-	return nil
 }
 
 // HandleRelay - evaluate node status, validate relay payload and call processRelay
@@ -541,18 +414,9 @@ func HandleRelay(r *pocketTypes.Relay) (res *pocketTypes.RelayResponse, dispatch
 	err = validate(r)
 
 	if err != nil {
-		logger.Error(
-			fmt.Sprintf(
-				"could not validate relay %s for app: %s, for chainID %v on node %s, at session height: %v, with error: %s",
-				r.RequestHashString(),
-				r.Proof.Token.ApplicationPublicKey,
-				r.Proof.Blockchain,
-				servicerAddress,
-				r.Meta.BlockHeight,
-				err.Error(),
-			),
-		)
-
+		// help to track how many bad request mesh filter.
+		servicerNode.Node.MetricsWorker.AddServiceMetricErrorFor(r.Proof.Blockchain, &servicerNode.Address, false, BadRequest, "400")
+		LogRelay(r, fmt.Sprintf("handler - could not validate relay/session due to error=%s", err.Error()), LogLvlError)
 		return
 	}
 
@@ -565,19 +429,9 @@ func HandleRelay(r *pocketTypes.Relay) (res *pocketTypes.RelayResponse, dispatch
 	blockChainCallEnd := time.Since(blockChainCallStart)
 
 	if err != nil && pocketTypes.ErrorWarrantsDispatch(err) {
-
 		session, e1 := sessionStorage.GetSession(r)
-
 		if e1 != nil {
-			logger.Error(
-				fmt.Sprintf(
-					"error getting session for app=%s chain=%s servicer=%s sessionHeight=%d",
-					r.Proof.Token.ApplicationPublicKey,
-					r.Proof.Blockchain,
-					servicerAddress,
-					r.Proof.SessionBlockHeight,
-				),
-			)
+			LogRelay(r, fmt.Sprintf("handler - error=%s getting session from session storage", e1.Error), LogLvlError)
 		} else {
 			dispatch = session.Dispatch
 		}
@@ -586,14 +440,12 @@ func HandleRelay(r *pocketTypes.Relay) (res *pocketTypes.RelayResponse, dispatch
 	// add to task group pool
 	if servicerNode.Node.Worker.Stopped() {
 		// this should not happen, but just in case avoid a panic here.
-		logger.Error(fmt.Sprintf("worker of node=%s was already stopped", servicerNode.Node.URL))
+		LogRelay(r, fmt.Sprintf("handler - queue worker of node=%s is stoppend", servicerNode.Node.URL), LogLvlError)
 		return
 	}
 
 	// 50k - 50
-	servicerNode.Node.Worker.Submit(func() {
-		notifyServicer(r)
-	})
+	servicerNode.Node.Worker.Submit(addRelayToQueue(r))
 
 	// track the relay time (with chain)
 	relayTimeDuration := time.Since(relayTimeStart)

@@ -8,12 +8,16 @@ import (
 )
 
 var (
-	InternalStatusType         = "internal"
-	ChainNotFoundStatusType    = "chain_not_found"
-	ServicerNotFoundStatusType = "servicer_not_found"
-	NotifyStatusType           = "notify"
-	ChainStatusType            = "chain"
-	AuthorizationHeader        = "Authorization"
+	ChainNotFoundStatusType     = "chain_not_found"
+	ServicerNotFoundStatusType  = "servicer_not_found"
+	BadRequest                  = "bad_request"
+	NotifyRequestErrorType      = "notify_request"
+	NotifyResponseErrorType     = "notify_response"
+	ChainStatusType             = "chain"
+	GetSessionErrorType         = "get_session"
+	InvalidSessionType          = "invalid_session"
+	SessionHeightOutOfRangeType = "session_height_out_of_range"
+	AuthorizationHeader         = "Authorization"
 )
 
 // SdkErrorResponse - response error format for re-implemented endpoints.
