@@ -14,7 +14,7 @@ func init() {
 
 func NewSessionStorage() *SessionStorage {
 	return &SessionStorage{
-		Sessions:         xsync.NewMapOf[*Session](),
+		Sessions:         xsync.NewMapOf[*NodeSession](),
 		ValidationWorker: NewWorkerPool("test", "balanced", 1, 1, 10000),
 	}
 }
