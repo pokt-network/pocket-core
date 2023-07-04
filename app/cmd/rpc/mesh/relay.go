@@ -87,7 +87,6 @@ func notifyServicer(r *pocketTypes.Relay) {
 			LogRelay(r, "avoid deleting relay from cache because it is re-queued", LogLvlInfo)
 			return
 		}
-		LogRelay(r, "deleting relay from cache", LogLvlInfo)
 		deleteCacheRelay(r)
 	}(r, &requeue)
 
