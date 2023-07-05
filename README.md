@@ -72,6 +72,10 @@ For more detailed command information, see the [usage section](doc/specs/cli/).
 
 [Visit our user documentation](https://docs.pokt.network) for tutorials and technical information on the Pocket Network.
 
+## Database Snapshots
+
+Snapshots are provided by [Liquify LTD](https://www.liquify.io/) details on how to access the snapshots can be found in [snapshot.md](doc/guides/snapshot.md)
+
 ## Running the tests
 
 To run the Pocket Core unit tests, `go test -short -v -p 1 ./...`
