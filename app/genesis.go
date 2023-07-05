@@ -8754,7 +8754,7 @@ var mainnetGenesis = `{
                     "jailed": true,
                     "status": 2,
                     "tokens": "4900000000000",
-                    "service_url": "https://node1.dev.poktnodes.com:443",
+                    "service_url": "https://node1.poktnodes.com:443",
                     "chains": [
                         "0001",
                         "0021"
@@ -8767,7 +8767,7 @@ var mainnetGenesis = `{
                     "jailed": true,
                     "status": 2,
                     "tokens": "4900000000000",
-                    "service_url": "https://node2.dev.poktnodes.com:443",
+                    "service_url": "https://node2.poktnodes.com:443",
                     "chains": [
                         "0001",
                         "0021"
@@ -8780,7 +8780,7 @@ var mainnetGenesis = `{
                     "jailed": true,
                     "status": 2,
                     "tokens": "200000000000",
-                    "service_url": "https://node3.dev.poktnodes.com:443",
+                    "service_url": "https://node3.poktnodes.com:443",
                     "chains": [
                         "0001",
                         "0021"
@@ -12121,7 +12121,7 @@ var mainnetGenesis = `{
                     "jailed": true,
                     "status": 2,
                     "tokens": "152527740000",
-                    "service_url": "https://node3.dev.pokt.net:443",
+                    "service_url": "https://node1.pokt.net:443",
                     "chains": [
                         "0001",
                         "0021"
@@ -12134,7 +12134,7 @@ var mainnetGenesis = `{
                     "jailed": true,
                     "status": 2,
                     "tokens": "148041630000",
-                    "service_url": "https://node2.dev.pokt.net:443",
+                    "service_url": "https://node2.pokt.net:443",
                     "chains": [
                         "0001",
                         "0021"
@@ -12147,7 +12147,7 @@ var mainnetGenesis = `{
                     "jailed": true,
                     "status": 2,
                     "tokens": "148041630000",
-                    "service_url": "https://node3.dev.pokt.net:4433",
+                    "service_url": "https://node3.pokt.net:4433",
                     "chains": [
                         "0001",
                         "0021"
@@ -14799,7 +14799,7 @@ var mainnetGenesis = `{
                     "jailed": true,
                     "status": 2,
                     "tokens": "18083175000000",
-                    "service_url": "https://node3.dev.pokt.foundation:443",
+                    "service_url": "https://node1.pokt.foundation:443",
                     "chains": [
                         "0001",
                         "0021"
@@ -14812,7 +14812,7 @@ var mainnetGenesis = `{
                     "jailed": true,
                     "status": 2,
                     "tokens": "18083175000000",
-                    "service_url": "https://node2.dev.pokt.foundation:443",
+                    "service_url": "https://node2.pokt.foundation:443",
                     "chains": [
                         "0001",
                         "0021"
@@ -14825,7 +14825,7 @@ var mainnetGenesis = `{
                     "jailed": true,
                     "status": 2,
                     "tokens": "18631150000000",
-                    "service_url": "https://node3.dev.pokt.foundation:443",
+                    "service_url": "https://node3.pokt.foundation:443",
                     "chains": [
                         "0001",
                         "0021"
