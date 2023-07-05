@@ -72,6 +72,10 @@ For more detailed command information, see the [usage section](doc/specs/cli/).
 
 [Visit our user documentation](https://docs.pokt.network) for tutorials and technical information on the Pocket Network.
 
+## Getting into TestNet
+
+Visit our Pocket TestNet information overview [here](https://github.com/pokt-network/pocket-core/blob/testnet_docs_updated/doc/TESTNET_INFO.md)
+
 ## Running the tests
 
 To run the Pocket Core unit tests, `go test -short -v -p 1 ./...`
