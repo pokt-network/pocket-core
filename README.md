@@ -7,6 +7,7 @@
 # Pocket Core
 
 Official golang implementation of the Pocket Network Protocol.
+
 <div>
   <a href="https://godoc.org/github.com/pokt-network/pocket-core"><img src="https://img.shields.io/badge/godoc-reference-blue.svg"/></a>
   <a href="https://goreportcard.com/report/github.com/pokt-network/pocket-core"><img src="https://goreportcard.com/badge/github.com/pokt-network/pocket-core"/></a>
@@ -37,7 +38,7 @@ Clone the repository, `cd` into it and run `go build app/cmd/pocket_core/main.go
 
 To run the Pocket Core binary you can use the following flags alongside the `main` executable:
 
-````
+```
 Usage:
   pocket [command]
 
@@ -64,7 +65,7 @@ Flags:
       --seeds string              a comma separated list of PeerURLs: '<ID>@<IP>:<PORT>,<ID2>@<IP2>:<PORT>...<IDn>@<IPn>:<PORT>'
 
 Use "pocket [command] --help" for more information about a command.
-````
+```
 
 For more detailed command information, see the [usage section](doc/specs/cli/).
 
@@ -75,6 +76,10 @@ For more detailed command information, see the [usage section](doc/specs/cli/).
 ## Database Snapshots
 
 Snapshots are provided by [Liquify LTD](https://www.liquify.io/) details on how to access the snapshots can be found in [snapshot.md](doc/guides/snapshot.md)
+
+## Accessing TestNet
+
+TestNet information can be found at [testnet.md](doc/guide/testnet.md)
 
 ## Running the tests
 
