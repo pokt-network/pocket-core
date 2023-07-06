@@ -23,8 +23,7 @@ Or checking version of the pocket binary on the testnet validators
 curl https://node1.testnet.pokt.network/v1
 ```
 
-
-## Pocket Testnet validators list with Tendermint RPC 
+## Pocket Testnet validators list with Tendermint RPC
 
 This info can be checked querying these links (Note that corresponding credentials are needed to accessing this info):
 
@@ -51,9 +50,7 @@ Verifying status of testnet node1 via tendermint:
 curl https://node1.tendermint.testnet.pokt.network/status
 ```
 
-
 ## Pocket TestNet Seeds
-
 
 If you want to sync with testnet, you only need to copy/paste the list of nodes below on the `config.json` file on the variable `Seeds`
 
@@ -61,22 +58,25 @@ If you want to sync with testnet, you only need to copy/paste the list of nodes 
 d90094952a3a67a99243cca645cdd5bd55fe8d27@seed1.testnet.pokt.network:26668, 2a5258dcdbaa5ca6fd882451f5a725587427a793@seed2.testnet.pokt.network:26669, a37baa84a53f2aab1243986c1cd4eff1591e50d0@seed3.testnet.pokt.network:26668, fb18401cf435bd24a2e8bf75ea7041afcf122acf@seed4.testnet.pokt.network:26669
 ```
 
-
 ## Pocket TestNet metrics dashboard
 
 TestNet metrics can be check following these links:
 
-**Testnet Loadbalancer metrics  (Network traffic dashboard)**
->https://monitoring.nodefleet.net/d/O23g2BeWk/testnet-loadbalancer-metrics?orgId=4&var-service=testnet1@file&var-entrypoint=All&from=now-3h&to=now&refresh=5m
+**Testnet Loadbalancer metrics (Network traffic dashboard)**
+
+> https://monitoring.nodefleet.net/d/O23g2BeWk/testnet-loadbalancer-metrics?orgId=4&var-service=testnet1@file&var-entrypoint=All&from=now-3h&to=now&refresh=5m
 
 **Tendermint metrics (Consensus, Blocks, Transactions dashboard information and so on)**
->https://monitoring.nodefleet.net/d/UJyurCTWz/testnet-validators-tendermint-metrics
+
+> https://monitoring.nodefleet.net/d/UJyurCTWz/testnet-validators-tendermint-metrics
 
 **Node exporter metrics (Instance metrics)**
->https://monitoring.nodefleet.net/d/Gm5yJc94z/testnet-validators-telegraf-metrics
+
+> https://monitoring.nodefleet.net/d/Gm5yJc94z/testnet-validators-telegraf-metrics
 
 **Loki dashboard (Testnet Logs and explorer search)**
->https://monitoring.nodefleet.net/d/_j0yAcrVz/testnet-validators-loki
+
+> https://monitoring.nodefleet.net/d/_j0yAcrVz/testnet-validators-loki
 
 Note corresponding credentials will be needed to accessing this info. Ask for credentials in Pocket's Node-Chat Discord channel [here](https://discord.com/channels/553741558869131266/564836328202567725)
 

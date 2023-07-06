@@ -166,8 +166,10 @@ func DefaultConfig(dataDir string) Config {
 	c.TendermintConfig.DBBackend = string(db.GoLevelDBBackend)
 	c.TendermintConfig.RPC.GRPCMaxOpenConnections = 2500
 	c.TendermintConfig.RPC.MaxOpenConnections = 2500
-	c.TendermintConfig.Mempool.Size = 9000
-	c.TendermintConfig.Mempool.CacheSize = 9000
+	c.TendermintConfig.Mempool.Size = 18000
+	c.TendermintConfig.Mempool.CacheSize = 18000
+	c.TendermintConfig.Mempool.MaxTxsBytes = 2147483648
+	c.TendermintConfig.Mempool.MaxTxBytes = 2097152
 	c.TendermintConfig.FastSync = &config.FastSyncConfig{
 		Version: "v1",
 	}

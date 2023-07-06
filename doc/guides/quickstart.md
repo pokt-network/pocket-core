@@ -70,8 +70,26 @@ pocket version
 
 ### From Homebrew
 
-```text
+To install `pocket` via `homebrew`
+
+```bash
 brew tap pokt-network/pocket-core && brew install pokt-network/pocket-core/pocket
+```
+
+To update via `homebrew`
+
+```bash
+ brew upgrade pokt-network/pocket-core/pocket
+```
+
+The version of `pocket` maintained by the `brew tap` can be found in [pokt-network/homebrew-pocket-core](https://github.com/pokt-network/homebrew-pocket-core).
+
+### From Tea
+
+Pocket was added to tea.xyz, a new package manager from the creator of homebrew in [this PR](https://github.com/teaxyz/pantry/pull/862)
+
+```bash
+tea pocket
 ```
 
 #### Test installation
