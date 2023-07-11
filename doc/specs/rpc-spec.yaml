@@ -2804,6 +2804,9 @@ components:
               type: boolean
             height:
               type: integer
+            client_session_sync_allowance:
+              type: integer
+              description: Return value loaded from config.json by the node. Used by mesh to understand the tolerance of the node on rollover sessions.
             servicers:
               type: boolean
               description: Flag that indicates true if all servicers address was able to be validated. False otherwise.

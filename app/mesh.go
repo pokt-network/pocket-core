@@ -110,7 +110,7 @@ func DefaultMeshConfig(dataDir string) MeshConfig {
 		ChainsName:                  sdk.DefaultChainsName,
 		ChainsNameMap:               "",
 		RemoteChainsNameMap:         "",
-		ChainRPCTimeout:             80000,
+		ChainRPCTimeout:             1200,
 		ChainRPCMaxIdleConnections:  2500,
 		ChainRPCMaxConnsPerHost:     2500,
 		ChainRPCMaxIdleConnsPerHost: 2500,
@@ -141,10 +141,10 @@ func DefaultMeshConfig(dataDir string) MeshConfig {
 		SessionStorageWorkerStrategy:        "lazy",
 		SessionStorageMaxWorkers:            5,
 		SessionStorageMaxWorkersCapacity:    10000,
-		SessionStorageWorkersIdleTimeout:    30000,
+		SessionStorageWorkersIdleTimeout:    10000,
 		SessionStorageValidateRetryMaxTimes: 10,
 		// Node Check
-		NodeCheckInterval: 60,
+		NodeCheckInterval: 10,
 		// Session cache (in-memory) clean up interval (seconds)
 		SessionCacheCleanUpInterval: 1800,
 		// Metrics

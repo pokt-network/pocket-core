@@ -132,7 +132,7 @@ This is just a basic sample, please refer to the full config details to extend a
   "json_sort_relay_responses": false,
   "chains_name": "chains/chains.json",
   "remote_chains_name_map": "https://poktscan-v1.nyc3.cdn.digitaloceanspaces.com/pokt-chains-map.json",
-  "chain_rpc_timeout": 80000,
+  "chain_rpc_timeout": 1200,
   "chain_rpc_max_idle_connections": 2500,
   "chain_rpc_max_conns_per_host": 2500,
   "chain_rpc_max_idle_conns_per_host": 2500,
@@ -156,7 +156,12 @@ This is just a basic sample, please refer to the full config details to extend a
   "servicer_rpc_max_idle_connections": 50000,
   "servicer_rpc_max_conns_per_host": 50000,
   "servicer_rpc_max_idle_conns_per_host": 50000,
-  "node_check_interval": 60,
+  "session_storage_worker_strategy": "lazy",
+  "session_storage_max_workers": 30,
+  "session_storage_max_workers_capacity": 3000,
+  "session_storage_workers_idle_timeout": 10000,
+  "session_storage_validate_retry_max_times": 10,
+  "node_check_interval": 10,
   "session_cache_clean_up_interval": 1800,
   "pocket_prometheus_port": "8083",
   "prometheus_max_open_files": 3,
@@ -268,8 +273,13 @@ This is just a basic sample, please refer to the full config details to extend a
 | servicer_max_workers                                	        | Number 	   | 50                 	       | Max amount of workers for each Pocket Node                                                                                                                                	                                                                                                                  |
 | servicer_max_workers_capacity                       	        | Number 	   | 50000                      | Max amount of tasks in queue without block it.                                                                                                                            	                                                                                                                  |
 | servicer_workers_idle_timeout                       	        | Number 	   | 10000              	       | Worker idle timeout. Avoid values lowers than default one.                                                                                                                	                                                                                                                  |
-| session_storage_worker_strategy                            	 | String 	   | lazy           	       | balanced \| eager \| lazy - Read more: https://github.com/alitto/pond#resizing-strategies                                                                                 	                                                                                                                  |
-| session_storage_max_workers                                	 | Number 	   | 5                 	       | Max amount of workers to get "dispatch" requests from node. WARN: do not rise this to high, due to Pocket Client node limitations on calculate the session.                                                                                                                                	 |
+| session_storage_worker_strategy                            	 | String 	   | lazy           	           | balanced \| eager \| lazy - Read more: https://github.com/alitto/pond#resizing-strategies                                                                                 	                                                                                                                  |
+| session_storage_worker_strategy                            	        | String 	   | lazy           	           | balanced \| eager \| lazy - Read more: https://github.com/alitto/pond#resizing-strategies                                                                                 	                                                                                                                  |
+| session_storage_max_workers                                	        | Number 	   | 5                 	        | Max amount of workers for Session Storage                                                                                                                               	                                                                                                                    |
+| session_storage_max_workers_capacity                       	        | Number 	   | 10000                      | Max amount of tasks in queue without block it.                                                                                                                            	                                                                                                                  |
+| session_storage_workers_idle_timeout                       	        | Number 	   | 10000              	       | Worker idle timeout. Avoid values lowers than default one.                                                                                                                	                                                                                                                  |
+| session_storage_validate_retry_max_times                       	        | Number 	   | 10              	          | Max amount of retry Session Storage will deal before reject a session as invalid if the node return wrong status codes.                                                                                                                	                                                     |
+| session_storage_max_workers                                	 | Number 	   | 5                 	        | Max amount of workers to get "dispatch" requests from node. WARN: do not rise this to high, due to Pocket Client node limitations on calculate the session.                                                                                                                                	 |
 | session_storage_max_workers_capacity                       	 | Number 	   | 10000                      | Max amount of tasks in queue without block it. 1 per node per session is ok. So 500 address you could easily set this to 500 or even 1000 and should be enough.                                                                                                                           	  |
 | session_storage_workers_idle_timeout                       	 | Number 	   | 30000              	       | Worker idle timeout. Avoid values lowers than default one.                                                                                                                                                                                                                                   
 | node_check_interval                        	                 | Number 	   | 60                 	       | Pocket node check interval time. Time in seconds.                                                                                                                         	                                                                                                                  |
@@ -298,21 +308,22 @@ This is just a basic sample, please refer to the full config details to extend a
 * `servicer_address` label is optional, you can add or remove from metrics in case you want to reduce the cardinality of the metrics.
 To do it set `metrics_attach_servicer_label` to `false` on config.json
 
-| Name | Type | Labels | Description |
-|---|---|---|---|
-| pocketcore_geo_mesh_workers_running | gauge | moniker, stat_type, node_name | Number of running worker goroutines |
-| pocketcore_geo_mesh_workers_idle | gauge | moniker, stat_type, node_name | Number of idle worker goroutines |
-| pocketcore_geo_mesh_tasks_submitted_total | gauge | moniker, stat_type, node_name | Number of tasks submitted |
-| pocketcore_geo_mesh_tasks_waiting_total | gauge | moniker, stat_type, node_name | Number of tasks waiting in the queue |
-| pocketcore_geo_mesh_tasks_successful_total | gauge | moniker, stat_type, node_name | Number of tasks that completed successfully |
-| pocketcore_geo_mesh_tasks_failed_total | gauge | moniker, stat_type, node_name | Number of tasks that completed with panic |
-| pocketcore_geo_mesh_tasks_completed_total | gauge | moniker, stat_type, node_name | Number of tasks that completed either successfully or with panic |
-| pocketcore_geo_mesh_min_workers | gauge | moniker, stat_type, node_name | Number min workers of node pool |
-| pocketcore_geo_mesh_max_workers | gauge | moniker, stat_type, node_name | Number max workers of node pool |
-| pocketcore_geo_mesh_max_capacity | gauge | moniker, stat_type, node_name | Number max capacity of node pool |
-| pocketcore_geo_mesh_relay_count | counter | moniker, chain_id, chain_name, is_notify, servicer_address (optional) | Number of relays executed |
-| pocketcore_geo_mesh_relay_time | histogram | moniker, chain_id, chain_name, is_notify, servicer_address (optional) | Relay duration in milliseconds |
-| pocketcore_geo_mesh_error_count | counter | moniker, chain_id, chain_name, is_notify, status_type, status_code, servicer_address (optional) | Number of errors resulting from relays (mesh or chain) |
+| Name | Type | Labels                                                                                               | Description |
+|---|---|------------------------------------------------------------------------------------------------------|---|
+| pocketcore_geo_mesh_workers_running | gauge | moniker, stat_type, node_name                                                                        | Number of running worker goroutines |
+| pocketcore_geo_mesh_workers_idle | gauge | moniker, stat_type, node_name                                                                        | Number of idle worker goroutines |
+| pocketcore_geo_mesh_tasks_submitted_total | gauge | moniker, stat_type, node_name                                                                        | Number of tasks submitted |
+| pocketcore_geo_mesh_tasks_waiting_total | gauge | moniker, stat_type, node_name                                                                        | Number of tasks waiting in the queue |
+| pocketcore_geo_mesh_tasks_successful_total | gauge | moniker, stat_type, node_name                                                                        | Number of tasks that completed successfully |
+| pocketcore_geo_mesh_tasks_failed_total | gauge | moniker, stat_type, node_name                                                                        | Number of tasks that completed with panic |
+| pocketcore_geo_mesh_tasks_completed_total | gauge | moniker, stat_type, node_name                                                                        | Number of tasks that completed either successfully or with panic |
+| pocketcore_geo_mesh_min_workers | gauge | moniker, stat_type, node_name                                                                        | Number min workers of node pool |
+| pocketcore_geo_mesh_max_workers | gauge | moniker, stat_type, node_name                                                                        | Number max workers of node pool |
+| pocketcore_geo_mesh_max_capacity | gauge | moniker, stat_type, node_name                                                                        | Number max capacity of node pool |
+| pocketcore_geo_mesh_relay_count | counter | moniker, chain_id, chain_name, is_notify, servicer_address (optional)                                | Number of relays executed |
+| pocketcore_geo_mesh_relay_time | histogram | moniker, chain_id, chain_name, is_notify, servicer_address (optional)                                | Relay duration in milliseconds |
+| pocketcore_geo_mesh_error_count | counter | moniker, chain_id, chain_name, is_notify, status_type, status_code, servicer_address (optional)      | Number of errors resulting from relays (mesh or chain) |
+| pocketcore_geo_mesh_optimistic_session_queue_count | counter | moniker, chain_id, chain_name, session_height, application_public_key, requeue | Number of optimistic sessions delivered to queue to be validated |
 
 #### Metrics Grafana Dashboard
 
