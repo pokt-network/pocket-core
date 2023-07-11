@@ -20,6 +20,10 @@ import (
 )
 
 const (
+	// Threshhold to determine when to expire an old session. (nodeBlockHeight - session
+	sessionBlockHeightExpireThreshhold = 12
+)
+const (
 	MarshallingError = iota
 	NewRequestError
 	ExecuteRequestError
@@ -488,13 +492,13 @@ func (ss *SessionStorage) GetSessionKeyByRelay(relay *pocketTypes.Relay) string 
 	return fmt.Sprintf("%s-%s", ss.GetSessionHashFromRelay(relay), relay.Proof.ServicerPubKey)
 }
 
-// cleanOldSessions - clean up sessions that are longer than 50 blocks (just to be sure they are not needed)
+// cleanOldSessions - clean up sessions that are longer than sessionBlockHeightExpireThreshhold blocks (just to be sure they are not needed)
 func cleanOldSessions(c *cron.Cron) {
 	_, err := c.AddFunc(fmt.Sprintf("@every %ds", app.GlobalMeshConfig.SessionCacheCleanUpInterval), func() {
 		sessionsToDelete := make([]string, 0)
 		servicerMap.Range(func(_ string, servicerNode *servicer) bool {
 			sessionStorage.Sessions.Range(func(key string, ns *NodeSession) bool {
-				if ns.BlockHeight < (servicerNode.Node.Status.Height - 12) {
+				if (servicerNode.Node.Status.Height - ns.BlockHeight) >= sessionBlockHeightExpireThreshhold {
 					sessionsToDelete = append(sessionsToDelete, key)
 				}
 				return true
