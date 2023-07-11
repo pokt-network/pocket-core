@@ -100,6 +100,10 @@ func (sn DispatchResponse) GetSupportedNodes() []string {
 }
 
 // NodeSession - contains error/valid information for the node-session relation
+// NOTE: NodeSession values are unsafely modified across multiple goroutines. It is a shared mutable data structure
+// that can result inconsistent state across multiple routines since it lacks locks / atomicity.
+// This should not be a problem as node sessions isValid is default true and only changed one way to be false
+// and remaining relays is merely only an estimate.
 type NodeSession struct {
 	Key string
 	// session info
