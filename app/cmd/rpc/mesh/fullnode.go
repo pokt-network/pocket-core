@@ -8,6 +8,7 @@ import (
 	"github.com/alitto/pond"
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/pokt-network/pocket-core/app"
+	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/puzpuzpuz/xsync"
 	"github.com/robfig/cron/v3"
 	"io"
@@ -21,14 +22,35 @@ import (
 
 // fullNode - represent the pocket client instance running that could handle 1 or N addresses (lean)
 type fullNode struct {
-	Name             string
-	URL              string
-	Servicers        *xsync.MapOf[string, *servicer]
-	Status           *app.HealthResponse
-	BlocksPerSession int64
-	Worker           *pond.WorkerPool
-	MetricsWorker    *Metrics
-	Crons            *cron.Cron
+	Name                       string
+	URL                        string
+	Servicers                  *xsync.MapOf[string, *servicer]
+	Status                     *app.HealthResponse
+	BlocksPerSession           int64
+	ClientSessionSyncAllowance int64
+	Worker                     *pond.WorkerPool
+	MetricsWorker              *Metrics
+	Crons                      *cron.Cron
+}
+
+func (node *fullNode) ShouldAssumeOptimisticSession(dispatcherSessionBlockHeight int64) bool {
+	fullNodeHeight := node.Status.Height
+	blocksPerSession := node.BlocksPerSession
+	servicerNodeSessionBlockHeight := node.GetLatestSessionBlockHeight()
+
+	// check if the relay is on a "future" session in relation to the latest known block of the node
+	isDispatcherAhead := dispatcherSessionBlockHeight >= fullNodeHeight
+	// check if not is at the end of his session
+	isFullNodeAtEndOfSession := (fullNodeHeight % blocksPerSession) == 0
+	// check if the difference between fullNode and the relay session height is really close to avoid someone could abuse
+	// of this optimistic approach.
+	isDispatcherWithinTolerance := (dispatcherSessionBlockHeight - servicerNodeSessionBlockHeight) <= blocksPerSession
+
+	return isDispatcherAhead && isFullNodeAtEndOfSession && isDispatcherWithinTolerance
+}
+
+func (node *fullNode) CanHandleRelayWithinTolerance(dispatcherSessionBlockHeight int64) bool {
+	return pocketTypes.IsProofSessionHeightWithinTolerance(node.GetLatestSessionBlockHeight(), node.BlocksPerSession, dispatcherSessionBlockHeight, node.ClientSessionSyncAllowance)
 }
 
 // NewWorker - generate a new worker.
@@ -198,6 +220,7 @@ func (node *fullNode) runCheck() error {
 
 	node.Status = &res.Status
 	node.BlocksPerSession = res.BlocksPerSession
+	node.ClientSessionSyncAllowance = res.ClientSessionSyncAllowance
 
 	if len(res.WrongChains) > 0 {
 		return errors.New(fmt.Sprintf("unable to validate following chains: %s", strings.Join(res.WrongChains[:], ",")))

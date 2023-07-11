@@ -3,20 +3,12 @@ package mesh
 import (
 	"github.com/pokt-network/pocket-core/app"
 	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
-	"github.com/puzpuzpuz/xsync"
 	"testing"
 )
 
 func init() {
 	app.GlobalMeshConfig = app.DefaultMeshConfig("~/pocket")
 	logger = initLogger()
-}
-
-func NewSessionStorage() *SessionStorage {
-	return &SessionStorage{
-		Sessions:         xsync.NewMapOf[*NodeSession](),
-		ValidationWorker: NewWorkerPool("test", "balanced", 1, 1, 10000),
-	}
 }
 
 /*
@@ -39,25 +31,20 @@ RelaySessionBlockHeight = 5
 servicerNodeSessionBlockHeight = 9
 -> should be fine, this code is not reached as we have session already cached.
 */
-func TestSessionStorage_ShouldAssumeOptimisticSession(t *testing.T) {
-	type fields struct {
-		SessionStorage *SessionStorage
-	}
+func TestFullNode_ShouldAssumeOptimisticSession(t *testing.T) {
 	type args struct {
 		relay        *pocketTypes.Relay
 		servicerNode *fullNode
 	}
 	tests := []struct {
-		name   string
-		fields fields
-		args   args
-		want   bool
+		name string
+
+		args args
+		want bool
 	}{
 		{
 			name: "node running 1 behind",
-			fields: fields{
-				SessionStorage: NewSessionStorage(),
-			},
+
 			args: args{
 				relay: &pocketTypes.Relay{
 					Proof: pocketTypes.RelayProof{
@@ -75,9 +62,7 @@ func TestSessionStorage_ShouldAssumeOptimisticSession(t *testing.T) {
 		},
 		{
 			name: "node running far behind",
-			fields: fields{
-				SessionStorage: NewSessionStorage(),
-			},
+
 			args: args{
 				relay: &pocketTypes.Relay{
 					Proof: pocketTypes.RelayProof{
@@ -95,9 +80,6 @@ func TestSessionStorage_ShouldAssumeOptimisticSession(t *testing.T) {
 		},
 		{
 			name: "node running super behind",
-			fields: fields{
-				SessionStorage: NewSessionStorage(),
-			},
 			args: args{
 				relay: &pocketTypes.Relay{
 					Proof: pocketTypes.RelayProof{
@@ -115,9 +97,7 @@ func TestSessionStorage_ShouldAssumeOptimisticSession(t *testing.T) {
 		},
 		{
 			name: "malicious user case",
-			fields: fields{
-				SessionStorage: NewSessionStorage(),
-			},
+
 			args: args{
 				relay: &pocketTypes.Relay{
 					Proof: pocketTypes.RelayProof{
@@ -136,7 +116,7 @@ func TestSessionStorage_ShouldAssumeOptimisticSession(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.fields.SessionStorage.ShouldAssumeOptimisticSession(tt.args.relay, tt.args.servicerNode); got != tt.want {
+			if got := tt.args.servicerNode.ShouldAssumeOptimisticSession(tt.args.relay.Proof.SessionBlockHeight); got != tt.want {
 				t.Errorf("ShouldAssumeOptimisticSession() = %v, want %v", got, tt.want)
 			}
 		})

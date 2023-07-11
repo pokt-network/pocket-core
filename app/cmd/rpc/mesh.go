@@ -414,13 +414,14 @@ func meshServicerNodeCheck(w http.ResponseWriter, r *http.Request, ps httprouter
 	}
 
 	response := mesh.CheckResponse{
-		Success:          true,
-		Status:           health,
-		Servicers:        true,
-		Chains:           true,
-		BlocksPerSession: blocksPerSession,
-		WrongServicers:   make([]string, 0),
-		WrongChains:      make([]string, 0),
+		Success:                    true,
+		Status:                     health,
+		Servicers:                  true,
+		Chains:                     true,
+		BlocksPerSession:           blocksPerSession,
+		WrongServicers:             make([]string, 0),
+		WrongChains:                make([]string, 0),
+		ClientSessionSyncAllowance: pocketTypes.GlobalPocketConfig.ClientSessionSyncAllowance,
 	}
 
 	for _, address := range checkPayload.Servicers {
