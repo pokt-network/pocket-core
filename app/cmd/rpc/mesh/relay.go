@@ -367,23 +367,25 @@ func validate(r *pocketTypes.Relay) sdk.Error {
 		return pocketTypes.NewInvalidSessionKeyError(ModuleName, err)
 	}
 
-	if !ns.IsValid {
+	if ns.IsValid {
 		return nil
 	}
 
 	if ns.Error != nil {
 		return NewPocketSdkErrorFromSdkError(ns.Error)
-	} else {
-		e2 := errors.New(fmt.Sprintf(
-			"invalid session=%s session_height=%d for app=%s chain=%s servicer=%s",
-			ns.Key,
-			ns.BlockHeight,
-			r.Proof.Token.ApplicationPublicKey,
-			r.Proof.Blockchain,
-			ns.ServicerAddress,
-		))
-		return pocketTypes.NewInvalidSessionKeyError(ModuleName, e2)
 	}
+
+	// Fallback invalid session
+	e2 := errors.New(fmt.Sprintf(
+		"invalid session=%s session_height=%d for app=%s chain=%s servicer=%s",
+		ns.Key,
+		ns.BlockHeight,
+		r.Proof.Token.ApplicationPublicKey,
+		r.Proof.Blockchain,
+		ns.ServicerAddress,
+	))
+	return pocketTypes.NewInvalidSessionKeyError(ModuleName, e2)
+
 }
 
 // HandleRelay - evaluate node status, validate relay payload and call processRelay
