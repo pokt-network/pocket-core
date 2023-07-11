@@ -356,23 +356,7 @@ func validate(r *pocketTypes.Relay) sdk.Error {
 		return pocketTypes.NewInvalidSessionKeyError(ModuleName, errors.New(e1.Error))
 	}
 
-	if ns != nil && !ns.IsValid {
-		if ns.Error != nil {
-			return NewPocketSdkErrorFromSdkError(ns.Error)
-		} else {
-			e2 := errors.New(fmt.Sprintf(
-				"invalid session=%s session_height=%d for app=%s chain=%s servicer=%s",
-				ns.Key,
-				ns.BlockHeight,
-				r.Proof.Token.ApplicationPublicKey,
-				r.Proof.Blockchain,
-				ns.ServicerAddress,
-			))
-			return pocketTypes.NewInvalidSessionKeyError(ModuleName, e2)
-		}
-	} else if ns.IsValid {
-		return nil
-	} else {
+	if ns == nil {
 		err := errors.New(fmt.Sprintf(
 			"session not found for app=%s chain=%s servicer=%s ",
 			r.Proof.Token.ApplicationPublicKey,
@@ -381,6 +365,24 @@ func validate(r *pocketTypes.Relay) sdk.Error {
 		))
 		LogRelay(r, "handler - session not found", LogLvlError)
 		return pocketTypes.NewInvalidSessionKeyError(ModuleName, err)
+	}
+
+	if !ns.IsValid {
+		return nil
+	}
+
+	if ns.Error != nil {
+		return NewPocketSdkErrorFromSdkError(ns.Error)
+	} else {
+		e2 := errors.New(fmt.Sprintf(
+			"invalid session=%s session_height=%d for app=%s chain=%s servicer=%s",
+			ns.Key,
+			ns.BlockHeight,
+			r.Proof.Token.ApplicationPublicKey,
+			r.Proof.Blockchain,
+			ns.ServicerAddress,
+		))
+		return pocketTypes.NewInvalidSessionKeyError(ModuleName, e2)
 	}
 }
 
