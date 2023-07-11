@@ -77,6 +77,10 @@ For more detailed command information, see the [usage section](doc/specs/cli/).
 
 Snapshots are provided by [Liquify LTD](https://www.liquify.io/) details on how to access the snapshots can be found in [snapshot.md](doc/guides/snapshot.md)
 
+## Pocket Pruner
+
+An offline pruning tool is provided by [C0D3R](https://c0d3r.org/). The tool is available in [their GitHub repository](https://github.com/msmania/pocket-pruner/).
+
 ## Accessing TestNet
 
 TestNet information can be found at [testnet.md](doc/guide/testnet.md)
