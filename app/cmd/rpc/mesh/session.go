@@ -103,7 +103,7 @@ func (sn DispatchResponse) GetSupportedNodes() []string {
 // NOTE: NodeSession values are unsafely modified across multiple goroutines. It is a shared mutable data structure
 // that can result inconsistent state across multiple routines since it lacks locks / atomicity.
 // This should not be a problem as node sessions isValid is default true and only changed one way to be false
-// and remaining relays is merely only an estimate.
+// and remaining relays is merely only a estimate, and query states can be finalized after a couple queries.
 type NodeSession struct {
 	Key string
 	// session info
