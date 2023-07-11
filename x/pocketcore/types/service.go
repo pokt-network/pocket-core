@@ -508,3 +508,14 @@ func ErrorWarrantsDispatch(err error) bool {
 	}
 	return false
 }
+
+// IsProofSessionHeightWithinTolerance checks if the relaySessionBlockHeight is bounded by (latestSessionBlockHeight - tolerance ) <= x <= latestSessionHeight
+func IsProofSessionHeightWithinTolerance(latestKnownSessionHeight, blocksPerSession, relaySessionBlockHeight, clientSessionSyncAllowance int64) bool {
+	// Session block height can never be zero.
+	if relaySessionBlockHeight <= 0 {
+		return false
+	}
+	tolerance := clientSessionSyncAllowance * blocksPerSession
+	minHeight := latestKnownSessionHeight - tolerance
+	return sdk.IsBetween(relaySessionBlockHeight, minHeight, latestKnownSessionHeight)
+}

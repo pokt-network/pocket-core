@@ -57,14 +57,7 @@ func (k Keeper) IsSessionBlock(ctx sdk.Ctx) bool {
 
 // IsProofSessionHeightWithinTolerance checks if the relaySessionBlockHeight is bounded by (latestSessionBlockHeight - tolerance ) <= x <= latestSessionHeight
 func (k Keeper) IsProofSessionHeightWithinTolerance(ctx sdk.Ctx, relaySessionBlockHeight int64) bool {
-	// Session block height can never be zero.
-	if relaySessionBlockHeight <= 0 {
-		return false
-	}
-	latestSessionHeight := k.GetLatestSessionBlockHeight(ctx)
-	tolerance := types.GlobalPocketConfig.ClientSessionSyncAllowance * k.posKeeper.BlocksPerSession(ctx)
-	minHeight := latestSessionHeight - tolerance
-	return sdk.IsBetween(relaySessionBlockHeight, minHeight, latestSessionHeight)
+	return types.IsProofSessionHeightWithinTolerance(k.GetLatestSessionBlockHeight(ctx), k.posKeeper.BlocksPerSession(ctx), relaySessionBlockHeight, types.GlobalPocketConfig.ClientSessionSyncAllowance)
 }
 
 // "GetLatestSessionBlockHeight" - Returns the latest session block height (first block of the session, (see blocksPerSession))

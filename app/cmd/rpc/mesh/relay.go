@@ -123,10 +123,9 @@ func notifyServicer(r *pocketTypes.Relay) {
 		return
 	}
 
-	// todo: this could be "tune" once RC-0.10.0 is released because fullNode will allow "old" session relays.
-	if ns.ServicerNode.Node.GetLatestSessionBlockHeight() != r.Proof.SessionBlockHeight {
+	if !ns.ServicerNode.Node.CanHandleRelayWithinTolerance(r.Proof.SessionBlockHeight) {
 		LogRelay(r, fmt.Sprintf(
-			"notify - unable to delivery because relay session height is different from fullNode session_height=%d",
+			"notify - unable to delivery because relay session height is not within tolerance of fullNode session_height=%d",
 			ns.ServicerNode.Node.GetLatestSessionBlockHeight(),
 		), LogLvlError)
 		ns.ServicerNode.Node.MetricsWorker.AddServiceMetricErrorFor(
@@ -345,7 +344,8 @@ func validate(r *pocketTypes.Relay) sdk.Error {
 	// load servicer from servicer map, if not there maybe the servicer is pk is not loaded
 	if servicerNode, ok := servicerMap.Load(servicerAddress); !ok {
 		return sdk.ErrInternal("failed to find correct servicer PK")
-	} else if servicerNode.Node.GetLatestSessionBlockHeight() != r.Proof.SessionBlockHeight {
+
+	} else if !servicerNode.Node.CanHandleRelayWithinTolerance(r.Proof.SessionBlockHeight) {
 		return pocketTypes.NewInvalidBlockHeightError(ModuleName)
 	}
 

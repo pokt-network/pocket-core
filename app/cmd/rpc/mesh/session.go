@@ -138,65 +138,63 @@ func (ns *NodeSession) CountRelay() bool {
 	return false
 }
 
-func (ns *NodeSession) ValidateSessionTask() func() {
-	return func() {
-		// add a little time between validation based on the amount of retries it already made.
-		// todo: probably we need a better handling for this "requeue" because this sleep will hang the worker for the amount of time.
-		// to avoid this a bigger workers for this pool is a good idea.
-		sleepDuration := time.Duration(ns.RetryTimes) * time.Second
-		ns.Log(fmt.Sprintf("sleeping %d seconds before validate", sleepDuration), LogLvlDebug)
-		time.Sleep(sleepDuration)
+func (ns *NodeSession) ValidateSessionTask() {
+	// add a little time between validation based on the amount of retries it already made.
+	// todo: probably we need a better handling for this "requeue" because this sleep will hang the worker for the amount of time.
+	// to avoid this a bigger workers for this pool is a good idea.
+	sleepDuration := time.Duration(ns.RetryTimes) * time.Second
+	ns.Log(fmt.Sprintf("sleeping %d seconds before validate", sleepDuration), LogLvlDebug)
+	time.Sleep(sleepDuration)
 
-		ns.Log("running session validate task for ", LogLvlDebug)
-		if ns.Queried {
-			ns.Log("already validated", LogLvlDebug)
-			ns.Queue = false
-			return
-		}
-
-		// if the node is not still in the session height does not make sense to proceed, so just requeue it.
-		if ns.BlockHeight > ns.ServicerNode.Node.Status.Height {
-			// reschedule this session check because the node is not still on the expected block
-			ns.Log(fmt.Sprintf("servicer latest node session_height=%d lower than relay", ns.ServicerNode.Node.GetLatestSessionBlockHeight()), LogLvlDebug)
-			sessionStorage.SubmitSessionToValidate(ns, true)
-			return
-		}
-
-		result, statusCode, e := ns.GetDispatch()
-		if e != nil {
-			ns.Log(fmt.Sprintf("error getting session disatch error=%s", e.Error()), LogLvlError)
-			// StatusOK = 200
-			// StatusUnauthorized = 401 - maybe after few retries node runner fix the issue and this will move? should we retry this?
-			if statusCode == ReadAllBodyError || statusCode == http.StatusOK || statusCode == http.StatusUnauthorized {
-				// this will re queue this.
-				ns.Log(fmt.Sprintf("session requeue after get error with status_code=%d", statusCode), LogLvlDebug)
-				sessionStorage.SubmitSessionToValidate(ns, true)
-			}
-			return
-		}
-
-		isSuccess := statusCode == 200
-
-		if !isSuccess && result.Error == nil {
-			// not success but could be due to network issue, so it will "retry" sending it again to queue
-			sessionStorage.SubmitSessionToValidate(ns, true)
-			return
-		}
-
-		ns.Log("session queried done", LogLvlInfo)
-		if isSuccess {
-			// dispatch response about session - across nodes
-			ns.Dispatch = result.Dispatch
-			// node-session specific
-			remainingRelays, _ := result.RemainingRelays.Int64()
-			ns.RemainingRelays = remainingRelays
-		} else if result.Error != nil {
-			ns.IsValid = !ShouldInvalidateSession(result.Error.Code)
-		}
-
+	ns.Log("running session validate task for ", LogLvlDebug)
+	if ns.Queried {
+		ns.Log("already validated", LogLvlDebug)
 		ns.Queue = false
-		ns.Queried = true
+		return
 	}
+
+	// if the node is not still in the session height does not make sense to proceed, so just requeue it.
+	if ns.BlockHeight > ns.ServicerNode.Node.Status.Height {
+		// reschedule this session check because the node is not still on the expected block
+		ns.Log(fmt.Sprintf("servicer latest node session_height=%d lower than relay", ns.ServicerNode.Node.GetLatestSessionBlockHeight()), LogLvlDebug)
+		sessionStorage.SubmitSessionToValidate(ns, true)
+		return
+	}
+
+	result, statusCode, e := ns.GetDispatch()
+	if e != nil {
+		ns.Log(fmt.Sprintf("error getting session disatch error=%s", e.Error()), LogLvlError)
+		// StatusOK = 200
+		// StatusUnauthorized = 401 - maybe after few retries node runner fix the issue and this will move? should we retry this?
+		if statusCode == ReadAllBodyError || statusCode == http.StatusOK || statusCode == http.StatusUnauthorized {
+			// this will re queue this.
+			ns.Log(fmt.Sprintf("session requeue after get error with status_code=%d", statusCode), LogLvlDebug)
+			sessionStorage.SubmitSessionToValidate(ns, true)
+		}
+		return
+	}
+
+	isSuccess := statusCode == 200
+
+	if !isSuccess && result.Error == nil {
+		// not success but could be due to network issue, so it will "retry" sending it again to queue
+		sessionStorage.SubmitSessionToValidate(ns, true)
+		return
+	}
+
+	ns.Log("session queried done", LogLvlInfo)
+	if isSuccess {
+		// dispatch response about session - across nodes
+		ns.Dispatch = result.Dispatch
+		// node-session specific
+		remainingRelays, _ := result.RemainingRelays.Int64()
+		ns.RemainingRelays = remainingRelays
+	} else if result.Error != nil {
+		ns.IsValid = !ShouldInvalidateSession(result.Error.Code)
+	}
+
+	ns.Queue = false
+	ns.Queried = true
 }
 
 func (ns *NodeSession) GetDispatch() (result *RPCSessionResult, statusCode int, e error) {
@@ -437,7 +435,9 @@ func (ss *SessionStorage) SubmitSessionToValidate(ns *NodeSession, isRequeue boo
 	if isRequeue {
 		ns.RetryTimes++
 	}
-	ss.ValidationWorker.Submit(ns.ValidateSessionTask())
+	ss.ValidationWorker.Submit(func() {
+		ns.ValidateSessionTask()
+	})
 	ss.Metrics.AddSessionStorageMetricQueueFor(ns, isRequeue)
 }
 
@@ -463,14 +463,13 @@ func (ss *SessionStorage) GetSession(relay *pocketTypes.Relay) (*NodeSession, *S
 	}
 
 	// 1. Optimistic:
-	// check if the relay is at the behind of a session
 	// check if the session block height is +1 than our node, if yes that mean our node is not still on the height,
 	// so we will be optimistic about this session and trust on the incoming relay, this session anyway will be moved to a validation
 	// worker well it will keep checking the node status height so once the node is on the same or greater height it will check
 	// the validity on the received session.
 	// 2. Current Session:
 	// allow it trusting that is a good session, so we lower the latency on the behind of a session.
-	if ss.ShouldAssumeOptimisticSession(relay, ns.ServicerNode.Node) || ns.ServicerNode.Node.GetLatestSessionBlockHeight() == relay.Proof.SessionBlockHeight {
+	if ns.ServicerNode.Node.ShouldAssumeOptimisticSession(relay.Proof.SessionBlockHeight) || ns.ServicerNode.Node.CanHandleRelayWithinTolerance(relay.Proof.SessionBlockHeight) {
 		// be optimistic about this session
 		if !ns.Queue && !ns.Queried {
 			// avoid re queue a session that is already set in queue
@@ -487,25 +486,6 @@ func (ss *SessionStorage) GetSession(relay *pocketTypes.Relay) (*NodeSession, *S
 
 func (ss *SessionStorage) GetSessionKeyByRelay(relay *pocketTypes.Relay) string {
 	return fmt.Sprintf("%s-%s", ss.GetSessionHashFromRelay(relay), relay.Proof.ServicerPubKey)
-}
-
-// ShouldAssumeOptimisticSession - This will evaluate if the node is 1 block behind (at the end of the latest session he knows)
-// and the received relay is on the immediate next session.
-func (ss *SessionStorage) ShouldAssumeOptimisticSession(relay *pocketTypes.Relay, servicerNode *fullNode) bool {
-	dispatcherSessionBlockHeight := relay.Proof.SessionBlockHeight
-	fullNodeHeight := servicerNode.Status.Height
-	blocksPerSession := servicerNode.BlocksPerSession
-	servicerNodeSessionBlockHeight := servicerNode.GetLatestSessionBlockHeight()
-
-	// check if the relay is on a "future" session in relation to the latest known block of the node
-	isDispatcherAhead := dispatcherSessionBlockHeight >= fullNodeHeight
-	// check if not is at the end of his session
-	isFullNodeAtEndOfSession := (fullNodeHeight % blocksPerSession) == 0
-	// check if the difference between fullNode and the relay session height is really close to avoid someone could abuse
-	// of this optimistic approach.
-	isDispatcherWithinTolerance := (dispatcherSessionBlockHeight - servicerNodeSessionBlockHeight) <= blocksPerSession
-
-	return isDispatcherAhead && isFullNodeAtEndOfSession && isDispatcherWithinTolerance
 }
 
 // cleanOldSessions - clean up sessions that are longer than 50 blocks (just to be sure they are not needed)
