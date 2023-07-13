@@ -10,6 +10,7 @@ import (
 	log2 "log"
 	"math/rand"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -175,4 +176,10 @@ func NewWorkerPool(name string, strategyName string, maxWorkers, maxCapacity, id
 
 func IsAtStartOfSession(blockHeight int64) bool {
 	return blockHeight%4 == 1
+}
+
+// CleanError - remove jump line on errors to enhance support of tooling like Loki to handle an error log on a single line.
+// Pocket Core return errors as multiple lines Message, Code, Codespace
+func CleanError(e string) string {
+	return strings.Replace(e, "\n", " ", -1)
 }

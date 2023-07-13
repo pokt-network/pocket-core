@@ -26,7 +26,7 @@ const (
 	ServicerRelayEndpoint   = "/v1/private/mesh/relay"
 	ServicerSessionEndpoint = "/v1/private/mesh/session"
 	ServicerCheckEndpoint   = "/v1/private/mesh/check"
-	AppVersion              = "RC-0.4.0"
+	AppVersion              = "RC-0.4.1"
 )
 
 var (
@@ -106,7 +106,7 @@ func StopRPC() {
 	logger.Info("stopping http server...")
 	if srv != nil {
 		if err := srv.Shutdown(context.Background()); err != nil {
-			logger.Error(fmt.Sprintf("http server shutdown error: %s", err.Error()))
+			logger.Error(fmt.Sprintf("http server shutdown error: %s", CleanError(err.Error())))
 		}
 	}
 	logger.Info("http server stopped!")
@@ -114,7 +114,7 @@ func StopRPC() {
 	// close relays cache db
 	logger.Info("stopping relays cache database...")
 	if err := relaysCacheDb.Close(); err != nil {
-		logger.Error(fmt.Sprintf("relays cache db shutdown error: %s", err.Error()))
+		logger.Error(fmt.Sprintf("relays cache db shutdown error: %s", CleanError(err.Error())))
 	}
 	logger.Info("relays cache database stopped!")
 

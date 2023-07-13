@@ -39,19 +39,19 @@ func loadServicersFromFile() (nodes *xsync.MapOf[string, *fullNode], servicers *
 	fallbackSchemaStringLoader := gojsonschema.NewStringLoader(fallbackNodeFileSchema)
 	fallbackSchema, fallbackSchemaError := fallbackSchemaLoader.Compile(fallbackSchemaStringLoader)
 	if fallbackSchemaError != nil {
-		log2.Fatal(fmt.Errorf("an error occurred loading fallback json schema: %s", fallbackSchemaError.Error()))
+		log2.Fatal(fmt.Errorf("an error occurred loading fallback json schema: %s", CleanError(fallbackSchemaError.Error())))
 	}
 
 	currentSchemaLoader := gojsonschema.NewSchemaLoader()
 	currentSchemaStringLoader := gojsonschema.NewStringLoader(nodeFileSchema)
 	currentSchema, currentSchemaError := currentSchemaLoader.Compile(currentSchemaStringLoader)
 	if currentSchemaError != nil {
-		log2.Fatal(fmt.Errorf("an error occurred loading json schema: %s", currentSchemaError.Error()))
+		log2.Fatal(fmt.Errorf("an error occurred loading json schema: %s", CleanError(currentSchemaError.Error())))
 	}
 
 	data, err := os.ReadFile(path)
 	if err != nil {
-		log2.Fatal(fmt.Errorf("an error occurred attempting to read the servicer key file: %s", err.Error()))
+		log2.Fatal(fmt.Errorf("an error occurred attempting to read the servicer key file: %s", CleanError(err.Error())))
 	}
 
 	strData := gojsonschema.NewStringLoader(string(data[:]))
@@ -63,7 +63,7 @@ func loadServicersFromFile() (nodes *xsync.MapOf[string, *fullNode], servicers *
 			var readServicers []nodeFileItem
 			// load servicers with new format
 			if err := json.Unmarshal(data, &readServicers); err != nil {
-				log2.Fatal(fmt.Errorf("an error occurred attempting to parse the servicer key file: %s", err.Error()))
+				log2.Fatal(fmt.Errorf("an error occurred attempting to parse the servicer key file: %s", CleanError(err.Error())))
 			}
 
 			for _, n := range readServicers {
@@ -108,7 +108,7 @@ func loadServicersFromFile() (nodes *xsync.MapOf[string, *fullNode], servicers *
 		var readServicers []fallbackNodeFileItem
 		// load servicers with new format
 		if err := json.Unmarshal(data, &readServicers); err != nil {
-			log2.Fatal(fmt.Errorf("an error occurred attempting to parse the servicer key file: %s", err.Error()))
+			log2.Fatal(fmt.Errorf("an error occurred attempting to parse the servicer key file: %s", CleanError(err.Error())))
 		}
 
 		for index, n := range readServicers {

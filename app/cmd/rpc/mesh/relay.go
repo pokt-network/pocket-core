@@ -13,6 +13,7 @@ import (
 	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"io"
 	"io/ioutil"
+	"strings"
 	"time"
 )
 
@@ -22,13 +23,13 @@ func storeRelay(relay *pocketTypes.Relay) {
 	LogRelay(relay, "storing relay", LogLvlDebug)
 	rb, err := json.Marshal(relay)
 	if err != nil {
-		LogRelay(relay, fmt.Sprintf("error=%s marshaling relay", err.Error()), LogLvlError)
+		LogRelay(relay, fmt.Sprintf("error=%s marshaling relay", CleanError(err.Error())), LogLvlError)
 		return
 	}
 
 	err = relaysCacheDb.Put(hash, rb)
 	if err != nil {
-		LogRelay(relay, fmt.Sprintf("error=%s adding relay to cache", err.Error()), LogLvlError)
+		LogRelay(relay, fmt.Sprintf("error=%s adding relay to cache", CleanError(err.Error())), LogLvlError)
 	}
 
 	return
@@ -37,7 +38,7 @@ func storeRelay(relay *pocketTypes.Relay) {
 // decodeCacheRelay - decode []byte relay from cache to pocketTypes.Relay
 func decodeCacheRelay(body []byte) (relay *pocketTypes.Relay) {
 	if err := json.Unmarshal(body, &relay); err != nil {
-		LogRelay(relay, fmt.Sprintf("error=%s decoding cache relay", err.Error()), LogLvlError)
+		LogRelay(relay, fmt.Sprintf("error=%s decoding cache relay", CleanError(err.Error())), LogLvlError)
 		// todo: delete key from cache?
 		deleteCacheRelay(relay) // because is malformed, probably.
 		return nil
@@ -50,7 +51,7 @@ func deleteCacheRelay(relay *pocketTypes.Relay) {
 	hash := relay.RequestHash()
 	err := relaysCacheDb.Delete(hash)
 	if err != nil {
-		LogRelay(relay, fmt.Sprintf("error=%s deleting relay from cache", err.Error()), LogLvlError)
+		LogRelay(relay, fmt.Sprintf("error=%s deleting relay from cache", CleanError(err.Error())), LogLvlError)
 		return
 	}
 
@@ -94,7 +95,7 @@ func notifyServicer(r *pocketTypes.Relay) {
 	ctx := context.WithValue(context.Background(), "result", &result)
 	jsonData, e1 := json.Marshal(r)
 	if e1 != nil {
-		LogRelay(r, fmt.Sprintf("notify - error=%s encoding relay", e1.Error()), LogLvlError)
+		LogRelay(r, fmt.Sprintf("notify - error=%s encoding relay", CleanError(e1.Error())), LogLvlError)
 		return
 	}
 
@@ -109,7 +110,7 @@ func notifyServicer(r *pocketTypes.Relay) {
 		)
 		return
 	} else if ns.Queried && !ns.IsValid {
-		LogRelay(r, fmt.Sprintf("notify - unable to notify because session was invalidated with error=%s", e1.Error()), LogLvlError)
+		LogRelay(r, fmt.Sprintf("notify - unable to notify because session was invalidated with error=%s", CleanError(e1.Error())), LogLvlError)
 		ns.ServicerNode.Node.MetricsWorker.AddServiceMetricErrorFor(
 			r.Proof.Blockchain, &ns.ServicerNode.Address,
 			true, InvalidSessionType, fmt.Sprintf("%d", ns.Error.Code),
@@ -160,7 +161,7 @@ func notifyServicer(r *pocketTypes.Relay) {
 	resp, e4 := relaysClient.Do(req)
 
 	if e4 != nil {
-		LogRelay(r, fmt.Sprintf("notify - error=%s dispatching relay to fullNode", e4.Error()), LogLvlError)
+		LogRelay(r, fmt.Sprintf("notify - error=%s dispatching relay to fullNode", CleanError(e4.Error())), LogLvlError)
 		ns.ServicerNode.Node.MetricsWorker.AddServiceMetricErrorFor(
 			r.Proof.Blockchain, &ns.ServicerNode.Address,
 			true, NotifyRequestErrorType, "500",
@@ -173,7 +174,7 @@ func notifyServicer(r *pocketTypes.Relay) {
 		if e5 != nil {
 			LogRelay(r, fmt.Sprintf(
 				"notify - error=%s closing dispatch notification response body",
-				e5.Error(),
+				CleanError(e5.Error()),
 			), LogLvlError)
 			return
 		}
@@ -184,7 +185,7 @@ func notifyServicer(r *pocketTypes.Relay) {
 	if e6 != nil {
 		LogRelay(r, fmt.Sprintf(
 			"notify - error=%s parsing response from endpoint=%s at fullNode",
-			e1.Error(), ServicerRelayEndpoint,
+			CleanError(e1.Error()), ServicerRelayEndpoint,
 		), LogLvlError)
 		ns.ServicerNode.Node.MetricsWorker.AddServiceMetricErrorFor(
 			r.Proof.Blockchain, &ns.ServicerNode.Address,
@@ -292,7 +293,7 @@ func processRelay(relay *pocketTypes.Relay) (*pocketTypes.RelayResponse, sdk.Err
 	// attempt to execute
 	respPayload, err := execute(relay, chains, servicerNode)
 	if err != nil {
-		LogRelay(relay, fmt.Sprintf("handler - call blockchain return error=%s", err.Error()), LogLvlError)
+		LogRelay(relay, fmt.Sprintf("handler - call blockchain return error=%s", CleanError(err.Error())), LogLvlError)
 		return nil, err
 	}
 
@@ -305,7 +306,7 @@ func processRelay(relay *pocketTypes.Relay) (*pocketTypes.RelayResponse, sdk.Err
 	// sign the response
 	sig, er := servicerNode.PrivateKey.Sign(resp.Hash())
 	if er != nil {
-		LogRelay(relay, fmt.Sprintf("handler - unable to sign relay response due to error=%s", err.Error()), LogLvlError)
+		LogRelay(relay, fmt.Sprintf("handler - unable to sign relay response due to error=%s", CleanError(err.Error())), LogLvlError)
 		return nil, pocketTypes.NewKeybaseError(pocketTypes.ModuleName, er)
 	}
 	// attach the signature in hex to the response
@@ -417,9 +418,25 @@ func HandleRelay(r *pocketTypes.Relay) (res *pocketTypes.RelayResponse, dispatch
 	err = validate(r)
 
 	if err != nil {
+		errStr := fmt.Sprintf("handler - could not validate relay/session due to error=%s", strings.Replace(CleanError(err.Error()), "\n", " ", -1))
+
+		if app.GlobalMeshConfig.LogRelayRequest {
+			// just if the setting is set to true, which by default is false, it will attach to the error the request_body of the relay, so this could help us provide context
+			// on incoming error from portals.
+			rb, ex := json.Marshal(r)
+			if ex == nil {
+				errStr = fmt.Sprintf("%s relay_request=%s", errStr, rb)
+			}
+		}
+
+		code := "400"
+		if castedError, kk := err.(sdk.Error); kk {
+			code = fmt.Sprintf("%d", castedError.Code())
+		}
 		// help to track how many bad request mesh filter.
-		servicerNode.Node.MetricsWorker.AddServiceMetricErrorFor(r.Proof.Blockchain, &servicerNode.Address, false, BadRequest, "400")
-		LogRelay(r, fmt.Sprintf("handler - could not validate relay/session due to error=%s", err.Error()), LogLvlError)
+		servicerNode.Node.MetricsWorker.AddServiceMetricErrorFor(r.Proof.Blockchain, &servicerNode.Address, false, BadRequest, code)
+
+		LogRelay(r, errStr, LogLvlError)
 		return
 	}
 

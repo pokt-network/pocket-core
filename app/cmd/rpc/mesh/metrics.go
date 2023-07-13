@@ -585,7 +585,7 @@ func StopPrometheusServer() {
 	logger.Info("stopping prometheus http server...")
 	if prometheusServer != nil {
 		if err := prometheusServer.Shutdown(context.Background()); err != nil {
-			logger.Error(fmt.Sprintf("prometheus http server shutdown error: %s", err.Error()))
+			logger.Error(fmt.Sprintf("prometheus http server shutdown error: %s", CleanError(err.Error())))
 		}
 	}
 	logger.Info("prometheus http server stopped!")

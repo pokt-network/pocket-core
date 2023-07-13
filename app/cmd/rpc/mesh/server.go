@@ -90,7 +90,7 @@ func retryRelaysPolicy(ctx context.Context, resp *http.Response, err error) (boo
 		logger.Error(
 			fmt.Sprintf(
 				"error dispatching relay to servicer: %s",
-				err.Error(),
+				CleanError(err.Error()),
 			),
 		)
 		return true, nil
@@ -117,7 +117,7 @@ func retryRelaysPolicy(ctx context.Context, resp *http.Response, err error) (boo
 				fmt.Sprintf(
 					"error decoding servicer %s relay response: %s",
 					servicerAddress,
-					err.Error(),
+					CleanError(err.Error()),
 				),
 			)
 			return true, err

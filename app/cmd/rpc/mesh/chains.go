@@ -40,7 +40,7 @@ func loadLocalChainsNameMap() ([]byte, error) {
 
 	if _, err := os.Stat(chainsPath); err != nil && os.IsNotExist(err) {
 		e := errors.New(fmt.Sprintf("chains_name_map not found @ %s", chainsPath))
-		logger.Error(e.Error())
+		logger.Error(CleanError(e.Error()))
 		return []byte{}, e
 	}
 
@@ -63,7 +63,7 @@ func loadRemoteChainsNameMap() ([]byte, error) {
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
-			logger.Error(err.Error())
+			logger.Error(CleanError(err.Error()))
 			return
 		}
 	}(resp.Body)
@@ -71,7 +71,7 @@ func loadRemoteChainsNameMap() ([]byte, error) {
 	// read the body just to allow http 1.x be able to reuse the connection
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		e := errors.New(fmt.Sprintf("Couldn't parse response body. Error: %s", err.Error()))
+		e := errors.New(fmt.Sprintf("Couldn't parse response body. Error: %s", CleanError(err.Error())))
 		return []byte{}, e
 	}
 
@@ -132,14 +132,14 @@ func loadChainsNameMap() {
 	plainSchemaStringLoader := gojsonschema.NewStringLoader(plainChainsMapSchema)
 	plainSchema, plainSchemaError := plainSchemaLoader.Compile(plainSchemaStringLoader)
 	if plainSchemaError != nil {
-		log2.Fatal(fmt.Errorf("an error occurred loading plain chains name map json schema: %s", plainSchemaError.Error()))
+		log2.Fatal(fmt.Errorf("an error occurred loading plain chains name map json schema: %s", CleanError(plainSchemaError.Error())))
 	}
 
 	richSchemaLoader := gojsonschema.NewSchemaLoader()
 	richSchemaStringLoader := gojsonschema.NewStringLoader(richChainsMapSchema)
 	richSchema, richSchemaError := richSchemaLoader.Compile(richSchemaStringLoader)
 	if richSchemaError != nil {
-		log2.Fatal(fmt.Errorf("an error occurred loading rich chains name map json schema: %s", richSchemaError.Error()))
+		log2.Fatal(fmt.Errorf("an error occurred loading rich chains name map json schema: %s", CleanError(richSchemaError.Error())))
 	}
 
 	strData := gojsonschema.NewStringLoader(string(data[:]))
@@ -195,7 +195,7 @@ func UpdateChains(c []pocketTypes.HostedBlockchain) (*pocketTypes.HostedBlockcha
 	var jsonFile *os.File
 	if _, err := os.Stat(chainsPath); err != nil && os.IsNotExist(err) {
 		e := errors.New(fmt.Sprintf("no chains.json found @ %s", chainsPath))
-		logger.Error(e.Error())
+		logger.Error(CleanError(e.Error()))
 		return chains, e
 	}
 	// reopen the file to read into the variable
@@ -355,7 +355,7 @@ func ExecuteBlockchainHTTPRequest(payload pocketTypes.Payload, chain pocketTypes
 	// generate an http request
 	req, e1 := http.NewRequest(m, _url, bytes.NewBuffer([]byte(data)))
 	if e1 != nil {
-		logger.Error("unable to create blockchain request ", "err", e1.Error())
+		logger.Error("unable to create blockchain request ", "err", CleanError(e1.Error()))
 		return "", errors.New("unable to process blockchain request"), 500
 	}
 	if chain.BasicAuth.Username != "" {
@@ -387,7 +387,7 @@ func ExecuteBlockchainHTTPRequest(payload pocketTypes.Payload, chain pocketTypes
 				"request timeout for CHAIN=%s PATH=%s METHOD=%s",
 				chain.ID, payload.Path, m,
 			)
-			logger.Error("blockchain call timeout: ", e2.Error())
+			logger.Error("blockchain call timeout: ", CleanError(e2.Error()))
 			return "", errors.New(logStr), 504
 		}
 
@@ -419,7 +419,7 @@ func ExecuteBlockchainHTTPRequest(payload pocketTypes.Payload, chain pocketTypes
 	// read all bz
 	body, e4 := ioutil.ReadAll(resp.Body)
 	if e4 != nil {
-		logger.Error("unable to process blockchain response payload ", " error ", e4.Error())
+		logger.Error("unable to process blockchain response payload ", " error ", CleanError(e4.Error()))
 		return "", errors.New("unable to process blockchain response payload"), 500
 	}
 
