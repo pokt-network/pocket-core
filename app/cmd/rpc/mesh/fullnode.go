@@ -114,7 +114,7 @@ func (node *fullNode) checkNodeEndpoint(endpoint string) error {
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
-			logger.Error(err.Error())
+			logger.Error(CleanError(err.Error()))
 			return
 		}
 	}(resp.Body)
@@ -122,7 +122,7 @@ func (node *fullNode) checkNodeEndpoint(endpoint string) error {
 	// read the body just to allow http 1.x be able to reuse the connection
 	_, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
-		e := errors.New(fmt.Sprintf("Couldn't parse response body. Error: %s", err.Error()))
+		e := errors.New(fmt.Sprintf("Couldn't parse response body. Error: %s", CleanError(err.Error())))
 		return e
 	}
 
@@ -242,7 +242,7 @@ func (node *fullNode) scheduleNodeChecks() {
 				fmt.Sprintf(
 					"node %s failed check with error=%s",
 					node.URL,
-					e.Error(),
+					CleanError(e.Error()),
 				),
 			)
 		}
@@ -331,7 +331,7 @@ func connectivityChecks(onlyFor mapset.Set[string]) {
 				e := node.checkNodeEndpoint(ep)
 				if e != nil {
 					// any connectivity error with the node will stop this mesh client
-					log2.Fatal(fmt.Sprintf("unable to reach node %s at endpoint %s. error: %s", node.URL, ep, e.Error()))
+					log2.Fatal(fmt.Sprintf("unable to reach node %s at endpoint %s. error: %s", node.URL, ep, CleanError(e.Error())))
 				}
 				success++
 			})
@@ -365,7 +365,7 @@ func connectivityChecks(onlyFor mapset.Set[string]) {
 			// run first time node check
 			e := node.runCheck()
 			if e != nil {
-				logger.Error(fmt.Sprintf("node %s fail check with: %s", node.URL, e.Error()))
+				logger.Error(fmt.Sprintf("node %s fail check with: %s", node.URL, CleanError(e.Error())))
 			}
 
 			// start node working

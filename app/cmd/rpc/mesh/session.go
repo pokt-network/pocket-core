@@ -174,7 +174,7 @@ func (ns *NodeSession) ValidateSessionTask() func() {
 
 		result, statusCode, e := ns.GetDispatch()
 		if e != nil {
-			ns.Log(fmt.Sprintf("error getting session disatch error=%s", e.Error()), LogLvlError)
+			ns.Log(fmt.Sprintf("error getting session disatch error=%s", CleanError(e.Error())), LogLvlError)
 			// StatusOK = 200
 			// StatusUnauthorized = 401 - maybe after few retries node runner fix the issue and this will move? should we retry this?
 			if statusCode == ReadAllBodyError || statusCode == http.StatusOK || statusCode == http.StatusUnauthorized {
@@ -241,7 +241,7 @@ func (ns *NodeSession) GetDispatch() (result *RPCSessionResult, statusCode int, 
 		statusCode = NewRequestError
 		e = errors.New(fmt.Sprintf(
 			"error creating check session request app=%s chain=%s blockHeight=%d servicer=%s err=%s",
-			ns.AppPubKey, ns.Chain, ns.BlockHeight, ns.ServicerAddress, e1.Error(),
+			ns.AppPubKey, ns.Chain, ns.BlockHeight, ns.ServicerAddress, CleanError(e1.Error()),
 		))
 		return
 	}
@@ -257,7 +257,7 @@ func (ns *NodeSession) GetDispatch() (result *RPCSessionResult, statusCode int, 
 		statusCode = ExecuteRequestError
 		e = errors.New(fmt.Sprintf(
 			"error calling check session request app=%s chain=%s blockHeight=%d servicer=%s err=%s",
-			ns.AppPubKey, ns.Chain, ns.BlockHeight, ns.ServicerAddress, e2.Error(),
+			ns.AppPubKey, ns.Chain, ns.BlockHeight, ns.ServicerAddress, CleanError(e2.Error()),
 		))
 		return
 	}
@@ -278,7 +278,7 @@ func (ns *NodeSession) GetDispatch() (result *RPCSessionResult, statusCode int, 
 		statusCode = ReadAllBodyError // override this to allow caller know when the error was
 		e = errors.New(fmt.Sprintf(
 			"error reading check session response body app=%s chain=%s blockHeight=%d servicer=%s err=%s",
-			ns.AppPubKey, ns.Chain, ns.BlockHeight, ns.ServicerPubKey, e3.Error(),
+			ns.AppPubKey, ns.Chain, ns.BlockHeight, ns.ServicerPubKey, CleanError(e3.Error()),
 		))
 
 		return
@@ -289,7 +289,7 @@ func (ns *NodeSession) GetDispatch() (result *RPCSessionResult, statusCode int, 
 	if e5 != nil {
 		e = errors.New(fmt.Sprintf(
 			"error unmarshalling check session response to RPCSessionResult app=%s chain=%s blockHeight=%d servicer=%s err=%s",
-			ns.AppPubKey, ns.Chain, ns.BlockHeight, ns.ServicerAddress, e4.Error(),
+			ns.AppPubKey, ns.Chain, ns.BlockHeight, ns.ServicerAddress, CleanError(e4.Error()),
 		))
 		return
 	}
@@ -388,8 +388,8 @@ func (ss *SessionStorage) NewNodeSessionFromRelay(relay *pocketTypes.Relay) (*No
 func (ss *SessionStorage) InvalidateNodeSession(relay *pocketTypes.Relay, e *SdkErrorResponse) *SdkErrorResponse {
 	if e == nil {
 		e1 := errors.New("SessionStorage.InvalidateNodeSession called without sdk error")
-		logger.Error(e1.Error())
-		return NewSdkErrorFromPocketSdkError(sdk.ErrInternal(e1.Error()))
+		logger.Error(CleanError(e1.Error()))
+		return NewSdkErrorFromPocketSdkError(sdk.ErrInternal(CleanError(e1.Error())))
 	}
 
 	if ns, ok := ss.Sessions.Load(ss.GetSessionKeyByRelay(relay)); !ok {
@@ -400,7 +400,7 @@ func (ss *SessionStorage) InvalidateNodeSession(relay *pocketTypes.Relay, e *Sdk
 			ns.BlockHeight,
 			ns.ServicerAddress,
 		))
-		return NewSdkErrorFromPocketSdkError(sdk.ErrInternal(e1.Error()))
+		return NewSdkErrorFromPocketSdkError(sdk.ErrInternal(CleanError(e1.Error())))
 	} else {
 		ns.Log("invalidating session", LogLvlInfo)
 		// queue and queried set to avoid requeue and understand we are invalidating the session even with query it
