@@ -21,6 +21,7 @@ type MeshConfig struct {
 	ClientRPCReadHeaderTimeout int64  `json:"client_rpc_read_header_timeout"`
 	ClientRPCWriteTimeout      int64  `json:"client_rpc_write_timeout"`
 	LogLevel                   string `json:"log_level"`
+	LogRelayRequest            bool   `json:"log_relay_request"`
 	LogChainRequest            bool   `json:"log_chain_request"`
 	LogChainResponse           bool   `json:"log_chain_response"`
 	UserAgent                  string `json:"user_agent"`
@@ -101,6 +102,7 @@ func DefaultMeshConfig(dataDir string) MeshConfig {
 		ClientRPCReadHeaderTimeout: 50000,
 		ClientRPCWriteTimeout:      90000,
 		LogLevel:                   "*:error",
+		LogRelayRequest:            false,
 		LogChainRequest:            false,
 		LogChainResponse:           false,
 		UserAgent:                  "mesh-node",

@@ -25,15 +25,15 @@ func getAuthTokenFromFile(path string) sdk.AuthToken {
 	if _, err := os.Stat(path); err == nil {
 		jsonFile, err = os.OpenFile(path, os.O_RDONLY, os.ModePerm)
 		if err != nil {
-			log2.Fatalf("cannot open auth token json file: " + err.Error())
+			log2.Fatalf("cannot open auth token json file: " + CleanError(err.Error()))
 		}
 		b, err := ioutil.ReadAll(jsonFile)
 		if err != nil {
-			log2.Fatalf("cannot read auth token json file: " + err.Error())
+			log2.Fatalf("cannot read auth token json file: " + CleanError(err.Error()))
 		}
 		err = json.Unmarshal(b, &t)
 		if err != nil {
-			log2.Fatalf("cannot read auth token json file into json: " + err.Error())
+			log2.Fatalf("cannot read auth token json file into json: " + CleanError(err.Error()))
 		}
 	}
 
