@@ -345,8 +345,7 @@ func validate(r *pocketTypes.Relay) sdk.Error {
 	// load servicer from servicer map, if not there maybe the servicer is pk is not loaded
 	if servicerNode, ok := servicerMap.Load(servicerAddress); !ok {
 		return sdk.ErrInternal("failed to find correct servicer PK")
-
-	} else if !servicerNode.Node.CanHandleRelayWithinTolerance(r.Proof.SessionBlockHeight) {
+	} else if r.Proof.SessionBlockHeight <= servicerNode.Node.GetLatestSessionBlockHeight() && !servicerNode.Node.CanHandleRelayWithinTolerance(r.Proof.SessionBlockHeight) {
 		return pocketTypes.NewInvalidBlockHeightError(ModuleName)
 	}
 
