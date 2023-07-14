@@ -44,8 +44,8 @@ func meshNodeRelay(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 		if app.GlobalMeshConfig.LogRelayRequest {
 			// just if the setting is set to true, which by default is false, it will attach to the error the request_body of the relay, so this could help us provide context
 			// on incoming error from portals.
-			rb, re := json.Marshal(r)
-			rhb, rhe := json.Marshal(r)
+			rb, re := json.Marshal(relay)
+			rhb, rhe := json.Marshal(r.Header)
 			if re == nil && rhe == nil {
 				mesh.GetLogger().Error(
 					fmt.Sprintf(
@@ -55,6 +55,13 @@ func meshNodeRelay(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 						rb,
 					),
 				)
+			} else {
+				if re != nil {
+					mesh.GetLogger().Error(fmt.Sprintf("error marshaling relay error=%s", re.Error()))
+				}
+				if re != nil {
+					mesh.GetLogger().Error(fmt.Sprintf("error marshaling request.Header error=%s", rhe.Error()))
+				}
 			}
 		}
 
