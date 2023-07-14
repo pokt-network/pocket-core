@@ -41,6 +41,23 @@ func meshNodeRelay(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	res, dispatch, err := mesh.HandleRelay(&relay)
 
 	if err != nil {
+		if app.GlobalMeshConfig.LogRelayRequest {
+			// just if the setting is set to true, which by default is false, it will attach to the error the request_body of the relay, so this could help us provide context
+			// on incoming error from portals.
+			rb, re := json.Marshal(r)
+			rhb, rhe := json.Marshal(r)
+			if re == nil && rhe == nil {
+				mesh.GetLogger().Error(
+					fmt.Sprintf(
+						"unable to process relay request_headers=%s relay=%s error=%s",
+						mesh.CleanError(err.Error()),
+						rhb,
+						rb,
+					),
+				)
+			}
+		}
+
 		response := mesh.RPCRelayResponse{
 			Success:  false,
 			Error:    mesh.NewSdkErrorFromPocketSdkError(sdk.ErrInternal(err.Error())),
