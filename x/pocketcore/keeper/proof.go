@@ -50,13 +50,16 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, node *pc.PocketNode, p
 				ctx.Logger().Error(fmt.Sprintf("could not delete evidence is not sealed, could cause a relay leak: %s", err.Error()))
 			}
 		}
-		if evidence.NumOfProofs != claim.TotalProofs {
+
+		if evidence.NumOfProofs < claim.TotalProofs {
 			err := pc.DeleteEvidence(claim.SessionHeader, claim.EvidenceType, node.EvidenceStore)
 			ctx.Logger().Error(fmt.Sprintf("evidence num of proofs does not equal claim total proofs... possible relay leak"))
 			if err != nil {
 				ctx.Logger().Error(fmt.Sprintf("evidence num of proofs does not equal claim total proofs... possible relay leak: %s", err.Error()))
 			}
+			continue
 		}
+
 		// get the session context
 		sessionCtx, err := ctx.PrevCtx(claim.SessionHeader.SessionBlockHeight)
 		if err != nil {
@@ -73,8 +76,24 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, node *pc.PocketNode, p
 		if !found {
 			ctx.Logger().Error(fmt.Sprintf("an error occurred creating the proof transaction with app %s not found with evidence %v", evidence.ApplicationPubKey, evidence))
 		}
+
+		// There is a potential race condition where the evidence is not sealed while submitting a claim
+		// Allowing for more relays to enter the evidence claim, and whenever a proof is generated, it will
+		// result in an incorrect merkle proof from being generated.
+		// In order to allow for best-effort process to submit a proof for the claim the servicer submitted
+		// 1. Generate a merkle proof for claim's total proof if proof count doesn't exceed max relays per session
+		// 2. Otherwise, fall back to max relays per session
+		relaysCompleted := claim.TotalProofs
+
+		maxSessionRelays := pc.MaxPossibleRelays(app, k.SessionNodeCount(sessionCtx)).Int64()
+
+		// If the relays completed is more than what protocol will allow, set it to the max.
+		if relaysCompleted > maxSessionRelays {
+			relaysCompleted = maxSessionRelays
+		}
+
 		// get the merkle proof object for the pseudorandom index
-		mProof, leaf := evidence.GenerateMerkleProof(claim.SessionHeader.SessionBlockHeight, int(index), pc.MaxPossibleRelays(app, k.SessionNodeCount(sessionCtx)).Int64())
+		mProof, leaf := evidence.GenerateMerkleProof(claim.SessionHeader.SessionBlockHeight, int(index), relaysCompleted)
 		// if prevalidation on, then pre-validate
 		if pc.GlobalPocketConfig.ProofPrevalidation {
 			// validate level count on claim by total relays
