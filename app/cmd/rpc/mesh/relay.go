@@ -82,6 +82,7 @@ func addRelayToQueue(r *pocketTypes.Relay) func() {
 func notifyServicer(r *pocketTypes.Relay) {
 	relayTimeStart := time.Now()
 	requeue := false
+
 	// discard this relay at the end of this function, to end this function the servicer will be retried N times
 	defer func(_r *pocketTypes.Relay, requeue *bool) {
 		if *requeue {
@@ -109,14 +110,25 @@ func notifyServicer(r *pocketTypes.Relay) {
 			true, GetSessionErrorType, "500",
 		)
 		return
-	} else if ns.Queried && !ns.IsValid {
+	}
+
+	// Add relay to bloom filter if it exists
+	if ns.bloomFilter != nil {
+		ns.bloomFilter.Add(r.Proof.Bytes())
+	}
+
+	// Check if we need already queried the session and it was invalid
+	if ns.Queried && !ns.IsValid {
 		LogRelay(r, fmt.Sprintf("notify - unable to notify because session was invalidated with error=%s", CleanError(e1.Error())), LogLvlError)
 		ns.ServicerNode.Node.MetricsWorker.AddServiceMetricErrorFor(
 			r.Proof.Blockchain, &ns.ServicerNode.Address,
 			true, InvalidSessionType, fmt.Sprintf("%d", ns.Error.Code),
 		)
 		return
-	} else if !ns.Queried && !ns.Queue {
+	}
+
+	// check if we haven't queried it before and it's not inflight to be queued
+	if !ns.Queried && !ns.Queue {
 		// we should re-schedule it to later on the session is validated, or even validated but invalid to be discarded.
 		LogRelay(r, "notify - relay re-queued because session is not queried and not in queue neither", LogLvlInfo)
 		requeue = true
@@ -124,6 +136,7 @@ func notifyServicer(r *pocketTypes.Relay) {
 		return
 	}
 
+	// Safety measure to not ask for an app session within range
 	if !ns.ServicerNode.Node.CanHandleRelayWithinTolerance(r.Proof.SessionBlockHeight) {
 		LogRelay(r, fmt.Sprintf(
 			"notify - unable to delivery because relay session height is not within tolerance of fullNode session_height=%d",
@@ -367,6 +380,10 @@ func validate(r *pocketTypes.Relay) sdk.Error {
 		return pocketTypes.NewInvalidSessionKeyError(ModuleName, err)
 	}
 
+	if ns.bloomFilter != nil && ns.bloomFilter.Test(r.Proof.Bytes()) {
+		return pocketTypes.NewDuplicateProofError(ModuleName)
+	}
+
 	if ns.IsValid {
 		return nil
 	}
@@ -439,7 +456,7 @@ func HandleRelay(r *pocketTypes.Relay) (res *pocketTypes.RelayResponse, dispatch
 		return
 	}
 
-	// store relay on cache; once we hit this point this relay will be processed so should be notified to servicer even
+	// store relay on cache and add to bloom filter; once we hit this point this relay will be processed so should be notified to servicer even
 	// if process is shutdown
 	storeRelay(r)
 
