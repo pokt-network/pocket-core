@@ -12,6 +12,7 @@ import (
 	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/puzpuzpuz/xsync"
 	"github.com/robfig/cron/v3"
+	"github.com/willf/bloom"
 	"io"
 	"io/ioutil"
 	log2 "log"
@@ -22,6 +23,7 @@ import (
 const (
 	// Threshhold to determine when to expire an old session. (nodeBlockHeight - session
 	sessionBlockHeightExpireThreshhold = 12
+	bloomFilterBuffer                  = 1.2 // adds 20% more max relays to keep track for duplicate proofs
 )
 const (
 	MarshallingError = iota
@@ -123,6 +125,7 @@ type NodeSession struct {
 	RemainingRelays int64             // how many relays the servicer can still service - todo: probably will remove and handle the overServiceError from the fullNode
 	IsValid         bool              // if the session is or not valid
 	Error           *SdkErrorResponse // in case session is not valid anymore, this will be the error to be returned.
+	bloomFilter     *bloom.BloomFilter
 }
 
 func (ns *NodeSession) CountRelay() bool {
@@ -200,6 +203,11 @@ func (ns *NodeSession) ValidateSessionTask() func() {
 			// node-session specific
 			remainingRelays, _ := result.RemainingRelays.Int64()
 			ns.RemainingRelays = remainingRelays
+
+			// initialize bloom filter once we are able to retrieve a session
+			if ns.bloomFilter == nil {
+				ns.bloomFilter = bloom.NewWithEstimates(uint(float64(remainingRelays)*bloomFilterBuffer), .01)
+			}
 		} else if result.Error != nil {
 			ns.IsValid = !ShouldInvalidateSession(result.Error.Code)
 		}
