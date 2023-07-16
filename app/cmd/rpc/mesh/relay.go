@@ -456,7 +456,7 @@ func HandleRelay(r *pocketTypes.Relay) (res *pocketTypes.RelayResponse, dispatch
 		return
 	}
 
-	// store relay on cache and add to bloom filter; once we hit this point this relay will be processed so should be notified to servicer even
+	// store relay on cache; once we hit this point this relay will be processed so should be notified to servicer even
 	// if process is shutdown
 	storeRelay(r)
 
