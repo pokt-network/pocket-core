@@ -125,7 +125,7 @@ type NodeSession struct {
 	RemainingRelays int64             // how many relays the servicer can still service - todo: probably will remove and handle the overServiceError from the fullNode
 	IsValid         bool              // if the session is or not valid
 	Error           *SdkErrorResponse // in case session is not valid anymore, this will be the error to be returned.
-	bloomFilter     *bloom.BloomFilter
+	BloomFilter     *bloom.BloomFilter
 }
 
 func (ns *NodeSession) CountRelay() bool {
@@ -205,8 +205,8 @@ func (ns *NodeSession) ValidateSessionTask() func() {
 			ns.RemainingRelays = remainingRelays
 
 			// initialize bloom filter once we are able to retrieve a session
-			if ns.bloomFilter == nil {
-				ns.bloomFilter = bloom.NewWithEstimates(uint(float64(remainingRelays)*bloomFilterBuffer), .01)
+			if ns.BloomFilter == nil {
+				ns.BloomFilter = bloom.NewWithEstimates(uint(float64(remainingRelays)*bloomFilterBuffer), .01)
 			}
 		} else if result.Error != nil {
 			ns.IsValid = !ShouldInvalidateSession(result.Error.Code)

@@ -17,8 +17,8 @@ import (
 	"time"
 )
 
-// storeRelay - persist relay to disk
-func storeRelay(relay *pocketTypes.Relay) {
+// storeRelayProofToDisk - persist relay to disk
+func storeRelayProofToDisk(relay *pocketTypes.Relay) {
 	hash := relay.RequestHash()
 	LogRelay(relay, "storing relay", LogLvlDebug)
 	rb, err := json.Marshal(relay)
@@ -33,6 +33,12 @@ func storeRelay(relay *pocketTypes.Relay) {
 	}
 
 	return
+}
+
+func addRelayToBloomFilter(relay *pocketTypes.Relay, ns *NodeSession) {
+	if ns != nil && ns.BloomFilter != nil {
+		ns.BloomFilter.Add(relay.Proof.Bytes())
+	}
 }
 
 // decodeCacheRelay - decode []byte relay from cache to pocketTypes.Relay
@@ -375,7 +381,7 @@ func validate(r *pocketTypes.Relay) (*NodeSession, sdk.Error) {
 		return nil, pocketTypes.NewInvalidSessionKeyError(ModuleName, err)
 	}
 
-	if ns.bloomFilter != nil && ns.bloomFilter.Test(r.Proof.Bytes()) {
+	if ns.BloomFilter != nil && ns.BloomFilter.Test(r.Proof.Bytes()) {
 		return nil, pocketTypes.NewDuplicateProofError(ModuleName)
 	}
 
@@ -453,12 +459,9 @@ func HandleRelay(r *pocketTypes.Relay) (res *pocketTypes.RelayResponse, dispatch
 
 	// store relay on cache; once we hit this point this relay will be processed so should be notified to servicer even
 	// if process is shutdown
-	storeRelay(r)
+	storeRelayProofToDisk(r)
 
-	// store relay inside our node session bloom filter if initialized
-	if ns != nil && ns.bloomFilter != nil {
-		ns.bloomFilter.Add(r.Proof.Bytes())
-	}
+	addRelayToBloomFilter(r, ns)
 
 	blockChainCallStart := time.Now()
 	res, err = processRelay(r)
