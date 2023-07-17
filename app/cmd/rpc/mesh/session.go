@@ -236,7 +236,7 @@ func (ns *NodeSession) IsDuplicateRelay(relay *pocketTypes.Relay) bool {
 		return false
 	}
 
-	_, exists := ns.OptimisticDuplicateRelayMap.Load(relay.RequestHashString())
+	_, exists := ns.OptimisticDuplicateRelayMap.Load(string(relay.Bytes()))
 	return exists
 }
 
@@ -250,7 +250,7 @@ func (ns *NodeSession) AddRelayToDuplicateSet(relay *pocketTypes.Relay) {
 	// Nil check is just for safety precautions incase we swapping in between relay map and bloom filter.
 	// Otherwise add it to our optimistic relay set
 	if ns.OptimisticDuplicateRelayMap != nil {
-		ns.OptimisticDuplicateRelayMap.Store(relay.RequestHashString(), relay)
+		ns.OptimisticDuplicateRelayMap.Store(string(relay.Bytes()), relay)
 		return
 	}
 }
