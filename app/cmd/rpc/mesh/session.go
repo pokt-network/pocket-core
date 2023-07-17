@@ -412,22 +412,23 @@ func (ss *SessionStorage) NewNodeSessionFromRelay(relay *pocketTypes.Relay) (*No
 	}
 
 	return &NodeSession{
-		Key:             ss.GetSessionKeyByRelay(relay),
-		Hash:            sessionHash,
-		AppPubKey:       relay.Proof.Token.ApplicationPublicKey,
-		Chain:           relay.Proof.Blockchain,
-		ServicerPubKey:  relay.Proof.ServicerPubKey,
-		ServicerAddress: servicerAddress,
-		BlockHeight:     relay.Proof.SessionBlockHeight,
-		Dispatch:        nil,
-		Queue:           false,
-		Queried:         false,
-		RetryTimes:      0,
-		RelayMeta:       &relay.Meta,
-		ServicerNode:    servicerNode,
-		RemainingRelays: -1,   // means that is unlimited until check it
-		IsValid:         true, // true until fullNode negate this
-		Error:           nil,
+		Key:                         ss.GetSessionKeyByRelay(relay),
+		Hash:                        sessionHash,
+		AppPubKey:                   relay.Proof.Token.ApplicationPublicKey,
+		Chain:                       relay.Proof.Blockchain,
+		ServicerPubKey:              relay.Proof.ServicerPubKey,
+		ServicerAddress:             servicerAddress,
+		BlockHeight:                 relay.Proof.SessionBlockHeight,
+		Dispatch:                    nil,
+		Queue:                       false,
+		Queried:                     false,
+		RetryTimes:                  0,
+		RelayMeta:                   &relay.Meta,
+		ServicerNode:                servicerNode,
+		RemainingRelays:             -1,   // means that is unlimited until check it
+		IsValid:                     true, // true until fullNode negate this
+		Error:                       nil,
+		OptimisticDuplicateRelayMap: xsync.NewMapOf[struct{}](),
 	}, nil
 }
 
