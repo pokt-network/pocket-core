@@ -112,11 +112,6 @@ func notifyServicer(r *pocketTypes.Relay) {
 		return
 	}
 
-	// Add relay to bloom filter if it exists
-	if ns.bloomFilter != nil {
-		ns.bloomFilter.Add(r.Proof.Bytes())
-	}
-
 	// Check if we need already queried the session and it was invalid
 	if ns.Queried && !ns.IsValid {
 		LogRelay(r, fmt.Sprintf("notify - unable to notify because session was invalidated with error=%s", CleanError(e1.Error())), LogLvlError)
@@ -328,45 +323,45 @@ func processRelay(relay *pocketTypes.Relay) (*pocketTypes.RelayResponse, sdk.Err
 }
 
 // validate - evaluate relay to understand if should or not processed.
-func validate(r *pocketTypes.Relay) sdk.Error {
+func validate(r *pocketTypes.Relay) (*NodeSession, sdk.Error) {
 	logger.Debug(fmt.Sprintf("validating relay %s", r.RequestHashString()))
 	// validate payload
 	if err := r.Payload.Validate(); err != nil {
-		return pocketTypes.NewEmptyPayloadDataError(ModuleName)
+		return nil, pocketTypes.NewEmptyPayloadDataError(ModuleName)
 	}
 	// validate appPubKey
 	if err := pocketTypes.PubKeyVerification(r.Proof.Token.ApplicationPublicKey); err != nil {
-		return err
+		return nil, err
 	}
 	// validate chain
 	if err := pocketTypes.NetworkIdentifierVerification(r.Proof.Blockchain); err != nil {
-		return pocketTypes.NewEmptyChainError(ModuleName)
+		return nil, pocketTypes.NewEmptyChainError(ModuleName)
 	}
 	// validate the relay merkleHash = request merkleHash
 	if r.Proof.RequestHash != r.RequestHashString() {
-		return pocketTypes.NewRequestHashError(ModuleName)
+		return nil, pocketTypes.NewRequestHashError(ModuleName)
 	}
 	// ensure the blockchain is supported locally
 	if !chains.Contains(r.Proof.Blockchain) {
-		return pocketTypes.NewUnsupportedBlockchainNodeError(ModuleName)
+		return nil, pocketTypes.NewUnsupportedBlockchainNodeError(ModuleName)
 	}
 	// validate servicer public key
 	servicerAddress, e := GetAddressFromPubKeyAsString(r.Proof.ServicerPubKey)
 	if e != nil {
-		return sdk.ErrInternal("could not convert servicer hex to public key")
+		return nil, sdk.ErrInternal("could not convert servicer hex to public key")
 	}
 	// load servicer from servicer map, if not there maybe the servicer is pk is not loaded
 	if servicerNode, ok := servicerMap.Load(servicerAddress); !ok {
-		return sdk.ErrInternal("failed to find correct servicer PK")
+		return nil, sdk.ErrInternal("failed to find correct servicer PK")
 	} else if r.Proof.SessionBlockHeight <= servicerNode.Node.GetLatestSessionBlockHeight() && !servicerNode.Node.CanHandleRelayWithinTolerance(r.Proof.SessionBlockHeight) {
-		return pocketTypes.NewInvalidBlockHeightError(ModuleName)
+		return nil, pocketTypes.NewInvalidBlockHeightError(ModuleName)
 	}
 
 	ns, e1 := sessionStorage.GetSession(r)
 
 	if e1 != nil {
 		LogRelay(r, "handler - unable to get session from session storage", LogLvlError)
-		return pocketTypes.NewInvalidSessionKeyError(ModuleName, errors.New(e1.Error))
+		return nil, pocketTypes.NewInvalidSessionKeyError(ModuleName, errors.New(e1.Error))
 	}
 
 	if ns == nil {
@@ -377,19 +372,19 @@ func validate(r *pocketTypes.Relay) sdk.Error {
 			servicerAddress,
 		))
 		LogRelay(r, "handler - session not found", LogLvlError)
-		return pocketTypes.NewInvalidSessionKeyError(ModuleName, err)
+		return nil, pocketTypes.NewInvalidSessionKeyError(ModuleName, err)
 	}
 
 	if ns.bloomFilter != nil && ns.bloomFilter.Test(r.Proof.Bytes()) {
-		return pocketTypes.NewDuplicateProofError(ModuleName)
+		return nil, pocketTypes.NewDuplicateProofError(ModuleName)
 	}
 
 	if ns.IsValid {
-		return nil
+		return ns, nil
 	}
 
 	if ns.Error != nil {
-		return NewPocketSdkErrorFromSdkError(ns.Error)
+		return nil, NewPocketSdkErrorFromSdkError(ns.Error)
 	}
 
 	// Fallback invalid session
@@ -401,7 +396,7 @@ func validate(r *pocketTypes.Relay) sdk.Error {
 		r.Proof.Blockchain,
 		ns.ServicerAddress,
 	))
-	return pocketTypes.NewInvalidSessionKeyError(ModuleName, e2)
+	return ns, pocketTypes.NewInvalidSessionKeyError(ModuleName, e2)
 
 }
 
@@ -431,7 +426,7 @@ func HandleRelay(r *pocketTypes.Relay) (res *pocketTypes.RelayResponse, dispatch
 		return nil, nil, fmt.Errorf("pocket node is currently syncing to the blockchain, cannot service in this state")
 	}
 
-	err = validate(r)
+	ns, err := validate(r)
 
 	if err != nil {
 		errStr := fmt.Sprintf("handler - could not validate relay/session due to error=%s", strings.Replace(CleanError(err.Error()), "\n", " ", -1))
@@ -459,6 +454,11 @@ func HandleRelay(r *pocketTypes.Relay) (res *pocketTypes.RelayResponse, dispatch
 	// store relay on cache; once we hit this point this relay will be processed so should be notified to servicer even
 	// if process is shutdown
 	storeRelay(r)
+
+	// store relay inside our node session bloom filter if initialized
+	if ns != nil && ns.bloomFilter != nil {
+		ns.bloomFilter.Add(r.Proof.Bytes())
+	}
 
 	blockChainCallStart := time.Now()
 	res, err = processRelay(r)
