@@ -61,7 +61,7 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, node *pc.PocketNode, p
 			if err != nil {
 				ctx.Logger().Error(fmt.Sprintf("evidence num of proofs does not equal claim total proofs... possible relay leak: %s", err.Error()))
 			}
-			// If this is the case, delete the evidence and continue iterating through evidences to claims to submit.
+			// If this is the case, delete the evidence and continue iterating through the claims to submit.
 			continue
 		}
 
