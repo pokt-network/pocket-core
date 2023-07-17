@@ -121,11 +121,12 @@ type NodeSession struct {
 	RetryTimes      int                    // how many times the session validation was retried
 	RelayMeta       *pocketTypes.RelayMeta // just a sample of any relay to get the dispatch
 	// servicer related info
-	ServicerNode    *servicer
-	RemainingRelays int64             // how many relays the servicer can still service - todo: probably will remove and handle the overServiceError from the fullNode
-	IsValid         bool              // if the session is or not valid
-	Error           *SdkErrorResponse // in case session is not valid anymore, this will be the error to be returned.
-	BloomFilter     *bloom.BloomFilter
+	ServicerNode                *servicer
+	RemainingRelays             int64             // how many relays the servicer can still service - todo: probably will remove and handle the overServiceError from the fullNode
+	IsValid                     bool              // if the session is or not valid
+	Error                       *SdkErrorResponse // in case session is not valid anymore, this will be the error to be returned.
+	DuplicateRelayBloomFilter   *bloom.BloomFilter
+	OptimisticDuplicateRelayMap *xsync.MapOf[string, *pocketTypes.Relay]
 }
 
 func (ns *NodeSession) CountRelay() bool {
@@ -204,16 +205,53 @@ func (ns *NodeSession) ValidateSessionTask() func() {
 			remainingRelays, _ := result.RemainingRelays.Int64()
 			ns.RemainingRelays = remainingRelays
 
-			// initialize bloom filter once we are able to retrieve a session
-			if ns.BloomFilter == nil {
-				ns.BloomFilter = bloom.NewWithEstimates(uint(float64(remainingRelays)*bloomFilterBuffer), .01)
+			// initialize bloom filter once we are able to retrieve a session and populate it with our optimistic relay set
+			if ns.DuplicateRelayBloomFilter == nil {
+				ns.DuplicateRelayBloomFilter = bloom.NewWithEstimates(uint(float64(remainingRelays)*bloomFilterBuffer), .01)
+				// Add optimistic relay set to bloom filter
+				ns.OptimisticDuplicateRelayMap.Range(func(key string, value *pocketTypes.Relay) bool {
+					ns.DuplicateRelayBloomFilter.Add(value.Bytes())
+					return true
+				})
+				ns.OptimisticDuplicateRelayMap = nil
 			}
+
 		} else if result.Error != nil {
 			ns.IsValid = !ShouldInvalidateSession(result.Error.Code)
 		}
 
 		ns.Queue = false
 		ns.Queried = true
+	}
+}
+
+func (ns *NodeSession) IsDuplicateRelay(relay *pocketTypes.Relay) bool {
+
+	if ns.DuplicateRelayBloomFilter != nil {
+		return ns.DuplicateRelayBloomFilter.Test(relay.Bytes())
+	}
+
+	// This might only happen whenever we are swapping in between relaySet to optimisticSet
+	if ns.OptimisticDuplicateRelayMap == nil {
+		return false
+	}
+
+	_, exists := ns.OptimisticDuplicateRelayMap.Load(relay.RequestHashString())
+	return exists
+}
+
+func (ns *NodeSession) AddRelayToDuplicateSet(relay *pocketTypes.Relay) {
+	// Add to bloom filter if it exists
+	if ns.DuplicateRelayBloomFilter != nil {
+		ns.DuplicateRelayBloomFilter.Add(relay.Proof.Bytes())
+		return
+	}
+
+	// Nil check is just for safety precautions incase we swapping in between relay map and bloom filter.
+	// Otherwise add it to our optimistic relay set
+	if ns.OptimisticDuplicateRelayMap != nil {
+		ns.OptimisticDuplicateRelayMap.Store(relay.RequestHashString(), relay)
+		return
 	}
 }
 
