@@ -35,11 +35,11 @@ func storeRelayProofToDisk(relay *pocketTypes.Relay) {
 	return
 }
 
-func addRelayToDuplicateSet(relay *pocketTypes.Relay, ns *NodeSession) {
+func addRelayProofToDuplicateSet(relayProof *pocketTypes.RelayProof, ns *NodeSession) {
 	if ns == nil {
 		return
 	}
-	ns.AddRelayToDuplicateSet(relay)
+	ns.AddRelayProofToDuplicateSet(relayProof)
 }
 
 // decodeCacheRelay - decode []byte relay from cache to pocketTypes.Relay
@@ -382,7 +382,7 @@ func validate(r *pocketTypes.Relay) (*NodeSession, sdk.Error) {
 		return nil, pocketTypes.NewInvalidSessionKeyError(ModuleName, err)
 	}
 
-	if ns.IsDuplicateRelay(r) {
+	if ns.IsDuplicateRelayProof(&r.Proof) {
 		return nil, pocketTypes.NewDuplicateProofError(ModuleName)
 	}
 
@@ -463,7 +463,7 @@ func HandleRelay(r *pocketTypes.Relay) (res *pocketTypes.RelayResponse, dispatch
 	storeRelayProofToDisk(r)
 
 	// Add relay to our duplicate set to prevent handling repeated relays sent from apps.
-	addRelayToDuplicateSet(r, ns)
+	addRelayProofToDuplicateSet(&r.Proof, ns)
 
 	blockChainCallStart := time.Now()
 	res, err = processRelay(r)
