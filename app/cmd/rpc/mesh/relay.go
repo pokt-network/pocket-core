@@ -403,7 +403,7 @@ func validate(r *pocketTypes.Relay) (*NodeSession, sdk.Error) {
 		r.Proof.Blockchain,
 		ns.ServicerAddress,
 	))
-	return ns, pocketTypes.NewInvalidSessionKeyError(ModuleName, e2)
+	return nil, pocketTypes.NewInvalidSessionKeyError(ModuleName, e2)
 
 }
 
