@@ -126,7 +126,7 @@ type NodeSession struct {
 	IsValid                     bool              // if the session is or not valid
 	Error                       *SdkErrorResponse // in case session is not valid anymore, this will be the error to be returned.
 	DuplicateRelayBloomFilter   *bloom.BloomFilter
-	OptimisticDuplicateRelayMap *xsync.MapOf[string, *pocketTypes.Relay]
+	OptimisticDuplicateRelayMap *xsync.MapOf[string, struct{}]
 }
 
 func (ns *NodeSession) CountRelay() bool {
@@ -209,8 +209,8 @@ func (ns *NodeSession) ValidateSessionTask() func() {
 			if ns.DuplicateRelayBloomFilter == nil {
 				ns.DuplicateRelayBloomFilter = bloom.NewWithEstimates(uint(float64(remainingRelays)*bloomFilterBuffer), .01)
 				// Add optimistic relay set to bloom filter
-				ns.OptimisticDuplicateRelayMap.Range(func(key string, value *pocketTypes.Relay) bool {
-					ns.DuplicateRelayBloomFilter.Add(value.Bytes())
+				ns.OptimisticDuplicateRelayMap.Range(func(key string, value struct{}) bool {
+					ns.DuplicateRelayBloomFilter.Add([]byte(key))
 					return true
 				})
 				ns.OptimisticDuplicateRelayMap = nil
@@ -250,7 +250,7 @@ func (ns *NodeSession) AddRelayToDuplicateSet(relay *pocketTypes.Relay) {
 	// Nil check is just for safety precautions incase we swapping in between relay map and bloom filter.
 	// Otherwise add it to our optimistic relay set
 	if ns.OptimisticDuplicateRelayMap != nil {
-		ns.OptimisticDuplicateRelayMap.Store(string(relay.Bytes()), relay)
+		ns.OptimisticDuplicateRelayMap.Store(string(relay.Bytes()), struct{}{})
 		return
 	}
 }
