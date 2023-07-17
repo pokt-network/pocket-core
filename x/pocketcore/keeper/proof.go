@@ -52,11 +52,16 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, node *pc.PocketNode, p
 		}
 
 		if evidence.NumOfProofs < claim.TotalProofs {
+			//  The node should never submit a proof whenever the number of stored relay proofs are
+			//  LESS than the number of relay proofs in the submitted claim as it can cause
+			//  a array index of out-bounds exception if the randomly selected index is more than what
+			//  we have in the store, causing a process crash.
 			err := pc.DeleteEvidence(claim.SessionHeader, claim.EvidenceType, node.EvidenceStore)
 			ctx.Logger().Error(fmt.Sprintf("evidence num of proofs does not equal claim total proofs... possible relay leak"))
 			if err != nil {
 				ctx.Logger().Error(fmt.Sprintf("evidence num of proofs does not equal claim total proofs... possible relay leak: %s", err.Error()))
 			}
+			// If this is the case, delete the evidence and continue iterating through evidences to claims to submit.
 			continue
 		}
 
