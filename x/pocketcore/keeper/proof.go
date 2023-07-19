@@ -51,15 +51,13 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, node *pc.PocketNode, p
 			}
 		}
 
+		// In the case of evidence.NumOfProofs < claim.TotalProofs, we don't submit a proof because we cannot generate a valid merkle proof with a smaller number of relays.
+		// In the case of evidence.NumOfProofs > claim.TotalProofs, we truncate proofs of the evidence (that happens inside GenerateMerkleProof) and submit a proof.
 		if evidence.NumOfProofs < claim.TotalProofs {
-			//  The node should never submit a proof whenever the number of stored relay proofs are
-			//  LESS than the number of relay proofs in the submitted claim as it can cause
-			//  a array index of out-bounds exception if the randomly selected index is more than what
-			//  we have in the store, causing a process crash.
 			err := pc.DeleteEvidence(claim.SessionHeader, claim.EvidenceType, node.EvidenceStore)
-			ctx.Logger().Error(fmt.Sprintf("evidence num of proofs does not equal claim total proofs... possible relay leak"))
+			ctx.Logger().Error(fmt.Sprintf("evidence num of proofs is less than submitted claim's total proofs, can't generate merkle proof"))
 			if err != nil {
-				ctx.Logger().Error(fmt.Sprintf("evidence num of proofs does not equal claim total proofs... possible relay leak: %s", err.Error()))
+				ctx.Logger().Error(fmt.Sprintf("evidence num of proofs is less than submitted claim's total proofs, can't generate merkle proof: %s", err.Error()))
 			}
 			// If this is the case, delete the evidence and continue iterating through the claims to submit.
 			continue
@@ -85,7 +83,7 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, node *pc.PocketNode, p
 		// There is a potential race condition where the evidence is not sealed while submitting a claim
 		// Allowing for more relays to enter the evidence claim, and whenever a proof is generated, it will
 		// result in an incorrect merkle proof from being generated.
-		// In order to allow for best-effort process to submit a proof for the claim the servicer submitted
+		// In order to allow for best-effort process to submit a proof for the claim the service submitted
 		// 1. Generate a merkle proof for claim's total proof if proof count doesn't exceed max relays per session
 		// 2. Otherwise, fall back to max relays per session
 		relaysCompleted := claim.TotalProofs
