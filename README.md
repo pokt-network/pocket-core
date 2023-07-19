@@ -4,7 +4,7 @@
   </a>
 </div>
 
-# Pocket Core
+# Pocket Core <!-- omit in toc -->
 
 Official golang implementation of the Pocket Network Protocol.
 
@@ -30,6 +30,20 @@ Official golang implementation of the Pocket Network Protocol.
 
 The Pocket Core application will allow anyone to spin up a Pocket Network full node, with options to enable/disable functionality and modules according to each deployment. For more information on Pocket Network, visit [pokt.network](https://pokt.network).
 
+## Table of Contents <!-- omit in toc -->
+
+- [Overview](#overview)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Documentation](#documentation)
+- [Database Snapshots](#database-snapshots)
+- [Accessing TestNet](#accessing-testnet)
+- [Running the tests](#running-the-tests)
+- [Contributing](#contributing)
+- [MainNet Seeds](#mainnet-seeds)
+- [Support \& Contact](#support--contact)
+- [License](#license)
+
 ## Installation
 
 Clone the repository, `cd` into it and run `go build app/cmd/pocket_core/main.go`.
@@ -38,7 +52,7 @@ Clone the repository, `cd` into it and run `go build app/cmd/pocket_core/main.go
 
 To run the Pocket Core binary you can use the following flags alongside the `main` executable:
 
-```
+```bash
 Usage:
   pocket [command]
 
@@ -92,6 +106,10 @@ To run the Pocket Core unit tests, `go test -short -v -p 1 ./...`
 ## Contributing
 
 Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on contributions and the process of submitting pull requests.
+
+## MainNet Seeds
+
+MainNet seeds are being maintained by [NodeFleet](https://nodefleet.org/) and more details can be found at [docs.pokt.network/node/seeds/](https://docs.pokt.network/node/seeds/).
 
 ## Support & Contact
 
