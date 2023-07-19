@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"encoding/hex"
+
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/nodes/exported"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
@@ -57,6 +58,7 @@ func (k Keeper) IsSessionBlock(ctx sdk.Ctx) bool {
 
 // IsProofSessionHeightWithinTolerance checks if the relaySessionBlockHeight is bounded by (latestSessionBlockHeight - tolerance ) <= x <= latestSessionHeight
 func (k Keeper) IsProofSessionHeightWithinTolerance(ctx sdk.Ctx, relaySessionBlockHeight int64) bool {
+
 	// Session block height can never be zero.
 	if relaySessionBlockHeight <= 0 {
 		return false
@@ -66,6 +68,40 @@ func (k Keeper) IsProofSessionHeightWithinTolerance(ctx sdk.Ctx, relaySessionBlo
 	minHeight := latestSessionHeight - tolerance
 	return sdk.IsBetween(relaySessionBlockHeight, minHeight, latestSessionHeight)
 }
+
+	// DISC #1: IsProofSessionHeightWithinTolerance pocket-core is different from the spec
+	// relaySessionBlockHeight = 11
+	// Assumption: portal is synched with the network (session = 11)
+	// Assumption: geo-mesh is not synched with the network (session = 7)
+	// Expectation: succeed
+	// Actual: failure
+	// Enable: enable sessions in the past
+	// Enable: enable
+
+	// Goal:
+	// Portal is at session 7
+	// Geo-mesh is at session 11
+	// you can ONLY handle sessions in the present
+
+	// But, what if I didn't send my claim yet?
+	// AND, I'm (a node) am ahead of portal (session 11)
+	// AND, portal (session 7) sends me a relay
+
+	// Question: why should som
+
+	// Portal -> session = 15
+	// Geo-mesh -> session = 11
+	// Portal sees latest of the network:
+	// 	- Good devops
+	//  - good network
+	// - good QoS
+	// Geomesh:
+	// 	- bad devops
+	// 	- bad internet
+	// 	- bad Qos => no reward
+
+https: //docs.pokt.network/learn/protocol/servicing/#:~:text=Zero%20Knowledge%20Range%20Proof,-In%20order%20to&text=Generate%20the%20Merkle%20Tree%20using,leafs%20possible%20to%20select%20from
+
 
 // "GetLatestSessionBlockHeight" - Returns the latest session block height (first block of the session, (see blocksPerSession))
 func (k Keeper) GetLatestSessionBlockHeight(ctx sdk.Ctx) (sessionBlockHeight int64) {

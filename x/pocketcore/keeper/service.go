@@ -3,17 +3,18 @@ package keeper
 import (
 	"encoding/hex"
 	"fmt"
+	"time"
+
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
 	pc "github.com/pokt-network/pocket-core/x/pocketcore/types"
-	"time"
 )
 
 // HandleRelay handles an api (read/write) request to a non-native (external) blockchain
 func (k Keeper) HandleRelay(ctx sdk.Ctx, relay pc.Relay) (*pc.RelayResponse, sdk.Error) {
 	relayTimeStart := time.Now()
 
-	sessionBlockHeight := relay.Proof.SessionBlockHeight
+	sessionBlockHeight := relay.Proof.SessionBlockHeight // 11
 
 	if !k.IsProofSessionHeightWithinTolerance(ctx, sessionBlockHeight) {
 		// For legacy support, we are intentionally returning the invalid block height error.
