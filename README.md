@@ -18,6 +18,7 @@ Official golang implementation of the Pocket Network Protocol.
 ## Overview
 
 <div>
+    <a href="https://discord.gg/pokt"><img src="https://img.shields.io/discord/553741558869131266"></a>
     <a  href="https://github.com/pokt-network/pocket-core/releases"><img src="https://img.shields.io/github/release-pre/pokt-network/pocket-core.svg"/></a>
     <a href="https://circleci.com/gh/pokt-network/pocket-core"><img src="https://circleci.com/gh/pokt-network/pocket-core.svg?style=svg"/></a>
     <a  href="https://github.com/pokt-network/pocket-core/pulse"><img src="https://img.shields.io/github/contributors/pokt-network/pocket-core.svg"/></a>
