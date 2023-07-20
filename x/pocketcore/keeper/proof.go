@@ -59,7 +59,7 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, node *pc.PocketNode, p
 			if err != nil {
 				ctx.Logger().Error(fmt.Sprintf("evidence num of proofs is less than submitted claim's total proofs, can't generate merkle proof: %s", err.Error()))
 			}
-			// If this is the case, delete the evidence and continue iterating through the claims to submit.
+			// // If this is the case, delete the evidence associated with this claim and continue iterating through the claims from other nodes that must submit a proof tx.
 			continue
 		}
 
@@ -80,10 +80,10 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, node *pc.PocketNode, p
 			ctx.Logger().Error(fmt.Sprintf("an error occurred creating the proof transaction with app %s not found with evidence %v", evidence.ApplicationPubKey, evidence))
 		}
 
-		// There is a potential race condition where the evidence is not sealed while submitting a claim
-		// Allowing for more relays to enter the evidence claim, and whenever a proof is generated, it will
-		// result in an incorrect merkle proof from being generated.
-		// In order to allow for best-effort process to submit a proof for the claim the service submitted
+		// There is a potential race condition where the evidence is not sealed while submitting a claim (https://github.com/pokt-network/pocket-core/pull/1574)
+		// Allowing for more relays than the maximum allowed in a certain session will result
+		// in the generation of an incorrect Merkle proof.
+		// In order to allow for best-effort submission of proofs for each existing claim:
 		// 1. Generate a merkle proof for claim's total proof if proof count doesn't exceed max relays per session
 		// 2. Otherwise, fall back to max relays per session
 		relaysCompleted := claim.TotalProofs
