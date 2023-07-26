@@ -89,12 +89,12 @@ var invalidSessionCode = []sdk.CodeType{
 	pocketTypes.CodeEvidenceSealed,
 	pocketTypes.CodeOverServiceError,
 	pocketTypes.CodeOutOfSyncRequestError,
-}
-
-var nonRetryableCodes = []sdk.CodeType{
 	pocketTypes.CodeUnsupportedBlockchainError,
 	pocketTypes.CodeUnsupportedBlockchainAppError,
 	pocketTypes.CodeUnsupportedBlockchainNodeError,
+}
+
+var nonRetryableCodes = []sdk.CodeType{
 	pocketTypes.CodeDuplicateProofError,
 	pocketTypes.CodeRequestHash,
 	pocketTypes.CodeInvalidBlockHeightError,
