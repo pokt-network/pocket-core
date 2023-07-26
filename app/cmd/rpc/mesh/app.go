@@ -91,7 +91,13 @@ var invalidSessionCode = []sdk.CodeType{
 	pocketTypes.CodeOutOfSyncRequestError,
 	pocketTypes.CodeUnsupportedBlockchainError,
 	pocketTypes.CodeUnsupportedBlockchainAppError,
+	pocketTypes.CodeInsufficientNodesError,
+	pocketTypes.CodeEmptyAddressError,
 	pocketTypes.CodeUnsupportedBlockchainNodeError,
+	pocketTypes.CodeEmptyNonNativeChainError,
+	pocketTypes.CodeInvalidAppPubKeyError,
+	pocketTypes.CodePubKeyError,
+	pocketTypes.CodePubKeySizeError,
 }
 
 var nonRetryableCodes = []sdk.CodeType{

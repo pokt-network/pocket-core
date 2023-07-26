@@ -217,7 +217,10 @@ func (ns *NodeSession) ValidateSessionTask() func() {
 			}
 
 		} else if result.Error != nil {
-			ns.IsValid = !ShouldInvalidateSession(result.Error.Code)
+			// We check for code invalid block height error here specifically because invalid block height is used in multiple locations
+			// however if invalid block height is returned when trying to retrieve a session, this means it is a invalid session whenever the full node
+			// calls session.validate
+			ns.IsValid = !ShouldInvalidateSession(result.Error.Code) && result.Error.Code != pocketTypes.CodeInvalidBlockHeightError
 		}
 
 		ns.Queue = false
