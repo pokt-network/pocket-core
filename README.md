@@ -38,6 +38,7 @@ The Pocket Core application will allow anyone to spin up a Pocket Network full n
 - [Usage](#usage)
 - [Documentation](#documentation)
 - [Database Snapshots](#database-snapshots)
+- [Pocket Pruner](#pocket-pruner)
 - [Accessing TestNet](#accessing-testnet)
 - [Running the tests](#running-the-tests)
 - [Contributing](#contributing)
@@ -47,8 +48,17 @@ The Pocket Core application will allow anyone to spin up a Pocket Network full n
 
 ## Installation
 
-Clone the repository, `cd` into it and run `go build app/cmd/pocket_core/pocket.go`.
-> Be sure to add the `pocket` executable to your `PATH` if you'd like to use it without direct reference to the binary.
+```bash
+# Build local binary
+git clone git@github.com:pokt-network/pocket && \
+cd pocket && \
+go build app/cmd/pocket_core/pocket.go
+
+# Assign local binary and add to your `PATH`  if you'd like to use it without direct reference to the binary.
+export POKT=$(pwd)/main
+```
+
+TIP: You can find alternative ways of installing `pocket` (e.g. homebrew) via the instructions [here](doc/guides/quickstart.md).
 
 ## Usage
 

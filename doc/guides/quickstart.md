@@ -62,8 +62,8 @@ pocket version
 
 {% tab title="Response" %}
 
-```
-> RC 0.8.0
+```bash
+> RC 0.10.4
 ```
 
 {% endtab %} {% endtabs %}
