@@ -47,11 +47,12 @@ The Pocket Core application will allow anyone to spin up a Pocket Network full n
 
 ## Installation
 
-Clone the repository, `cd` into it and run `go build app/cmd/pocket_core/main.go`.
+Clone the repository, `cd` into it and run `go build app/cmd/pocket_core/pocket.go`.
+> Be sure to add the `pocket` executable to your `PATH` if you'd like to use it without direct reference to the binary.
 
 ## Usage
 
-To run the Pocket Core binary you can use the following flags alongside the `main` executable:
+To run the Pocket Core binary you can use the following flags alongside the `pocket` executable:
 
 ```bash
 Usage:
