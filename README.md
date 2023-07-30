@@ -44,6 +44,7 @@ The Pocket Core application will allow anyone to spin up a Pocket Network full n
 - [Contributing](#contributing)
 - [MainNet Seeds](#mainnet-seeds)
 - [Support \& Contact](#support--contact)
+  - [GPokT](#gpokt)
 - [License](#license)
 
 ## Installation
@@ -128,9 +129,12 @@ MainNet seeds are being maintained by [NodeFleet](https://nodefleet.org/) and mo
 <div>
   <a  href="https://twitter.com/poktnetwork" ><img src="https://img.shields.io/twitter/url/http/shields.io.svg?style=social"></a>
   <a href="https://t.me/POKTnetwork"><img src="https://img.shields.io/badge/Telegram-blue.svg"></a>
-  <a href="https://www.facebook.com/POKTnetwork" ><img src="https://img.shields.io/badge/Facebook-red.svg"></a>
   <a href="https://research.pokt.network"><img src="https://img.shields.io/discourse/https/research.pokt.network/posts.svg"></a>
 </div>
+
+### GPokT
+
+You can also use our chatbot, [GPokT](https://gpoktn.streamlit.app), to ask questions about Pocket Network. As of updating this documentation, please note that it may require you to provide your own LLM API token. If the deployed version of GPokT is down, you can deploy your own version by following the instructions [here](https://github.com/pokt-network/gpokt).
 
 ## License
 
