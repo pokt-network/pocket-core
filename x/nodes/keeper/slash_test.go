@@ -79,7 +79,7 @@ func TestHandleValidatorSignature(t *testing.T) {
 				}
 				keeper.SetValidatorSigningInfo(context, sdk.Address(cryptoAddr), signingInfo)
 				signedBlocksWindow := keeper.SignedBlocksWindow(context)
-				minSignedPerWindow := keeper.MinSignedPerWindow(context)
+				minSignedPerWindow := keeper.MinBlocksSignedPerWindow(context)
 				downtimeJailDuration := keeper.DowntimeJailDuration(context)
 				slashFractionDowntime := keeper.SlashFractionDowntime(context)
 				keeper.handleValidatorSignature(context, sdk.Address(cryptoAddr), test.args.power, test.args.signed, signedBlocksWindow, minSignedPerWindow, downtimeJailDuration, slashFractionDowntime)

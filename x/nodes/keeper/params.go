@@ -64,15 +64,25 @@ func (k Keeper) SignedBlocksWindow(ctx sdk.Ctx) (res int64) {
 	return
 }
 
-// MinSignedPerWindow - Downtime slashing threshold
-func (k Keeper) MinSignedPerWindow(ctx sdk.Ctx) (res int64) {
+// Returns the product of two parameters: MinSignedPerWindow * SignedBlocksWindow
+// which indicates the minimum number of blocks in the SignedBlocksWindow range
+// that a node must sign to stay out of jail.
+func (k Keeper) MinBlocksSignedPerWindow(ctx sdk.Ctx) (res int64) {
 	var minSignedPerWindow sdk.BigDec
 	k.Paramstore.Get(ctx, types.KeyMinSignedPerWindow, &minSignedPerWindow)
 	signedBlocksWindow := k.SignedBlocksWindow(ctx)
 
 	// NOTE: RoundInt64 will never panic as minSignedPerWindow is
 	//       less than 1.
-	return minSignedPerWindow.MulInt64(signedBlocksWindow).RoundInt64() // todo may have to be int64 .RoundInt64()
+	return minSignedPerWindow.MulInt64(signedBlocksWindow).RoundInt64()
+}
+
+// MinSignedPerWindow -
+// The minimum proportion of the SignedBlocksWindow that a node must sign
+// to stay out of jail.
+func (k Keeper) MinSignedPerWindow(ctx sdk.Ctx) (res sdk.BigDec) {
+	k.Paramstore.Get(ctx, types.KeyMinSignedPerWindow, &res)
+	return
 }
 
 // DowntimeJailDuration - Downtime jail duration
@@ -177,7 +187,7 @@ func (k Keeper) GetParams(ctx sdk.Ctx) types.Params {
 		MaxJailedBlocks:                      k.MaxJailedBlocks(ctx),
 		MaxEvidenceAge:                       k.MaxEvidenceAge(ctx),
 		SignedBlocksWindow:                   k.SignedBlocksWindow(ctx),
-		MinSignedPerWindow:                   sdk.NewDec(k.MinSignedPerWindow(ctx)),
+		MinSignedPerWindow:                   k.MinSignedPerWindow(ctx),
 		DowntimeJailDuration:                 k.DowntimeJailDuration(ctx),
 		SlashFractionDoubleSign:              k.SlashFractionDoubleSign(ctx),
 		SlashFractionDowntime:                k.SlashFractionDowntime(ctx),

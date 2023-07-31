@@ -131,8 +131,6 @@ func ActivateAdditionalParameters(ctx sdk.Ctx, am AppModule) {
 		params.ServicerStakeWeightMultiplier = types.DefaultServicerStakeWeightMultiplier
 		params.ServicerStakeWeightCeiling = types.DefaultServicerStakeWeightCeiling
 		params.ServicerStakeFloorMultiplierExponent = types.DefaultServicerStakeFloorMultiplierExponent
-		// custom logic for minSignedPerWindow
-		params.MinSignedPerWindow = params.MinSignedPerWindow.QuoInt64(params.SignedBlocksWindow)
 		am.keeper.SetParams(ctx, params)
 	}
 }

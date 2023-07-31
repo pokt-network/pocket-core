@@ -107,8 +107,6 @@ func (k Keeper) ConvertState(ctx sdk.Ctx) {
 		panic(err)
 	}
 	k.Cdc.SetUpgradeOverride(true)
-	// custom logic for minSignedPerWindow
-	params.MinSignedPerWindow = params.MinSignedPerWindow.QuoInt64(params.SignedBlocksWindow)
 	k.SetParams(ctx, params)
 	k.SetPrevStateValidatorsPower(ctx, prevStateTotalPower)
 	k.SetWaitingValidators(ctx, waitingValidators)
