@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	"log"
 	"math/rand"
 	"strconv"
 	"sync"
@@ -1229,6 +1230,144 @@ func TestChangeParamspip22afterActivationHeight(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_RTTM2_ChangeParamValue(t *testing.T) {
+	cdc := memCodec()
+	ParamName := "pos/RelaysToTokensMultiplierMap"
+	ParamValue := map[string]int64{
+		"0001": 12345,
+	}
+	ExpectedValue, err := cdc.MarshalJSON(ParamValue)
+	assert.Nil(t, err)
+
+	testModeTemp := codec.TestMode
+	upgradeHeightTemp := codec.UpgradeHeight
+
+	// Prepare governance parameters
+	// Includes codec upgrade, validator split, non-custodial upgrade,
+	// and block size reduction
+	codec.TestMode = -4
+	// Height at which codec was upgraded from amino to proto
+	codec.UpgradeHeight = 2
+	// Height at which to enable block size upgrades
+	codec.UpgradeFeatureMap[codec.PerChainRTTM] = 6
+	resetTestACL()
+
+	// On cleanup, revert global values so they are the same everywhere else
+	t.Cleanup(func() {
+		codec.TestMode = testModeTemp
+		codec.UpgradeHeight = upgradeHeightTemp
+	})
+
+	// Prepare the test network
+	_, kb, cleanup := NewInMemoryTendermintNodeProto(t, oneAppTwoNodeGenesis())
+	defer cleanup()
+
+	// Get the address of the ACL owner (i.e. the DAO)
+	cb, err := kb.GetCoinbase()
+	assert.Nil(t, err)
+	daoAddr := cb.GetAddress()
+
+	// Subscribe to new events
+	_, _, newBlockEventChan := subscribeTo(t, tmTypes.EventNewBlock)
+	memCli, stopCli, txEventChan := subscribeTo(t, tmTypes.EventTx)
+	defer stopCli()
+
+	// Wait until UpgradeHeight
+	for {
+		if PCA.LastBlockHeight() >= codec.UpgradeHeight {
+			break
+		}
+		<-newBlockEventChan
+	}
+
+	height := PCA.LastBlockHeight()
+	log.Println("#", height, "Empty parameter value before activation")
+	param, err := PCA.QueryParam(height, ParamName)
+	assert.Nil(t, err)
+	assert.Equal(t, "", param.Value)
+
+	// Submit a param change before activation
+	tx, err := gov.ChangeParamsTx(
+		cdc,
+		memCli,
+		kb,
+		daoAddr,
+		ParamName,
+		ParamValue,
+		"test",
+		10000,
+		false,
+	)
+	assert.Nil(t, err)
+	assert.NotNil(t, tx)
+	log.Println(tx.TxHash)
+
+	// Make sure the tx has been rejected
+	txEvent := <-txEventChan
+	assert.Equal(t, tx.TxHash, txEvent.Events["tx.hash"][0])
+	txResult, ok := txEvent.Data.(tmTypes.EventDataTx)
+	assert.True(t, ok)
+	assert.Equal(t, txResult.Result.Codespace, gov.ModuleName)
+	assert.Equal(t,
+		sdk.CodeType(txResult.Result.Code),
+		govTypes.CodeUnauthorizedParamChange,
+	)
+
+	height = PCA.LastBlockHeight()
+	log.Println("#", height, "Still empty parameter after the tx rejected")
+	param, err = PCA.QueryParam(height, ParamName)
+	assert.Nil(t, err)
+	assert.Equal(t, "", param.Value)
+
+	// Wait for feature activation
+	for {
+		if PCA.LastBlockHeight() >= codec.UpgradeFeatureMap[codec.PerChainRTTM] {
+			break
+		}
+		<-newBlockEventChan
+	}
+
+	// Submit a param change after activation
+	tx, err = gov.ChangeParamsTx(
+		cdc,
+		memCli,
+		kb,
+		daoAddr,
+		ParamName,
+		ParamValue,
+		"test",
+		10000,
+		false,
+	)
+	assert.Nil(t, err)
+	assert.NotNil(t, tx)
+	log.Println(tx.TxHash)
+
+	// Make sure the tx has been approved
+	txEvent = <-txEventChan
+	assert.Equal(t, tx.TxHash, txEvent.Events["tx.hash"][0])
+	txResult, ok = txEvent.Data.(tmTypes.EventDataTx)
+	assert.True(t, ok)
+	assert.Equal(t, txResult.Result.Codespace, "")
+	assert.Zero(t, txResult.Result.Code)
+
+	<-newBlockEventChan // Wait for next block
+
+	height = PCA.LastBlockHeight()
+	log.Println("#", height, "Parameter is updated after activation")
+	param, err = PCA.QueryParam(height, ParamName)
+	assert.Nil(t, err)
+	assert.Equal(t, string(ExpectedValue), param.Value)
+
+	<-newBlockEventChan // Wait for next block
+
+	height = PCA.LastBlockHeight()
+	log.Println("#", height, "Verify the parameter change is stable")
+	param, err = PCA.QueryParam(height, ParamName)
+	assert.Nil(t, err)
+	assert.Equal(t, string(ExpectedValue), param.Value)
 }
 
 func TestUpgrade(t *testing.T) {

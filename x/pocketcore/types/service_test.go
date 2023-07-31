@@ -353,6 +353,10 @@ func (m MockPosKeeper) RewardForRelays(ctx sdk.Ctx, relays sdk.BigInt, address s
 	panic("implement me")
 }
 
+func (m MockPosKeeper) RewardForRelaysPerChain(sdk.Ctx, string, sdk.BigInt, sdk.Address) sdk.BigInt {
+	panic("implement me")
+}
+
 func (m MockPosKeeper) GetStakedTokens(ctx sdk.Ctx) sdk.BigInt {
 	panic("implement me")
 }

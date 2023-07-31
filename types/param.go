@@ -22,6 +22,7 @@ var (
 	// which feature introduced it
 	additionalParametersKeys = map[string]string{
 		"BlockByteSize":                        codec.BlockSizeModifyKey,
+		"RelaysToTokensMultiplierMap":          codec.PerChainRTTM,
 		"ServicerStakeFloorMultiplier":         codec.RSCALKey,
 		"ServicerStakeWeightMultiplier":        codec.RSCALKey,
 		"ServicerStakeWeightCeiling":           codec.RSCALKey,

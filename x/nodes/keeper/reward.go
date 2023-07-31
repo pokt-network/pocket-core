@@ -9,8 +9,13 @@ import (
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 )
 
-// RewardForRelays - Award coins to an address (will be called at the beginning of the next block)
+// RewardForRelays - Award coins to an address using the default multiplier
 func (k Keeper) RewardForRelays(ctx sdk.Ctx, relays sdk.BigInt, address sdk.Address) sdk.BigInt {
+	return k.RewardForRelaysPerChain(ctx, "", relays, address)
+}
+
+// RewardForRelaysPerChain - Award coins to an address for relays of a specific chain
+func (k Keeper) RewardForRelaysPerChain(ctx sdk.Ctx, chain string, relays sdk.BigInt, address sdk.Address) sdk.BigInt {
 	// feature flags
 	isAfterRSCAL := k.Cdc.IsAfterNamedFeatureActivationHeight(ctx.BlockHeight(), codec.RSCALKey)
 	isNonCustodialActive := k.Cdc.IsAfterNonCustodialUpgrade(ctx.BlockHeight())
@@ -45,6 +50,8 @@ func (k Keeper) RewardForRelays(ctx sdk.Ctx, relays sdk.BigInt, address sdk.Addr
 		}
 	}
 
+	multiplier := k.GetChainSpecificMultiplier(ctx, chain)
+
 	var coins sdk.BigInt
 
 	//check if PIP22 is enabled, if so scale the rewards
@@ -56,11 +63,11 @@ func (k Keeper) RewardForRelays(ctx sdk.Ctx, relays sdk.BigInt, address sdk.Addr
 		bin := flooredStake.Quo(k.ServicerStakeFloorMultiplier(ctx))
 		//calculate the weight value, weight will be a floatng point number so cast to DEC here and then truncate back to big int
 		weight := bin.ToDec().FracPow(k.ServicerStakeFloorMultiplierExponent(ctx), Pip22ExponentDenominator).Quo(k.ServicerStakeWeightMultiplier(ctx))
-		coinsDecimal := k.RelaysToTokensMultiplier(ctx).ToDec().Mul(relays.ToDec()).Mul(weight)
+		coinsDecimal := multiplier.ToDec().Mul(relays.ToDec()).Mul(weight)
 		//truncate back to int
 		coins = coinsDecimal.TruncateInt()
 	} else {
-		coins = k.RelaysToTokensMultiplier(ctx).Mul(relays)
+		coins = multiplier.Mul(relays)
 	}
 
 	toNode, toFeeCollector := k.NodeReward(ctx, coins)
@@ -71,6 +78,19 @@ func (k Keeper) RewardForRelays(ctx sdk.Ctx, relays sdk.BigInt, address sdk.Addr
 		k.mint(ctx, toFeeCollector, k.getFeePool(ctx).GetAddress())
 	}
 	return toNode
+}
+
+// Calculates a chain-specific Relays-To-Token-Multiplier.
+// Returns the default multiplier if the feature is not activated or a given
+// chain is not set in the parameter.
+func (k Keeper) GetChainSpecificMultiplier(ctx sdk.Ctx, chain string) sdk.BigInt {
+	if k.Cdc.IsAfterPerChainRTTMUpgrade(ctx.BlockHeight()) {
+		multiplierMap := k.RelaysToTokensMultiplierMap(ctx)
+		if multiplier, found := multiplierMap[chain]; found {
+			return sdk.NewInt(multiplier)
+		}
+	}
+	return k.RelaysToTokensMultiplier(ctx)
 }
 
 // blockReward - Handles distribution of the collected fees

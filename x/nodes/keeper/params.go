@@ -110,6 +110,14 @@ func (k Keeper) RelaysToTokensMultiplier(ctx sdk.Ctx) sdk.BigInt {
 	return sdk.NewInt(multiplier)
 }
 
+func (k Keeper) RelaysToTokensMultiplierMap(ctx sdk.Ctx) (res map[string]int64) {
+	k.Paramstore.Get(ctx, types.KeyRelaysToTokensMultiplierMap, &res)
+	if res == nil {
+		res = types.DefaultRelaysToTokensMultiplierMap
+	}
+	return
+}
+
 // ServicerStakeFloorMultiplier - Retrieve ServicerStakeFloorMultiplier
 func (k Keeper) ServicerStakeFloorMultiplier(ctx sdk.Ctx) sdk.BigInt {
 	var multiplier int64
@@ -176,6 +184,7 @@ func (k Keeper) MaxJailedBlocks(ctx sdk.Ctx) (res int64) {
 func (k Keeper) GetParams(ctx sdk.Ctx) types.Params {
 	return types.Params{
 		RelaysToTokensMultiplier:             k.RelaysToTokensMultiplier(ctx).Int64(),
+		RelaysToTokensMultiplierMap:          k.RelaysToTokensMultiplierMap(ctx),
 		UnstakingTime:                        k.UnStakingTime(ctx),
 		MaxValidators:                        k.MaxValidators(ctx),
 		StakeDenom:                           k.StakeDenom(ctx),

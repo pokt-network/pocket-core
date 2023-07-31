@@ -15,8 +15,18 @@ func (k Keeper) GetNode(ctx sdk.Ctx, address sdk.Address) (n exported.ValidatorI
 }
 
 // "AwardCoinsForRelays" - Award coins to nodes for relays completed using the nodes keeper
-func (k Keeper) AwardCoinsForRelays(ctx sdk.Ctx, relays int64, toAddr sdk.Address) sdk.BigInt {
-	return k.posKeeper.RewardForRelays(ctx, sdk.NewInt(relays), toAddr)
+func (k Keeper) AwardCoinsForRelays(
+	ctx sdk.Ctx,
+	chain string,
+	relays int64,
+	toAddr sdk.Address,
+) sdk.BigInt {
+	return k.posKeeper.RewardForRelaysPerChain(
+		ctx,
+		chain,
+		sdk.NewInt(relays),
+		toAddr,
+	)
 }
 
 // "BurnCoinsForChallenges" - Executes the burn for challenge function in the nodes module

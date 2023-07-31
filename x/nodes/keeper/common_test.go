@@ -47,7 +47,6 @@ func (m MockPocketKeeper) ClearSessionCache() {
 
 var _ types.PocketKeeper = MockPocketKeeper{}
 
-// : deadcode unused
 func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, []auth.Account, Keeper) {
 	initPower := int64(100000000000)
 	nAccs := int64(4)

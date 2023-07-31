@@ -187,6 +187,16 @@ func (am AppModule) activateAdditionalParametersACL(ctx sdk.Ctx) {
 		params.ACL.SetOwner(types.NewACLKey(types.NodesSubspace, "ServicerStakeFloorMultiplierExponent"), am.keeper.GetDAOOwner(ctx))
 		am.keeper.SetParams(ctx, params)
 	}
+
+	// Activate Per-chain Relays-To-Tokens-Multiplier
+	if am.keeper.GetCodec().IsOnNamedFeatureActivationHeight(ctx.BlockHeight(), codec.PerChainRTTM) {
+		params := am.keeper.GetParams(ctx)
+		params.ACL.SetOwner(
+			types.NewACLKey(types.NodesSubspace, "RelaysToTokensMultiplierMap"),
+			am.keeper.GetDAOOwner(ctx),
+		)
+		am.keeper.SetParams(ctx, params)
+	}
 }
 
 // EndBlock returns the end blocker for the staking module. It returns no validator
