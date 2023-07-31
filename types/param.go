@@ -17,10 +17,16 @@ const (
 var (
 	ParamsKey  = NewKVStoreKey(paramsKey)
 	ParamsTKey = NewTransientStoreKey(paramsTKey)
-	// AdditionalParametersKeys Tracks the keys for parameter added on the live network for RC-0.9.0 and future releases
-	AdditionalParametersKeys = []string{"BlockByteSize",
-		"ServicerStakeFloorMultiplier", "ServicerStakeWeightMultiplier",
-		"ServicerStakeWeightCeiling", "ServicerStakeFloorMultiplierExponent"}
+
+	// This map tracks the list of parameters introduced after genesis and
+	// which feature introduced it
+	additionalParametersKeys = map[string]string{
+		"BlockByteSize":                        codec.BlockSizeModifyKey,
+		"ServicerStakeFloorMultiplier":         codec.RSCALKey,
+		"ServicerStakeWeightMultiplier":        codec.RSCALKey,
+		"ServicerStakeWeightCeiling":           codec.RSCALKey,
+		"ServicerStakeFloorMultiplierExponent": codec.RSCALKey,
+	}
 )
 
 // Individual parameter store for each keeper
@@ -297,16 +303,17 @@ func (s Subspace) SetParamSet(ctx Ctx, ps ParamSet) {
 		// since SetStruct is meant to be used in InitGenesis
 		// so this method will not be called frequently
 		v := reflect.Indirect(reflect.ValueOf(pair.Value)).Interface()
-		//if we are on the genesis or at codec upgrade height (heights where we call setParamSet For all the modules)
-		//ignore the additional parameter as they will alter the apphash
-		if ctx.BlockHeight() < 3 || ctx.IsOnUpgradeHeight() {
-			if !ContainsString(AdditionalParametersKeys, (string)(pair.Key)) {
-				s.Set(ctx, pair.Key, v)
-			}
-		} else {
-			s.Set(ctx, pair.Key, v)
 
+		if feature, found := additionalParametersKeys[(string)(pair.Key)]; found {
+			if !cdc.IsAfterNamedFeatureActivationHeight(ctx.BlockHeight(), feature) {
+				// If the param is introduced after genesis and we're not yet on
+				// the block activating the feature, we skip writing it to the DB
+				// otherwise it alters the app hash and breaks consensus.
+				continue
+			}
 		}
+
+		s.Set(ctx, pair.Key, v)
 	}
 }
 
