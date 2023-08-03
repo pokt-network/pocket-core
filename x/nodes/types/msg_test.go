@@ -1,13 +1,14 @@
 package types
 
 import (
+	"crypto/rand"
 	"fmt"
-	"math/rand"
 	"reflect"
 	"testing"
 
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMsgBeginUnstake_GetSignBytes(t *testing.T) {
@@ -661,6 +662,47 @@ func TestMsgStake_ValidateBasic(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestMsgStake_Delegators(t *testing.T) {
+	operator := crypto.Ed25519PrivateKey{}.GenPrivateKey()
+	output := crypto.Ed25519PrivateKey{}.GenPrivateKey()
+	delegator1 := crypto.Ed25519PrivateKey{}.GenPrivateKey()
+	delegator2 := crypto.Ed25519PrivateKey{}.GenPrivateKey()
+	msg := MsgStake{
+		PublicKey:  operator.PublicKey(),
+		Chains:     []string{"0001", "0040", "03DF"},
+		Value:      sdk.NewInt(1000000000000),
+		ServiceUrl: "https://pokt.network:1",
+		Output:     sdk.Address(output.PublicKey().Address()),
+		Delegators: map[string]uint32{},
+	}
+	assert.Nil(t, msg.ValidateBasic())
+
+	invalidAddr := "1234"
+	msg.Delegators[invalidAddr] = 10
+	err := msg.ValidateBasic()
+	assert.NotNil(t, err)
+	assert.Equal(t, CodeInvalidaDelegators, err.Code())
+
+	// [0]
+	delete(msg.Delegators, invalidAddr)
+	msg.Delegators[delegator1.PublicKey().Address().String()] = 0
+	assert.Nil(t, msg.ValidateBasic())
+
+	// [100]
+	msg.Delegators[delegator1.PublicKey().Address().String()] = 100
+	assert.Nil(t, msg.ValidateBasic())
+
+	// [100, 1]
+	msg.Delegators[delegator2.PubKey().Address().String()] = 1
+	err = msg.ValidateBasic()
+	assert.NotNil(t, err)
+	assert.Equal(t, CodeInvalidaDelegators, err.Code())
+
+	// [99, 1]
+	msg.Delegators[delegator1.PublicKey().Address().String()] = 99
+	assert.Nil(t, msg.ValidateBasic())
 }
 
 func TestMsgUnjail_GetSignBytes(t *testing.T) {

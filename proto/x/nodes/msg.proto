@@ -23,6 +23,10 @@ message MsgProtoStake {
 		(gogoproto.jsontag) = "output_address,omitempty",
 		(gogoproto.moretags) = "yaml:\"output_address\""
 	];
+	map<string, uint32> Delegators = 6 [
+		(gogoproto.jsontag) = "delegators,omitempty",
+		(gogoproto.moretags) = "yaml:\"delegators\""
+	];
 }
 
 message LegacyMsgProtoStake {

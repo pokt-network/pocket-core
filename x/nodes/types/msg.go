@@ -1,7 +1,9 @@
 package types
 
 import (
+	"encoding/json"
 	"fmt"
+
 	"github.com/pokt-network/pocket-core/codec"
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
@@ -22,7 +24,7 @@ const (
 	MsgSendName    = "send"
 )
 
-//----------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
 // GetSigners return address(es) that must sign over msg.GetSignBytes()
 func (msg MsgBeginUnstake) GetSigners() []sdk.Address {
 	return []sdk.Address{msg.Signer, msg.Address}
@@ -141,16 +143,17 @@ func (msg MsgSend) GetFee() sdk.BigInt {
 	return sdk.NewInt(NodeFeeMap[msg.Type()])
 }
 
-//----------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
 var _ codec.ProtoMarshaler = &MsgStake{}
 
 // MsgStake - struct for staking transactions
 type MsgStake struct {
-	PublicKey  crypto.PublicKey `json:"public_key" yaml:"public_key"`
-	Chains     []string         `json:"chains" yaml:"chains"`
-	Value      sdk.BigInt       `json:"value" yaml:"value"`
-	ServiceUrl string           `json:"service_url" yaml:"service_url"`
-	Output     sdk.Address      `json:"output_address,omitempty" yaml:"output_address"`
+	PublicKey  crypto.PublicKey  `json:"public_key" yaml:"public_key"`
+	Chains     []string          `json:"chains" yaml:"chains"`
+	Value      sdk.BigInt        `json:"value" yaml:"value"`
+	ServiceUrl string            `json:"service_url" yaml:"service_url"`
+	Output     sdk.Address       `json:"output_address,omitempty" yaml:"output_address"`
+	Delegators map[string]uint32 `json:"delegators,omitempty" yaml:"delegators"`
 }
 
 func (msg *MsgStake) Marshal() ([]byte, error) {
@@ -189,6 +192,7 @@ func (msg *MsgStake) Unmarshal(data []byte) error {
 		Value:      m.Value,
 		ServiceUrl: m.ServiceUrl,
 		Output:     m.OutputAddress,
+		Delegators: m.Delegators,
 	}
 	*msg = newMsg
 	return nil
@@ -229,6 +233,18 @@ func (msg MsgStake) ValidateBasic() sdk.Error {
 	if err := ValidateServiceURL(msg.ServiceUrl); err != nil {
 		return err
 	}
+	if msg.Delegators != nil {
+		totalShares := uint32(0)
+		for addrStr, share := range msg.Delegators {
+			if _, err := sdk.AddressFromHex(addrStr); err != nil {
+				return ErrInvalidDelegators(DefaultCodespace, err.Error())
+			}
+			totalShares = totalShares + share
+			if totalShares > 100 {
+				return ErrInvalidDelegators(DefaultCodespace, "Total share exceeds 100")
+			}
+		}
+	}
 	return nil
 }
 
@@ -252,7 +268,26 @@ func (msg *MsgStake) XXX_MessageName() string {
 }
 
 func (msg MsgStake) String() string {
-	return fmt.Sprintf("Public Key: %s\nChains: %s\nValue: %s\nOutputAddress: %s\n", msg.PublicKey.RawString(), msg.Chains, msg.Value.String(), msg.Output)
+	delegatorsStr := ""
+	if msg.Delegators != nil {
+		if jsonBytes, err := json.Marshal(msg.Delegators); err == nil {
+			delegatorsStr = string(jsonBytes)
+		} else {
+			delegatorsStr = err.Error()
+		}
+	}
+	return fmt.Sprintf(`Public Key: %s
+Chains: %s
+Value: %s
+OutputAddress: %s
+Delegators: %s
+`,
+		msg.PublicKey.RawString(),
+		msg.Chains,
+		msg.Value.String(),
+		msg.Output,
+		delegatorsStr,
+	)
 }
 
 func (msg *MsgStake) ProtoMessage() {
@@ -273,6 +308,7 @@ func (msg MsgStake) ToProto() MsgProtoStake {
 		Value:         msg.Value,
 		ServiceUrl:    msg.ServiceUrl,
 		OutputAddress: msg.Output,
+		Delegators:    msg.Delegators,
 	}
 }
 

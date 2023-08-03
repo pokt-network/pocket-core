@@ -37,6 +37,7 @@ const (
 	CodeUnauthorizedSigner          CodeType          = 125
 	CodeNilSigner                   CodeType          = 126
 	CodeDisallowedOutputAddressEdit CodeType          = 127
+	CodeInvalidaDelegators          CodeType          = 128
 )
 
 func ErrTooManyChains(codespace sdk.CodespaceType) sdk.Error {
@@ -159,4 +160,9 @@ func ErrStateConversion(codespace sdk.CodespaceType, err error) sdk.Error {
 func ErrDisallowedOutputAddressEdit(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeDisallowedOutputAddressEdit,
 		"Only the owner of the current output address can edit the output address")
+}
+
+func ErrInvalidDelegators(codespace sdk.CodespaceType, reason string) sdk.Error {
+	return sdk.NewError(codespace, CodeInvalidaDelegators,
+		"Invalid delegators: %s", reason)
 }
