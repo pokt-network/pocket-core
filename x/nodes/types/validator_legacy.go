@@ -2,13 +2,16 @@ package types
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/pokt-network/pocket-core/codec"
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
-	"time"
 )
 
+// Make sure these structs implement ProtoMarshaler
 var _ codec.ProtoMarshaler = &LegacyValidator{}
+var _ codec.ProtoMarshaler = &LegacyValidator8{}
 
 type LegacyValidator struct {
 	Address                 sdk.Address      `json:"address" yaml:"address"`               // address of the validator; hex encoded in JSON
@@ -19,6 +22,17 @@ type LegacyValidator struct {
 	ServiceURL              string           `json:"service_url" yaml:"service_url"`       // url where the pocket service api is hosted
 	StakedTokens            sdk.BigInt       `json:"tokens" yaml:"tokens"`                 // tokens staked in the network
 	UnstakingCompletionTime time.Time        `json:"unstaking_time" yaml:"unstaking_time"` // if unstaking, min time for the validator to complete unstaking
+}
+
+func (v LegacyValidator) ExactEqualsTo(v2 LegacyValidator) bool {
+	return v.Address.Equals(v2.Address) &&
+		v.PublicKey.Equals(v2.PublicKey) &&
+		v.Jailed == v2.Jailed &&
+		v.Status == v2.Status &&
+		CompareSlices(v.Chains, v2.Chains) &&
+		v.ServiceURL == v2.ServiceURL &&
+		v.StakedTokens.Equal(v2.StakedTokens) &&
+		v.UnstakingCompletionTime.Equal(v2.UnstakingCompletionTime)
 }
 
 func (v *LegacyValidator) Marshal() ([]byte, error) {
@@ -106,10 +120,24 @@ func (v *LegacyValidator) Reset() {
 }
 
 func (v LegacyValidator) String() string {
-	return fmt.Sprintf("Address:\t\t%s\nPublic Key:\t\t%s\nJailed:\t\t\t%v\nStatus:\t\t\t%s\nTokens:\t\t\t%s\n"+
-		"ServiceUrl:\t\t%s\nChains:\t\t\t%v\nUnstaking Completion Time:\t\t%v\n"+
-		"\n----\n",
-		v.Address, v.PublicKey.RawString(), v.Jailed, v.Status, v.StakedTokens, v.ServiceURL, v.Chains, v.UnstakingCompletionTime,
+	return fmt.Sprintf(`Address:		%s
+Public Key:		%s
+Jailed:			%v
+Status:			%s
+Tokens:			%s
+ServiceUrl:		%s
+Chains:			%v
+Unstaking Completion Time:		%v
+----
+`,
+		v.Address,
+		v.PublicKey.RawString(),
+		v.Jailed,
+		v.Status,
+		v.StakedTokens,
+		v.ServiceURL,
+		v.Chains,
+		v.UnstakingCompletionTime,
 	)
 }
 
@@ -145,6 +173,20 @@ func (v Validator) ToLegacy() LegacyValidator {
 	}
 }
 
+func (v Validator) ToLegacy8() LegacyValidator8 {
+	return LegacyValidator8{
+		Address:                 v.Address,
+		PublicKey:               v.PublicKey,
+		Jailed:                  v.Jailed,
+		Status:                  v.Status,
+		Chains:                  v.Chains,
+		ServiceURL:              v.ServiceURL,
+		StakedTokens:            v.StakedTokens,
+		UnstakingCompletionTime: v.UnstakingCompletionTime,
+		OutputAddress:           v.OutputAddress,
+	}
+}
+
 // FromProto converts the Protobuf structure to Validator
 func (v LegacyProtoValidator) FromProto() (LegacyValidator, error) {
 	pubkey, err := crypto.NewPublicKeyBz(v.PublicKey)
@@ -175,4 +217,138 @@ func (v LegacyValidator) ToProto() LegacyProtoValidator {
 		StakedTokens:            v.StakedTokens,
 		UnstakingCompletionTime: v.UnstakingCompletionTime,
 	}
+}
+
+type LegacyValidator8 struct {
+	Address                 sdk.Address      `json:"address" yaml:"address"`                         // address of the validator; hex encoded in JSON
+	PublicKey               crypto.PublicKey `json:"public_key" yaml:"public_key"`                   // the consensus public key of the validator; hex encoded in JSON
+	Jailed                  bool             `json:"jailed" yaml:"jailed"`                           // has the validator been jailed from staked status?
+	Status                  sdk.StakeStatus  `json:"status" yaml:"status"`                           // validator status (staked/unstaking/unstaked)
+	Chains                  []string         `json:"chains" yaml:"chains"`                           // validator non native blockchains
+	ServiceURL              string           `json:"service_url" yaml:"service_url"`                 // url where the pocket service api is hosted
+	StakedTokens            sdk.BigInt       `json:"tokens" yaml:"tokens"`                           // tokens staked in the network
+	UnstakingCompletionTime time.Time        `json:"unstaking_time" yaml:"unstaking_time"`           // if unstaking, min time for the validator to complete unstaking
+	OutputAddress           sdk.Address      `json:"output_address,omitempty" yaml:"output_address"` // the custodial output address of the validator
+}
+
+func (v LegacyValidator8) ToLegacy() LegacyValidator {
+	return LegacyValidator{
+		Address:                 v.Address,
+		PublicKey:               v.PublicKey,
+		Jailed:                  v.Jailed,
+		Status:                  v.Status,
+		Chains:                  v.Chains,
+		ServiceURL:              v.ServiceURL,
+		StakedTokens:            v.StakedTokens,
+		UnstakingCompletionTime: v.UnstakingCompletionTime,
+	}
+}
+
+func (v LegacyValidator8) ToValidator() Validator {
+	return Validator{
+		Address:                 v.Address,
+		PublicKey:               v.PublicKey,
+		Jailed:                  v.Jailed,
+		Status:                  v.Status,
+		Chains:                  v.Chains,
+		ServiceURL:              v.ServiceURL,
+		StakedTokens:            v.StakedTokens,
+		UnstakingCompletionTime: v.UnstakingCompletionTime,
+		OutputAddress:           v.OutputAddress,
+	}
+}
+
+func (v LegacyValidator8) ToProto() ProtoValidatorV8 {
+	return ProtoValidatorV8{
+		Address:                 v.Address,
+		PublicKey:               v.PublicKey.RawBytes(),
+		Jailed:                  v.Jailed,
+		Status:                  int32(v.Status),
+		Chains:                  v.Chains,
+		ServiceURL:              v.ServiceURL,
+		StakedTokens:            v.StakedTokens,
+		UnstakingCompletionTime: v.UnstakingCompletionTime,
+		OutputAddress:           v.OutputAddress,
+	}
+}
+
+func (v ProtoValidatorV8) FromProto() (LegacyValidator8, error) {
+	pubkey, err := crypto.NewPublicKeyBz(v.PublicKey)
+	if err != nil {
+		return LegacyValidator8{}, err
+	}
+	return LegacyValidator8{
+		Address:                 v.Address,
+		PublicKey:               pubkey,
+		Jailed:                  v.Jailed,
+		Status:                  sdk.StakeStatus(v.Status),
+		ServiceURL:              v.ServiceURL,
+		Chains:                  v.Chains,
+		StakedTokens:            v.StakedTokens,
+		UnstakingCompletionTime: v.UnstakingCompletionTime,
+		OutputAddress:           v.OutputAddress,
+	}, nil
+}
+
+func (v *LegacyValidator8) Marshal() ([]byte, error) {
+	a := v.ToProto()
+	return a.Marshal()
+}
+
+func (v *LegacyValidator8) MarshalTo(data []byte) (n int, err error) {
+	a := v.ToProto()
+	return a.MarshalTo(data)
+}
+
+func (v *LegacyValidator8) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	a := v.ToProto()
+	return a.MarshalToSizedBuffer(dAtA)
+}
+
+func (v *LegacyValidator8) Size() int {
+	a := v.ToProto()
+	return a.Size()
+}
+
+func (v *LegacyValidator8) Unmarshal(data []byte) error {
+	var vp ProtoValidatorV8
+	err := vp.Unmarshal(data)
+	if err != nil {
+		return err
+	}
+	*v, err = vp.FromProto()
+	return err
+}
+
+func (v *LegacyValidator8) Reset() {
+	*v = LegacyValidator8{}
+}
+
+func (v LegacyValidator8) String() string {
+	return fmt.Sprintf(`Address:		%s
+Public Key:		%s
+Jailed:			%v
+Status:			%s
+Tokens:			%s
+ServiceUrl:		%s
+Chains:			%v
+Unstaking Completion Time:		%v
+Output Address:		%s
+----
+`,
+		v.Address,
+		v.PublicKey.RawString(),
+		v.Jailed,
+		v.Status,
+		v.StakedTokens,
+		v.ServiceURL,
+		v.Chains,
+		v.UnstakingCompletionTime,
+		v.OutputAddress,
+	)
+}
+
+func (v LegacyValidator8) ProtoMessage() {
+	val := v.ToValidator()
+	val.ProtoMessage()
 }
