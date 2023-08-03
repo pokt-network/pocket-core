@@ -42,6 +42,21 @@ func NewValidator(addr sdk.Address, consPubKey crypto.PublicKey, chains []string
 	}
 }
 
+func NewValidatorFromMsg(msg MsgStake) Validator {
+	return Validator{
+		Address:                 sdk.Address(msg.PublicKey.Address()),
+		PublicKey:               msg.PublicKey,
+		Jailed:                  false,
+		Status:                  sdk.Staked,
+		Chains:                  msg.Chains,
+		ServiceURL:              msg.ServiceUrl,
+		StakedTokens:            msg.Value,
+		UnstakingCompletionTime: time.Time{},
+		OutputAddress:           msg.Output,
+		Delegators:              msg.Delegators,
+	}
+}
+
 // ABCIValidatorUpdate returns an abci.ValidatorUpdate from a staking validator type
 // with the full validator power
 func (v Validator) ABCIValidatorUpdate() abci.ValidatorUpdate {

@@ -2,12 +2,13 @@ package nodes
 
 import (
 	"fmt"
+	"reflect"
+	"time"
+
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/nodes/keeper"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
-	"reflect"
-	"time"
 )
 
 func NewHandler(k keeper.Keeper) sdk.Handler {
@@ -59,10 +60,14 @@ func handleStake(ctx sdk.Ctx, msg types.MsgStake, k keeper.Keeper, signer crypto
 		}
 	}
 
-	pk := msg.PublicKey
-	addr := pk.Address()
-	// create validator object using the message fields
-	validator := types.NewValidator(sdk.Address(addr), pk, msg.Chains, msg.ServiceUrl, sdk.ZeroInt(), msg.Output)
+	if !k.Cdc.IsAfterDelegatorUpgrade(ctx.BlockHeight()) &&
+		msg.Delegators != nil {
+		msg.Delegators = nil
+	}
+
+	validator := types.NewValidatorFromMsg(msg)
+	// StakedTokens is set through StakeValidator.  Resetting to 0 for now.
+	validator.StakedTokens = sdk.ZeroInt()
 	// check if they can stake
 	if err := k.ValidateValidatorStaking(ctx, validator, msg.Value, sdk.Address(signer.Address())); err != nil {
 		if sdk.ShowTimeTrackData {
@@ -85,13 +90,13 @@ func handleStake(ctx sdk.Ctx, msg types.MsgStake, k keeper.Keeper, signer crypto
 		sdk.NewEvent(
 			types.EventTypeStake,
 			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, sdk.Address(addr).String()),
+			sdk.NewAttribute(sdk.AttributeKeySender, validator.Address.String()),
 			sdk.NewAttribute(sdk.AttributeKeyAmount, msg.Value.String()),
 		),
 		sdk.NewEvent(
 			sdk.EventTypeMessage,
 			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, sdk.Address(addr).String()),
+			sdk.NewAttribute(sdk.AttributeKeySender, validator.Address.String()),
 		),
 	})
 	return sdk.Result{Events: ctx.EventManager().Events()}
