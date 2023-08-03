@@ -123,6 +123,8 @@ Reach out to the team about TestNet directly on [Discord](https://discord.com/ch
 
 ### View All Validator Tendermint Versions
 
+_Important: You need to expose `NODE_FLEET_PASSWORD`_
+
 ```bash
 #!/bin/bash
 declare -a nodes=("node1.tendermint.testnet.pokt.network/status"
