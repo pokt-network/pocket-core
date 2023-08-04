@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/pokt-network/pocket-core/app"
 	"github.com/pokt-network/pocket-core/app/cmd/rpc"
@@ -247,6 +249,88 @@ func StakeNode(chains []string, serviceURL, operatorPubKey, output, passphrase, 
 	}
 	return &rpc.SendRawTxParams{
 		Addr:        operatorAddress.String(),
+		RawHexBytes: hex.EncodeToString(txBz),
+	}, nil
+}
+
+func BuildStakeTx(
+	operatorPubKeyStr,
+	outputAddrStr,
+	stakeAmountStr,
+	chains,
+	serviceUrl,
+	delegatorsStr,
+	networkId,
+	feeStr,
+	memo,
+	signerAddrStr,
+	passphrase string,
+) (*rpc.SendRawTxParams, error) {
+	keybase, err := app.GetKeybase()
+	if err != nil {
+		return nil, err
+	}
+
+	signerAddr, err := sdk.AddressFromHex(signerAddrStr)
+	if err != nil {
+		return nil, err
+	}
+
+	operatorPubkey, err := crypto.NewPublicKey(operatorPubKeyStr)
+	if err != nil {
+		return nil, err
+	}
+
+	outputAddr, err := sdk.AddressFromHex(outputAddrStr)
+	if err != nil {
+		return nil, err
+	}
+
+	stakeAmount, ok := sdk.NewIntFromString(stakeAmountStr)
+	if !ok {
+		return nil, errors.New("Invalid stake amount: " + stakeAmountStr)
+	}
+
+	fee, err := strconv.ParseInt(feeStr, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+
+	msg := &nodeTypes.MsgStake{
+		PublicKey:  operatorPubkey,
+		Chains:     strings.Split(chains, ","),
+		Value:      stakeAmount,
+		ServiceUrl: serviceUrl,
+		Output:     outputAddr,
+	}
+
+	if len(delegatorsStr) > 0 {
+		if json.Unmarshal([]byte(delegatorsStr), &msg.Delegators); err != nil {
+			return nil, err
+		}
+	}
+
+	if err = msg.ValidateBasic(); err != nil {
+		return nil, err
+	}
+
+	txBz, err := newTxBz(
+		app.Codec(),
+		msg,
+		signerAddr,
+		networkId,
+		keybase,
+		passphrase,
+		fee,
+		memo,
+		false,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &rpc.SendRawTxParams{
+		Addr:        signerAddrStr,
 		RawHexBytes: hex.EncodeToString(txBz),
 	}, nil
 }
