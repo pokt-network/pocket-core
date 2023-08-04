@@ -16,22 +16,20 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/julienschmidt/httprouter"
 	"github.com/pokt-network/pocket-core/app"
 	"github.com/pokt-network/pocket-core/codec"
 	"github.com/pokt-network/pocket-core/crypto"
-	rand2 "github.com/tendermint/tendermint/libs/rand"
-	"github.com/tendermint/tendermint/rpc/client"
-
-	types3 "github.com/pokt-network/pocket-core/x/apps/types"
-
-	"github.com/julienschmidt/httprouter"
 	"github.com/pokt-network/pocket-core/types"
+	types3 "github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/pocket-core/x/auth"
 	authTypes "github.com/pokt-network/pocket-core/x/auth/types"
 	"github.com/pokt-network/pocket-core/x/nodes"
 	types2 "github.com/pokt-network/pocket-core/x/nodes/types"
 	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/stretchr/testify/assert"
+	rand2 "github.com/tendermint/tendermint/libs/rand"
+	"github.com/tendermint/tendermint/rpc/client"
 	core_types "github.com/tendermint/tendermint/rpc/core/types"
 	tmTypes "github.com/tendermint/tendermint/types"
 	"gopkg.in/h2non/gock.v1"
@@ -1635,4 +1633,54 @@ func NewValidChallengeProof(t *testing.T, privateKeys []crypto.PrivateKey) (chal
 		ReporterAddress:  types.Address(reporterAddr),
 	}
 	return proof
+}
+
+func TestMsgStake_Marshaling_BackwardCompatibility(t *testing.T) {
+	// Tx 3640B15041998FE800C2F61FC033CBF295D9282B5E7045A16F754ED9D8A54AFF in Mainnet
+	StakeTxBeforeDelegatorsUpgrade :=
+		"/wIK4QEKFy94Lm5vZGVzLk1zZ1Byb3RvU3Rha2U4EsUBCiBzfNC5BqUX6Aow9768" +
+			"QTKyYiRdhqrGqeqTIMVSckAe8RIEMDAwMxIEMDAwNBIEMDAwNRIEMDAwORIEMDAy" +
+			"MRIEMDAyNxIEMDAyOBIEMDA0NhIEMDA0NxIEMDA0ORIEMDA1MBIEMDA1NhIEMDA2" +
+			"NhIEMDA3MhIEMDNERhoMMTQwMDAwMDAwMDAwIiNodHRwczovL3ZhbDE2NjcwMDUy" +
+			"MDYuYzBkM3Iub3JnOjQ0MyoU6By0i9H9b2jibqTioCbqBdSFO3USDgoFdXBva3QS" +
+			"BTEwMDAwGmQKIHN80LkGpRfoCjD3vrxBMrJiJF2Gqsap6pMgxVJyQB7xEkDOrzwH" +
+			"w68+vl2z9nC+zYz3u4J7Oe3ntBOVP+cYHO5+lLuc8nH0OaG6pujXEPo19F5qW4Zh" +
+			"NBEgtChJp+QhYVgIIiBDdXN0b2RpYWwgdG8gTm9uLUN1c3RvZGlhbCBhZ2FpbijS" +
+			"CQ=="
+
+	StakeTxAfterDelegatorsUpgrade :=
+		"5wIK3gEKFy94Lm5vZGVzLk1zZ1Byb3RvU3Rha2U4EsIBCiDiN+/FSpPtYWiZWemv" +
+			"oNS9SfoRwLlGw15r66zLBSzj/BIEMDAwMRIEQkVFRhoNODAwMDAwMDAwMDAwMCIR" +
+			"aHR0cHM6Ly94LmNvbTo0NDMqFP6BhSfNdDhmwdtr3rGHMdBIkd94MiwKKDIwMDAw" +
+			"MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAQAjIsCigxMDAwMDAw" +
+			"MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwEAESDgoFdXBva3QSBTEw" +
+			"MDAwGmQKICMRMWDdwHGZU6kMUecdxLF6UgHw0L1Vcc8lzz8Ynz0ZEkA+A9PANYsP" +
+			"+z7TduPuM7iM6jRILBJsdz0OMiGFrpGgJAsw7YrzXloJE4hyI921HoQ/bRFdw3/N" +
+			"Nea33C6VZqUGIgRtZW1vKKCQ7dyJ3LatFw=="
+
+	originalNCUST := codec.UpgradeFeatureMap[codec.NonCustodialUpdateKey]
+	t.Cleanup(func() {
+		codec.UpgradeFeatureMap[codec.NonCustodialUpdateKey] = originalNCUST
+	})
+
+	// Choose Proto marshaler
+	heightForProto := int64(-1)
+	// Simulate post-NCUST
+	codec.UpgradeFeatureMap[codec.NonCustodialUpdateKey] = -1
+	// Initialize app.cdc
+	app.Codec()
+
+	stdTx, err := app.UnmarshalTxStr(StakeTxBeforeDelegatorsUpgrade, heightForProto)
+	assert.Nil(t, err)
+	msgStake, ok := stdTx.Msg.(*types2.MsgStake)
+	assert.True(t, ok)
+	assert.Nil(t, msgStake.Delegators)
+	assert.Nil(t, msgStake.ValidateBasic())
+
+	stdTx, err = app.UnmarshalTxStr(StakeTxAfterDelegatorsUpgrade, heightForProto)
+	assert.Nil(t, err)
+	msgStake, ok = stdTx.Msg.(*types2.MsgStake)
+	assert.True(t, ok)
+	assert.NotNil(t, msgStake.Delegators)
+	assert.Nil(t, msgStake.ValidateBasic())
 }

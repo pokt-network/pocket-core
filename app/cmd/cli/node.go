@@ -13,6 +13,7 @@ func init() {
 	rootCmd.AddCommand(nodesCmd)
 	nodesCmd.AddCommand(nodeUnstakeCmd)
 	nodesCmd.AddCommand(nodeUnjailCmd)
+	nodesCmd.AddCommand(stakeNewCmd)
 }
 
 var nodesCmd = &cobra.Command{
@@ -111,6 +112,76 @@ Will prompt the user for the <fromAddr> account passphrase.`,
 		resp, err := QueryRPC(SendRawTxPath, j)
 		if err != nil {
 			fmt.Println(err)
+			return
+		}
+		fmt.Println(resp)
+	},
+}
+
+var stakeNewCmd = &cobra.Command{
+	Use:   `stakeNew <OperatorPublicKey> <OutputAddress> <SignerAddress> <Stake> <ChainIDs> <ServiceURL> <Delegators> <NetworkID> <Fee> [Memo]`,
+	Short: "Stake a node in the network",
+	Long: `Stake a node in the network, promoting it to a servicer or a validator.
+
+The command takes the following parameters.
+
+  OperatorPublicKey Public key to use as the node's operator account
+  OutputAddress     Address to use as the node's output account
+  SignerAddress     Address to sign the transaction
+  Stake             Amount to stake in uPOKT
+  ChainIDs          Comma-separated chain IDs to host on the node
+  ServiceURL        Relay endpoint of the node.  Must include the port number.
+  Delegators        Delegator addresses to share rewards
+  NetworkID         Network ID to submit a transaction to e.g. mainnet or testnet
+  Fee               Transaction fee in uPOKT
+  Memo              Text to include in the transaction.  No functional effect.
+`,
+	Args: cobra.MinimumNArgs(9),
+	Run: func(cmd *cobra.Command, args []string) {
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
+
+		operatorPubKey := args[0]
+		outputAddr := args[1]
+		signerAddr := args[2]
+		stakeAmount := args[3]
+		chains := args[4]
+		serviceUrl := args[5]
+		delegators := args[6]
+		networkId := args[7]
+		fee := args[8]
+		memo := ""
+		if len(args) >= 10 {
+			memo = args[9]
+		}
+
+		fmt.Println("Enter Passphrase:")
+		passphrase := app.Credentials(pwd)
+
+		rawStakeTx, err := BuildStakeTx(
+			operatorPubKey,
+			outputAddr,
+			stakeAmount,
+			chains,
+			serviceUrl,
+			delegators,
+			networkId,
+			fee,
+			memo,
+			signerAddr,
+			passphrase,
+		)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		txBytes, err := json.Marshal(rawStakeTx)
+		if err != nil {
+			fmt.Println("Fail to build a transaction:", err)
+			return
+		}
+		resp, err := QueryRPC(SendRawTxPath, txBytes)
+		if err != nil {
+			fmt.Println("Fail to submit a transaction:", err)
 			return
 		}
 		fmt.Println(resp)
