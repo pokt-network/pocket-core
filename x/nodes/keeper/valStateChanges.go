@@ -261,6 +261,15 @@ func (k Keeper) ValidateEditStake(ctx sdk.Ctx, currentValidator, newValidtor typ
 				return types.ErrUnequalOutputAddr(k.Codespace())
 			}
 		}
+
+		// Delegators can be set/edited only if 1) the feature has been activated
+		// AND 2) the message is signed by the operator address.
+		if k.Cdc.IsAfterDelegatorUpgrade(ctx.BlockHeight()) &&
+			!types.CompareStringMaps(currentValidator.Delegators, newValidtor.Delegators) &&
+			!signer.Equals(currentValidator.Address) {
+			return types.ErrDisallowedOutputAddressEdit(k.Codespace())
+		}
+
 		// prevent waiting vals from modifying anything
 		if k.IsWaitingValidator(ctx, currentValidator.Address) {
 			return types.ErrValidatorWaitingToUnstake(types.ModuleName)
@@ -327,6 +336,11 @@ func (k Keeper) EditStakeValidator(ctx sdk.Ctx, currentValidator, updatedValidat
 		if k.Cdc.IsAfterOutputAddressEditorUpgrade(ctx.BlockHeight()) ||
 			currentValidator.OutputAddress == nil {
 			currentValidator.OutputAddress = updatedValidator.OutputAddress
+		}
+
+		// After the upgrade, we allow delegators change
+		if k.Cdc.IsAfterDelegatorUpgrade(ctx.BlockHeight()) {
+			currentValidator.Delegators = updatedValidator.Delegators
 		}
 	}
 	// update chains
