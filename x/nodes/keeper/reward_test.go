@@ -1,11 +1,14 @@
 package keeper
 
 import (
+	"encoding/binary"
+	"fmt"
 	"testing"
 
 	"github.com/pokt-network/pocket-core/codec"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
+	pcTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -84,6 +87,28 @@ func TestMint(t *testing.T) {
 				assert.True(t, sdk.NewCoins(sdk.NewCoin(keeper.StakeDenom(context), test.amount)).IsEqual(coins), "coins should match")
 			}
 		})
+	}
+}
+
+func verifyAccountBalance(
+	t *testing.T,
+	k Keeper,
+	ctx sdk.Context,
+	address sdk.Address,
+	expected sdk.BigInt,
+) {
+	acc := k.GetAccount(ctx, address)
+	expectedCoins := sdk.NewCoins(sdk.NewCoin("upokt", expected))
+	assert.True(t, acc.Coins.IsEqual(expectedCoins))
+	if !acc.Coins.IsEqual(expectedCoins) {
+		fmt.Println(
+			"Balance mismatch",
+			address,
+			"actual=",
+			acc.Coins,
+			"expected=",
+			expectedCoins,
+		)
 	}
 }
 
@@ -183,26 +208,42 @@ func TestKeeper_rewardFromRelays(t *testing.T) {
 				validator:         stakedValidator.GetAddress(),
 				Output:            stakedValidator.OutputAddress,
 				validatorNoOutput: stakedValidatorNoOutput.GetAddress(),
-				OutputNoOutput:    stakedValidatorNoOutput.GetAddress(),
 			}},
 	}
+
+	totalSupplyPrev := keeper.AccountKeeper.GetSupply(context).
+		GetTotal().
+		AmountOf("upokt")
+
+	relays := sdk.NewInt(10000)
+	rewardCost := keeper.AccountKeeper.GetFee(context, pcTypes.MsgClaim{}).
+		Add(keeper.AccountKeeper.GetFee(context, pcTypes.MsgProof{}))
+	totalReward := relays.Mul(keeper.RelaysToTokensMultiplier(context))
+	nodeReward, _ := keeper.splitRewards(context, totalReward)
+	outputReward := nodeReward.Sub(rewardCost)
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			k := tt.fields.keeper
 			ctx := tt.args.ctx
-			k.RewardForRelays(tt.args.ctx, sdk.NewInt(10000), tt.args.validator)
-			acc := k.GetAccount(ctx, tt.args.Output)
-			assert.False(t, acc.Coins.IsZero())
-			assert.True(t, acc.Coins.IsEqual(sdk.NewCoins(sdk.NewCoin("upokt", sdk.NewInt(8900000)))))
-			acc = k.GetAccount(ctx, tt.args.validator)
-			assert.True(t, acc.Coins.IsZero())
+
+			k.RewardForRelays(tt.args.ctx, relays, tt.args.validator)
+			verifyAccountBalance(t, k, ctx, tt.args.Output, outputReward)
+			verifyAccountBalance(t, k, ctx, tt.args.validator, rewardCost)
+
+			totalSupply := k.AccountKeeper.GetSupply(ctx).
+				GetTotal().
+				AmountOf("upokt")
+			assert.True(t, totalSupply.Equal(totalSupplyPrev.Add(totalReward)))
+
 			// no output now
-			k.RewardForRelays(tt.args.ctx, sdk.NewInt(10000), tt.args.validatorNoOutput)
-			acc = k.GetAccount(ctx, tt.args.OutputNoOutput)
-			assert.False(t, acc.Coins.IsZero())
-			assert.True(t, acc.Coins.IsEqual(sdk.NewCoins(sdk.NewCoin("upokt", sdk.NewInt(8900000)))))
-			acc2 := k.GetAccount(ctx, tt.args.validatorNoOutput)
-			assert.Equal(t, acc, acc2)
+			k.RewardForRelays(tt.args.ctx, relays, tt.args.validatorNoOutput)
+			verifyAccountBalance(t, k, ctx, tt.args.validatorNoOutput, nodeReward)
+
+			totalSupply = k.AccountKeeper.GetSupply(ctx).
+				GetTotal().
+				AmountOf("upokt")
+			assert.True(t, totalSupply.Equal(totalSupplyPrev.Add(totalReward.MulRaw(2))))
 		})
 	}
 }
@@ -508,4 +549,96 @@ func TestKeeper_RewardForRelaysPerChain(t *testing.T) {
 	)
 	assert.True(t, rewardsHighProfit.Equal(ExpectedRewards(RTTM_High)))
 	assert.True(t, rewardsDefault.LT(rewardsHighProfit))
+}
+
+func toArray(addr sdk.Address) [sdk.AddrLen]byte {
+	var arr [sdk.AddrLen]byte
+	copy(arr[:], addr)
+	return arr
+}
+
+func indexToAddress(index int) sdk.Address {
+	addr := make([]byte, sdk.AddrLen)
+	binary.BigEndian.PutUint64(addr, uint64(index))
+	return addr
+}
+
+func TestKeeper_SplitNodeRewards(t *testing.T) {
+	var result map[[sdk.AddrLen]byte]sdk.BigInt
+	callback := func(addr sdk.Address, rewards sdk.BigInt) {
+		result[toArray(addr)] = rewards
+	}
+
+	recipient, _ := sdk.AddressFromHex("ffffffffffffffffffffffffffffffffffffffff")
+
+	verifyResult := func(
+		t *testing.T,
+		totalRewards sdk.BigInt,
+		expectedBalances []uint64,
+	) {
+		// Verify each delegator receives expected rewards
+		for idx, expectedBalance := range expectedBalances {
+			rewardsResult, found := result[toArray(indexToAddress(idx))]
+			if expectedBalance == 0 {
+				assert.False(t, found, "Rewards shouldn't be dispatched")
+				continue
+			}
+			assert.True(t, found, "Rewards not dispatched")
+			assert.Equal(t, expectedBalance, rewardsResult.Uint64(), "Wrong rewards")
+			totalRewards = totalRewards.Sub(rewardsResult)
+		}
+
+		assert.False(t, totalRewards.IsNegative(), "Too many rewards")
+
+		// Verify the recipient receives the remains if any exists
+		reward, found := result[toArray(recipient)]
+		if totalRewards.IsZero() {
+			assert.False(t, found)
+			return
+		}
+		assert.True(t, found)
+		assert.True(t, reward.Equal(totalRewards))
+	}
+
+	delegatorMap := func(shares []uint32) map[string]uint32 {
+		if len(shares) == 0 {
+			return nil
+		}
+		m := map[string]uint32{}
+		for idx, share := range shares {
+			m[indexToAddress(idx).String()] = share
+		}
+		return m
+	}
+
+	totalBig := sdk.NewInt(10004)
+	totalSmall := sdk.NewInt(81)
+
+	// All goes to the default recipient.
+	result = map[[sdk.AddrLen]byte]sdk.BigInt{}
+	SplitNodeRewards(totalBig, recipient, delegatorMap([]uint32{}), callback)
+	verifyResult(t, totalBig, []uint64{})
+
+	// All goes to the delegator.
+	result = map[[sdk.AddrLen]byte]sdk.BigInt{}
+	SplitNodeRewards(totalBig, recipient, delegatorMap([]uint32{100}), callback)
+	verifyResult(t, totalBig, []uint64{totalBig.Uint64()})
+
+	// Multiple delegators.  Remainder goes to the recipient.
+	result = map[[sdk.AddrLen]byte]sdk.BigInt{}
+	SplitNodeRewards(totalBig, recipient, delegatorMap([]uint32{1, 0, 2, 30, 50}), callback)
+	verifyResult(t, totalBig, []uint64{100, 0, 200, 3001, 5002})
+
+	// Share less than a single token is truncated.
+	result = map[[sdk.AddrLen]byte]sdk.BigInt{}
+	SplitNodeRewards(totalSmall, recipient, delegatorMap([]uint32{1, 1, 1, 1}), callback)
+	verifyResult(t, totalSmall, []uint64{})
+	result = map[[sdk.AddrLen]byte]sdk.BigInt{}
+	SplitNodeRewards(totalSmall, recipient, delegatorMap([]uint32{1, 2}), callback)
+	verifyResult(t, totalSmall, []uint64{0, 1})
+
+	// Invalid delegator map: all goes to the recipient
+	result = map[[sdk.AddrLen]byte]sdk.BigInt{}
+	SplitNodeRewards(totalSmall, recipient, delegatorMap([]uint32{1, 0xffffffff}), callback)
+	verifyResult(t, totalSmall, []uint64{})
 }

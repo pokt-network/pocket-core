@@ -7,6 +7,7 @@ import (
 	sdk "github.com/pokt-network/pocket-core/types"
 	govTypes "github.com/pokt-network/pocket-core/x/gov/types"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
+	pcTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
 )
 
 // RewardForRelays - Award coins to an address using the default multiplier
@@ -99,13 +100,71 @@ func (k Keeper) RewardForRelaysPerChain(ctx sdk.Ctx, chain string, relays sdk.Bi
 
 	toNode, toFeeCollector :=
 		k.CalculateRelayReward(ctx, chain, relays, validator.GetTokens())
-	if toNode.IsPositive() {
-		k.mint(ctx, toNode, address)
+
+	if k.Cdc.IsAfterDelegatorUpgrade(ctx.BlockHeight()) {
+		rewardCost := k.AccountKeeper.GetFee(ctx, pcTypes.MsgClaim{}).
+			Add(k.AccountKeeper.GetFee(ctx, pcTypes.MsgProof{}))
+		if toNode.LT(rewardCost) {
+			rewardCost = toNode
+		}
+		k.mint(ctx, rewardCost, validator.Address)
+		toNode = toNode.Sub(rewardCost)
 	}
+
+	SplitNodeRewards(
+		toNode,
+		address,
+		validator.Delegators,
+		func(recipient sdk.Address, share sdk.BigInt) {
+			k.mint(ctx, share, recipient)
+		},
+	)
 	if toFeeCollector.IsPositive() {
 		k.mint(ctx, toFeeCollector, k.getFeePool(ctx).GetAddress())
 	}
 	return toNode
+}
+
+// Splits rewards into the primary recipient and delegator addresses and
+// invokes a callback per share.
+func SplitNodeRewards(
+	rewards sdk.BigInt,
+	primaryRecipient sdk.Address,
+	delegators map[string]uint32,
+	callback func(sdk.Address, sdk.BigInt),
+) {
+	if !rewards.IsPositive() {
+		return
+	}
+
+	totalShare := int64(0)
+	for _, share := range delegators {
+		totalShare = totalShare + int64(share)
+		if totalShare > 100 {
+			// If the total shares for delegators exceeds 100,
+			// all rewards go to the primary recipient.
+			delegators = nil
+			break
+		}
+	}
+
+	remains := rewards
+	for addrStr, share := range delegators {
+		addr, err := sdk.AddressFromHex(addrStr)
+		if err != nil {
+			continue
+		}
+		percentage := sdk.NewDecWithPrec(int64(share), 2)
+		allocation := rewards.ToDec().Mul(percentage).TruncateInt()
+		if allocation.IsPositive() {
+			callback(addr, allocation)
+		}
+		remains = remains.Sub(allocation)
+	}
+
+	if remains.IsPositive() {
+		callback(primaryRecipient, remains)
+	}
 }
 
 // Calculates a chain-specific Relays-To-Token-Multiplier.
