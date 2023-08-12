@@ -4,18 +4,20 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	sdk "github.com/pokt-network/pocket-core/types"
-	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"time"
+
+	sdk "github.com/pokt-network/pocket-core/types"
+	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 
 	"github.com/pokt-network/pocket-core/app"
 	"github.com/pokt-network/pocket-core/app/cmd/rpc"
 )
 
 var (
+	ChallengePath,
 	SendRawTxPath,
 	GetNodePath,
 	GetACLPath,
@@ -50,6 +52,8 @@ func init() {
 	routes := rpc.GetRoutes()
 	for _, route := range routes {
 		switch route.Name {
+		case "Challenge":
+			ChallengePath = route.Path
 		case "SendRawTx":
 			SendRawTxPath = route.Path
 		case "QueryNode":

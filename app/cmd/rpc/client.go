@@ -5,12 +5,13 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	nodesTypes "github.com/pokt-network/pocket-core/x/nodes/types"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
 	"time"
+
+	nodesTypes "github.com/pokt-network/pocket-core/x/nodes/types"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/pokt-network/pocket-core/app"
@@ -141,6 +142,7 @@ func Stop(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 // Challenge supports CORS functionality
 func Challenge(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	// TODO
 	var challenge = types.ChallengeProofInvalidData{}
 	if cors(&w, r) {
 		return

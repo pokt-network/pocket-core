@@ -117,7 +117,68 @@ Prompts the user for the <fromAddr> account passphrase.`,
 }
 
 var createAATCmd = &cobra.Command{
-	Use:   "create-aat <appAddr> <clientPubKey>",
+	Use:   "submit-challenge <appAddr> <clientPubKey>",
+	Short: "Creates an application authentication token",
+	Long: `Creates a signed application authentication token (version 0.0.1 of the AAT spec), that can be embedded into application software for Relay servicing.
+Will prompt the user for the <appAddr> account passphrase.
+Read the Application Authentication Token documentation for more information.
+NOTE: USE THIS METHOD AT YOUR OWN RISK. READ THE APPLICATION SECURITY GUIDELINES IN ORDER TO UNDERSTAND WHAT'S THE RECOMMENDED AAT CONFIGURATION FOR YOUR APPLICATION.`,
+	Args: cobra.ExactArgs(2),
+	Run: func(cmd *cobra.Command, args []string) {
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
+		kb := app.MustGetKeybase()
+		if kb == nil {
+			fmt.Println(app.UninitializedKeybaseError)
+			return
+		}
+		addr, err := types.AddressFromHex(args[0])
+		if err != nil {
+			fmt.Printf("Address Error %s", err)
+			return
+		}
+		kp, err := kb.Get(addr)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println("Enter passphrase: ")
+		cred := app.Credentials(pwd)
+		privkey, err := mintkey.UnarmorDecryptPrivKey(kp.PrivKeyArmor, cred)
+		if err != nil {
+			return
+		}
+		aat, err := app.GenerateAAT(hex.EncodeToString(kp.PublicKey.RawBytes()), args[1], privkey)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println(string(aat))
+	},
+}
+
+//                             value: send
+//   /client/challenge:
+//     post:
+//       tags:
+//         - client
+//       requestBody:
+//         description: Request a Challenge for invalid data served through relay
+//         required: true
+//         content:
+//           application/json:
+//             schema:
+//               $ref: '#/components/schemas/QueryChallengeRequest'
+//       responses:
+//         '200':
+//           description: Returns Challenge Response
+//           content:
+//             application/json:
+//               schema:
+//                 $ref: '#/components/schemas/QueryChallengeResponse'
+//   /query/account:
+
+var challengeCmd = &cobra.Command{
+	Use:   "submit-challenge <appAddr> <clientPubKey>",
 	Short: "Creates an application authentication token",
 	Long: `Creates a signed application authentication token (version 0.0.1 of the AAT spec), that can be embedded into application software for Relay servicing.
 Will prompt the user for the <appAddr> account passphrase.
