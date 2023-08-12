@@ -37,9 +37,11 @@ The Pocket Core application will allow anyone to spin up a Pocket Network full n
 - [Installation](#installation)
 - [Usage](#usage)
 - [Documentation](#documentation)
+- [Portal](#portal)
 - [Database Snapshots](#database-snapshots)
 - [Pocket Pruner](#pocket-pruner)
 - [Accessing TestNet](#accessing-testnet)
+- [Charts \& Analytics](#charts--analytics)
 - [Running the tests](#running-the-tests)
 - [Contributing](#contributing)
 - [MainNet Seeds](#mainnet-seeds)
@@ -100,6 +102,10 @@ For more detailed command information, see the [usage section](doc/specs/cli/).
 
 [Visit our user documentation](https://docs.pokt.network) for tutorials and technical information on the Pocket Network.
 
+## Portal
+
+The Portal to the Pocket Network is provided by [Pocket Network Inc](https://portal.pokt.network/).
+
 ## Database Snapshots
 
 Snapshots are provided by [Liquify LTD](https://www.liquify.io/) details on how to access the snapshots can be found in [snapshot.md](doc/guides/snapshot.md)
@@ -111,6 +117,10 @@ An offline pruning tool is provided by [C0D3R](https://c0d3r.org/). The tool is 
 ## Accessing TestNet
 
 TestNet information can be found at [testnet.md](doc/guide/testnet.md) and is maintained by the [nodefleet.org](https://nodefleet.org/) team.
+
+## Charts & Analytics
+
+Key charts & analytics are provided by [POKTScan](https://poktscan.com/) and [C0D3R](https://c0d3r.org).
 
 ## Running the tests
 
