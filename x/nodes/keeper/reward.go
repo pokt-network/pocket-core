@@ -14,6 +14,45 @@ func (k Keeper) RewardForRelays(ctx sdk.Ctx, relays sdk.BigInt, address sdk.Addr
 	return k.RewardForRelaysPerChain(ctx, "", relays, address)
 }
 
+// CalculateRelayReward - Calculate the amount of rewards based on the given
+// number of relays and the staked tokens.  The returned reward amount includes
+// DAO & Proposer portions.
+func (k Keeper) CalculateRelayReward(
+	ctx sdk.Ctx,
+	chain string,
+	relays sdk.BigInt,
+	stake sdk.BigInt,
+) (sdk.BigInt, sdk.BigInt) {
+	// feature flags
+	isAfterRSCAL := k.Cdc.IsAfterNamedFeatureActivationHeight(ctx.BlockHeight(), codec.RSCALKey)
+	multiplier := k.GetChainSpecificMultiplier(ctx, chain)
+
+	var coins sdk.BigInt
+	//check if PIP22 is enabled, if so scale the rewards
+	if isAfterRSCAL {
+		//floorstake to the lowest bin multiple or take ceiling, whicherver is smaller
+		flooredStake := sdk.MinInt(
+			stake.Sub(stake.Mod(k.ServicerStakeFloorMultiplier(ctx))),
+			k.ServicerStakeWeightCeiling(ctx).
+				Sub(k.ServicerStakeWeightCeiling(ctx).Mod(k.ServicerStakeFloorMultiplier(ctx))),
+		)
+		//Convert from tokens to a BIN number
+		bin := flooredStake.Quo(k.ServicerStakeFloorMultiplier(ctx))
+		//calculate the weight value, weight will be a floatng point number so cast
+		// to DEC here and then truncate back to big int
+		weight := bin.ToDec().
+			FracPow(k.ServicerStakeFloorMultiplierExponent(ctx), Pip22ExponentDenominator).
+			Quo(k.ServicerStakeWeightMultiplier(ctx))
+		coinsDecimal := multiplier.ToDec().Mul(relays.ToDec()).Mul(weight)
+		//truncate back to int
+		coins = coinsDecimal.TruncateInt()
+	} else {
+		coins = multiplier.Mul(relays)
+	}
+
+	return k.splitRewards(ctx, coins)
+}
+
 // RewardForRelaysPerChain - Award coins to an address for relays of a specific chain
 func (k Keeper) RewardForRelaysPerChain(ctx sdk.Ctx, chain string, relays sdk.BigInt, address sdk.Address) sdk.BigInt {
 	// feature flags
@@ -28,7 +67,11 @@ func (k Keeper) RewardForRelaysPerChain(ctx sdk.Ctx, chain string, relays sdk.Bi
 
 	//adding "&& (isAfterRSCAL || isAfterNonCustodial)" to sync from scratch as weighted stake and non-custodial introduced this requirement
 	if !found && (isAfterRSCAL || isNonCustodialActive) {
-		ctx.Logger().Error(fmt.Errorf("no validator found for address %s; at height %d\n", address.String(), ctx.BlockHeight()).Error())
+		ctx.Logger().Error(
+			"no validator found",
+			"address", address,
+			"height", ctx.BlockHeight(),
+		)
 		return sdk.ZeroInt()
 	}
 
@@ -45,32 +88,17 @@ func (k Keeper) RewardForRelaysPerChain(ctx sdk.Ctx, chain string, relays sdk.Bi
 	if isDuringFirstNonCustodialIssue {
 		_, found := k.GetValidator(ctx, address)
 		if !found {
-			ctx.Logger().Error(fmt.Errorf("no validator found for address %s; at height %d\n", address.String(), ctx.BlockHeight()).Error())
+			ctx.Logger().Error(
+				"no validator found",
+				"address", address,
+				"height", ctx.BlockHeight(),
+			)
 			return sdk.ZeroInt()
 		}
 	}
 
-	multiplier := k.GetChainSpecificMultiplier(ctx, chain)
-
-	var coins sdk.BigInt
-
-	//check if PIP22 is enabled, if so scale the rewards
-	if isAfterRSCAL {
-		stake := validator.GetTokens()
-		//floorstake to the lowest bin multiple or take ceiling, whicherver is smaller
-		flooredStake := sdk.MinInt(stake.Sub(stake.Mod(k.ServicerStakeFloorMultiplier(ctx))), k.ServicerStakeWeightCeiling(ctx).Sub(k.ServicerStakeWeightCeiling(ctx).Mod(k.ServicerStakeFloorMultiplier(ctx))))
-		//Convert from tokens to a BIN number
-		bin := flooredStake.Quo(k.ServicerStakeFloorMultiplier(ctx))
-		//calculate the weight value, weight will be a floatng point number so cast to DEC here and then truncate back to big int
-		weight := bin.ToDec().FracPow(k.ServicerStakeFloorMultiplierExponent(ctx), Pip22ExponentDenominator).Quo(k.ServicerStakeWeightMultiplier(ctx))
-		coinsDecimal := multiplier.ToDec().Mul(relays.ToDec()).Mul(weight)
-		//truncate back to int
-		coins = coinsDecimal.TruncateInt()
-	} else {
-		coins = multiplier.Mul(relays)
-	}
-
-	toNode, toFeeCollector := k.NodeReward(ctx, coins)
+	toNode, toFeeCollector :=
+		k.CalculateRelayReward(ctx, chain, relays, validator.GetTokens())
 	if toNode.IsPositive() {
 		k.mint(ctx, toNode, address)
 	}

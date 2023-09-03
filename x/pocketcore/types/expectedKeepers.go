@@ -9,6 +9,11 @@ import (
 )
 
 type PosKeeper interface {
+	CalculateRelayReward(
+		ctx sdk.Ctx, chain string,
+		relays sdk.BigInt,
+		stake sdk.BigInt,
+	) (nodeReward, feesCollected sdk.BigInt)
 	RewardForRelays(ctx sdk.Ctx, relays sdk.BigInt, address sdk.Address) sdk.BigInt
 	RewardForRelaysPerChain(
 		ctx sdk.Ctx,

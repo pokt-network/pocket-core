@@ -5,14 +5,13 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/tendermint/tendermint/rpc/client"
-
 	"github.com/pokt-network/pocket-core/codec"
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/auth"
 	"github.com/pokt-network/pocket-core/x/auth/util"
 	pc "github.com/pokt-network/pocket-core/x/pocketcore/types"
+	"github.com/tendermint/tendermint/rpc/client"
 )
 
 // "SendClaimTx" - Automatically sends a claim of work/challenge based on relays or challenges stored.
@@ -25,6 +24,10 @@ func (k Keeper) SendClaimTx(
 ) {
 	// get the private val key (main) account from the keybase
 	address := node.GetAddress()
+	validator := k.posKeeper.Validator(ctx, address)
+	// The cost to earn relay rewards from an evidence
+	rewardCost := k.authKeeper.GetFee(ctx, pc.MsgClaim{}).
+		Add(k.authKeeper.GetFee(ctx, pc.MsgProof{}))
 	// retrieve the iterator to go through each piece of evidence in storage
 	iter := pc.EvidenceIterator(node.EvidenceStore)
 	defer iter.Close()
@@ -51,6 +54,39 @@ func (k Keeper) SendClaimTx(
 				ctx.Logger().Debug(err.Error())
 			}
 			continue
+		}
+		if validator != nil && pc.GlobalPocketConfig.NotClaimPossiblyNegativeRewards {
+			rewardExpected, _ := k.posKeeper.CalculateRelayReward(
+				ctx,
+				evidence.Chain,
+				sdk.NewInt(evidence.NumOfProofs),
+				validator.GetTokens(),
+			)
+			if rewardExpected.LTE(rewardCost) {
+				// If the expected amount of relay rewards from this evidence is less
+				// than the cost of claiming/proofing the evicence, claining the
+				// evidece is a potential loss.
+				//
+				// It's still "potential" because the amount of relay rewards is
+				// calculated when the network processes a proof transaction. It's
+				// possible this evidence is profitable if RTTM is increased and/or
+				// the node's stake is increased to an upper bin.
+				ctx.Logger().Info("Discarding an evidence not worth claiming",
+					"addr", address,
+					"sbh", evidence.SessionBlockHeight,
+					"chain", evidence.Chain,
+					"proofs", evidence.NumOfProofs,
+					"rewardExpected", rewardExpected,
+					"cost", rewardCost)
+				if err := pc.DeleteEvidence(
+					evidence.SessionHeader,
+					evidenceType,
+					node.EvidenceStore,
+				); err != nil {
+					ctx.Logger().Debug(err.Error())
+				}
+				continue
+			}
 		}
 		if ctx.BlockHeight() <= evidence.SessionBlockHeight+k.BlocksPerSession(sessionCtx)-1 { // ensure session is over
 			ctx.Logger().Info("the session is ongoing, so will not send the claim-tx yet")

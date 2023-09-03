@@ -144,7 +144,11 @@ func (k Keeper) ServicerStakeFloorMultiplierExponent(ctx sdk.Ctx) (res sdk.BigDe
 	return
 }
 
-func (k Keeper) NodeReward(ctx sdk.Ctx, reward sdk.BigInt) (nodeReward sdk.BigInt, feesCollected sdk.BigInt) {
+// Split rewards into node's cut and feeCollector's cut (= DAO + Proposer)
+func (k Keeper) splitRewards(
+	ctx sdk.Ctx,
+	reward sdk.BigInt,
+) (nodeReward, feesCollected sdk.BigInt) {
 	// convert reward to dec
 	r := reward.ToDec()
 	// get the dao and proposer % ex DAO .1 or 10% Proposer .01 or 1%
