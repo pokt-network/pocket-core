@@ -184,38 +184,62 @@ func (k Keeper) GetChainSpecificMultiplier(ctx sdk.Ctx, chain string) sdk.BigInt
 func (k Keeper) blockReward(ctx sdk.Ctx, previousProposer sdk.Address) {
 	feesCollector := k.getFeePool(ctx)
 	feesCollected := feesCollector.GetCoins().AmountOf(sdk.DefaultStakeDenom)
-	// check for zero fees
 	if feesCollected.IsZero() {
 		return
 	}
-	// get the dao and proposer % ex DAO .1 or 10% Proposer .01 or 1%
-	daoAllocation := sdk.NewDec(k.DAOAllocation(ctx))
-	proposerAllocation := sdk.NewDec(k.ProposerAllocation(ctx))
-	daoAndProposerAllocation := daoAllocation.Add(proposerAllocation)
-	// get the new percentages based on the total. This is needed because the node (relayer) cut has already been allocated
-	daoAllocation = daoAllocation.Quo(daoAndProposerAllocation)
-	// dao cut calculation truncates int ex: 1.99uPOKT = 1uPOKT
-	daoCut := feesCollected.ToDec().Mul(daoAllocation).TruncateInt()
-	// proposer is whatever is left
-	proposerCut := feesCollected.Sub(daoCut)
+
+	daoCut, proposerCut := k.splitFeesCollected(ctx, feesCollected)
+
 	// send to the two parties
 	feeAddr := feesCollector.GetAddress()
 	err := k.AccountKeeper.SendCoinsFromAccountToModule(ctx, feeAddr, govTypes.DAOAccountName, sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, daoCut)))
 	if err != nil {
-		ctx.Logger().Error(fmt.Sprintf("unable to send %s cut of block reward to the dao: %s, at height %d", daoCut.String(), err.Error(), ctx.BlockHeight()))
+		ctx.Logger().Error("unable to send a DAO cut of block reward",
+			"height", ctx.BlockHeight(),
+			"cut", daoCut,
+			"err", err.Error(),
+		)
 	}
+
 	if k.Cdc.IsAfterNonCustodialUpgrade(ctx.BlockHeight()) {
-		outputAddress, found := k.GetValidatorOutputAddress(ctx, previousProposer)
+		validator, found := k.GetValidator(ctx, previousProposer)
 		if !found {
-			ctx.Logger().Error(fmt.Sprintf("unable to send %s cut of block reward to the proposer: %s, with error %s, at height %d", proposerCut.String(), previousProposer, types.ErrNoValidatorForAddress(types.ModuleName), ctx.BlockHeight()))
+			ctx.Logger().Error("unable to find a validator to send a block reward to",
+				"height", ctx.BlockHeight(),
+				"addr", previousProposer,
+			)
 			return
 		}
-		err = k.AccountKeeper.SendCoins(ctx, feeAddr, outputAddress, sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, proposerCut)))
-		if err != nil {
-			ctx.Logger().Error(fmt.Sprintf("unable to send %s cut of block reward to the proposer: %s, with error %s, at height %d", proposerCut.String(), previousProposer, err.Error(), ctx.BlockHeight()))
+
+		if !k.Cdc.IsAfterDelegatorUpgrade(ctx.BlockHeight()) {
+			validator.Delegators = nil
 		}
+
+		SplitNodeRewards(
+			proposerCut,
+			k.GetOutputAddressFromValidator(validator),
+			validator.Delegators,
+			func(recipient sdk.Address, share sdk.BigInt) {
+				err = k.AccountKeeper.SendCoins(
+					ctx,
+					feeAddr,
+					recipient,
+					sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, share)),
+				)
+				if err != nil {
+					ctx.Logger().Error("unable to send a cut of block reward",
+						"height", ctx.BlockHeight(),
+						"cut", share,
+						"addr", recipient,
+						"err", err.Error(),
+					)
+				}
+			},
+		)
+
 		return
 	}
+
 	err = k.AccountKeeper.SendCoins(ctx, feeAddr, previousProposer, sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, proposerCut)))
 	if err != nil {
 		ctx.Logger().Error(fmt.Sprintf("unable to send %s cut of block reward to the proposer: %s, with error %s, at height %d", proposerCut.String(), previousProposer, err.Error(), ctx.BlockHeight()))

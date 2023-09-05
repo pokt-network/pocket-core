@@ -164,6 +164,25 @@ func (k Keeper) splitRewards(
 	return
 }
 
+// Split feeCollector's cut into DAO and Propower
+func (k Keeper) splitFeesCollected(
+	ctx sdk.Ctx,
+	feesCollected sdk.BigInt,
+) (daoCut, proposerCut sdk.BigInt) {
+	daoAllocation := sdk.NewDec(k.DAOAllocation(ctx))
+	proposerAllocation := sdk.NewDec(k.ProposerAllocation(ctx))
+
+	// get the new percentages of `dao / (dao + proposer)`
+	daoAllocation = daoAllocation.Quo(daoAllocation.Add(proposerAllocation))
+
+	// dao cut calculation truncates int ex: 1.99uPOKT = 1uPOKT
+	daoCut = feesCollected.ToDec().Mul(daoAllocation).TruncateInt()
+
+	// proposer is whatever is left
+	proposerCut = feesCollected.Sub(daoCut)
+	return
+}
+
 // DAOAllocation - Retrieve DAO allocation
 func (k Keeper) DAOAllocation(ctx sdk.Ctx) (res int64) {
 	k.Paramstore.Get(ctx, types.KeyDAOAllocation, &res)

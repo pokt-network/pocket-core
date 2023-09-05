@@ -142,6 +142,13 @@ func TestKeeper_rewardFromFees(t *testing.T) {
 	fp = keeper.getFeePool(context)
 	keeper.SetValidator(context, stakedValidator)
 	assert.Equal(t, fees, fp.GetCoins())
+
+	_, proposerCut := keeper.splitFeesCollected(context, amount)
+
+	totalSupplyPrev := keeper.AccountKeeper.GetSupply(context).
+		GetTotal().
+		AmountOf("upokt")
+
 	tests := []struct {
 		name   string
 		fields fields
@@ -159,11 +166,14 @@ func TestKeeper_rewardFromFees(t *testing.T) {
 			k := tt.fields.keeper
 			ctx := tt.args.ctx
 			k.blockReward(tt.args.ctx, tt.args.previousProposer)
-			acc := k.GetAccount(ctx, tt.args.Output)
-			assert.False(t, acc.Coins.IsZero())
-			assert.True(t, acc.Coins.IsEqual(sdk.NewCoins(sdk.NewCoin("upokt", sdk.NewInt(910)))))
-			acc = k.GetAccount(ctx, tt.args.previousProposer)
-			assert.True(t, acc.Coins.IsZero())
+
+			verifyAccountBalance(t, k, ctx, tt.args.Output, proposerCut)
+			verifyAccountBalance(t, k, ctx, tt.args.previousProposer, sdk.ZeroInt())
+
+			totalSupply := k.AccountKeeper.GetSupply(ctx).
+				GetTotal().
+				AmountOf("upokt")
+			assert.True(t, totalSupply.Equal(totalSupplyPrev))
 		})
 	}
 }
