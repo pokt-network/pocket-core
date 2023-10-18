@@ -20,6 +20,7 @@ type PosKeeper interface {
 	BlocksPerSession(ctx sdk.Ctx) (res int64)
 	StakeDenom(ctx sdk.Ctx) (res string)
 	GetValidatorsByChain(ctx sdk.Ctx, networkID string) (validators []sdk.Address, total int)
+	ValidatorHasLessOrEqualMaxChains(ctx sdk.Ctx, val nodesexported.ValidatorI) bool
 }
 
 type AppsKeeper interface {

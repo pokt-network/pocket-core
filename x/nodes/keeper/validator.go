@@ -188,7 +188,8 @@ func (k Keeper) ClearSessionCache() {
 
 // IterateAndExecuteOverVals - Goes through the validator set and executes handler
 func (k Keeper) IterateAndExecuteOverVals(
-	ctx sdk.Ctx, fn func(index int64, validator exported.ValidatorI) (stop bool)) {
+	ctx sdk.Ctx, fn func(index int64, validator exported.ValidatorI) (stop bool),
+) {
 	store := ctx.KVStore(k.storeKey)
 	iterator, _ := sdk.KVStorePrefixIterator(store, types.AllValidatorsKey)
 	defer iterator.Close()
@@ -231,6 +232,11 @@ func (k Keeper) AllValidators(ctx sdk.Ctx) (validators []exported.ValidatorI) {
 		validators = append(validators, validator)
 	}
 	return validators
+}
+
+// ValidatorHasLessOrEqualMaxChains - Check if the validator has less or equal than the maximum chains param
+func (k Keeper) ValidatorHasLessOrEqualMaxChains(ctx sdk.Ctx, val exported.ValidatorI) bool {
+	return int64(len(val.GetChains())) <= k.GetParams(ctx).MaximumChains
 }
 
 // map of validator addresses to serialized power
