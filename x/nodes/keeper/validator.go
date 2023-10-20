@@ -234,9 +234,9 @@ func (k Keeper) AllValidators(ctx sdk.Ctx) (validators []exported.ValidatorI) {
 	return validators
 }
 
-// ValidatorHasLessOrEqualMaxChains - Check if the validator has less or equal than the maximum chains param
-func (k Keeper) ValidatorHasLessOrEqualMaxChains(ctx sdk.Ctx, val exported.ValidatorI) bool {
-	return int64(len(val.GetChains())) <= k.GetParams(ctx).MaximumChains
+// GetNodeMaxChains - Retrieve the maximum number of chains a node can have
+func (k Keeper) GetNodeMaxChains(ctx sdk.Ctx) int64 {
+	return k.MaxChains(ctx)
 }
 
 // map of validator addresses to serialized power

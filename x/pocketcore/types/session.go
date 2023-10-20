@@ -139,7 +139,7 @@ func NewSessionNodes(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, chain string, se
 			node.IsJailed() ||
 			!NodeHasChain(chain, node) ||
 			sessionNodes.Contains(node.GetAddress()) ||
-			!keeper.ValidatorHasLessOrEqualMaxChains(ctx, node) {
+			keeper.GetNodeMaxChains(ctx) < int64(len(node.GetChains())) {
 			continue
 		}
 		// else add the node to the session
