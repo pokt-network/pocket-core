@@ -46,7 +46,6 @@ const (
 	ValidatorSplitHeight         = int64(45353)
 	NonCustodial1RollbackHeight  = int64(69583)
 	NonCustodial2AllowanceHeight = int64(74622)
-	EnforceMaxChainsHeight       = int64(120905)
 	UpgradeCodecUpdateKey        = "CODEC"
 	ValidatorSplitUpdateKey      = "SPLIT"
 	NonCustodialUpdateKey        = "NCUST"
