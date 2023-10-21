@@ -24,8 +24,8 @@ func TestRelay_Validate(t *testing.T) { // TODO add overservice, and not unique 
 	appPubKey := appPrivateKey.PublicKey().RawString()
 	npk := getRandomPubKey()
 	nodePubKey := npk.RawString()
-	ethereum := hex.EncodeToString([]byte{01})
-	bitcoin := hex.EncodeToString([]byte{02})
+	ethereum := hex.EncodeToString([]byte{0o1})
+	bitcoin := hex.EncodeToString([]byte{0o2})
 	p := Payload{
 		Data:    "{\"jsonrpc\":\"2.0\",\"method\":\"web3_clientVersion\",\"params\":[],\"id\":67}",
 		Method:  "",
@@ -145,7 +145,7 @@ func TestRelay_Execute(t *testing.T) {
 	npk := getRandomPubKey()
 	nodeAddr := sdk.Address(npk.Address())
 	nodePubKey := npk.RawString()
-	ethereum := hex.EncodeToString([]byte{01})
+	ethereum := hex.EncodeToString([]byte{0o1})
 	p := Payload{
 		Data:    "foo",
 		Method:  "POST",
@@ -194,7 +194,7 @@ func TestRelay_HandleProof(t *testing.T) {
 	appPubKey := appPrivateKey.PublicKey().RawString()
 	npk := getRandomPubKey()
 	nodePubKey := npk.RawString()
-	ethereum := hex.EncodeToString([]byte{01})
+	ethereum := hex.EncodeToString([]byte{0o1})
 	p := Payload{
 		Data:    "foo",
 		Method:  "POST",
@@ -392,4 +392,8 @@ func (m MockPosKeeper) BlocksPerSession(ctx sdk.Ctx) (res int64) {
 
 func (m MockPosKeeper) StakeDenom(ctx sdk.Ctx) (res string) {
 	panic("implement me")
+}
+
+func (m MockPosKeeper) GetNodeMaxChains(ctx sdk.Ctx) (res int64) {
+	return 15
 }
