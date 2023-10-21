@@ -139,7 +139,7 @@ func NewSessionNodes(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, chain string, se
 			node.IsJailed() ||
 			!NodeHasChain(chain, node) ||
 			sessionNodes.Contains(node.GetAddress()) ||
-			keeper.GetNodeMaxChains(ctx) < int64(len(node.GetChains())) {
+			InvalidMaxChains(ctx, keeper, node) {
 			continue
 		}
 		// else add the node to the session
@@ -287,4 +287,8 @@ func NodeHasChain(chain string, node exported.ValidatorI) bool {
 		}
 	}
 	return hasChain
+}
+
+func InvalidMaxChains(ctx sdk.Ctx, keeper PosKeeper, node exported.ValidatorI) bool {
+	return keeper.Codec().IsAfterEnforceMaxChainsUpgrade(ctx.BlockHeight()) && keeper.GetNodeMaxChains(ctx) > int64(len(node.GetChains()))
 }
