@@ -131,7 +131,3 @@ func (k Keeper) GetMsgStakeOutputSigner(ctx sdk.Ctx, msg sdk.Msg) sdk.Address {
 	}
 	return outputAddr
 }
-
-func (k Keeper) Codec() *codec.Codec {
-	return k.Cdc
-}

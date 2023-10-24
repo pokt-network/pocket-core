@@ -290,5 +290,5 @@ func NodeHasChain(chain string, node exported.ValidatorI) bool {
 }
 
 func InvalidMaxChains(ctx sdk.Ctx, keeper PosKeeper, node exported.ValidatorI) bool {
-	return keeper.Codec().IsAfterEnforceMaxChainsUpgrade(ctx.BlockHeight()) && keeper.GetNodeMaxChains(ctx) > int64(len(node.GetChains()))
+	return ModuleCdc.IsAfterEnforceMaxChainsUpgrade(ctx.BlockHeight()) && keeper.GetNodeMaxChains(ctx) > int64(len(node.GetChains()))
 }

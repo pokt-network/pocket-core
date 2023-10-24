@@ -397,7 +397,3 @@ func (m MockPosKeeper) StakeDenom(ctx sdk.Ctx) (res string) {
 func (m MockPosKeeper) GetNodeMaxChains(ctx sdk.Ctx) (res int64) {
 	return 15
 }
-
-func (m MockPosKeeper) Codec() *codec.Codec {
-	panic("implement me")
-}
