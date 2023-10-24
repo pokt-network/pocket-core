@@ -3,9 +3,9 @@ package keeper
 import (
 	"encoding/hex"
 	"fmt"
-	"github.com/pokt-network/pocket-core/codec"
 	"time"
 
+	"github.com/pokt-network/pocket-core/codec"
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/auth"
@@ -130,6 +130,11 @@ func (k Keeper) ValidateClaim(ctx sdk.Ctx, claim pc.MsgClaim) (err sdk.Error) {
 		if pc.MaxPossibleRelays(app, k.SessionNodeCount(sessionContext)).LT(sdk.NewInt(claim.TotalProofs)) {
 			return pc.NewOverServiceError(pc.ModuleName)
 		}
+	}
+	// Ensure that the app is not staked to more than the permitted number of chains
+	if pc.ModuleCdc.IsAfterEnforceMaxChainsUpgrade(ctx.BlockHeight()) &&
+		int64(len(app.GetChains())) > k.posKeeper.GetNodeMaxChains(sessionContext) {
+		return pc.NewAppChainsOverLimitError(pc.ModuleName, int64(len(app.GetChains())), k.posKeeper.GetNodeMaxChains(sessionContext))
 	}
 	// get the session node count for the time of the session
 	sessionNodeCount := int(k.SessionNodeCount(sessionContext))
@@ -316,7 +321,7 @@ func (k Keeper) ClaimIsMature(ctx sdk.Ctx, sessionBlockHeight int64) bool {
 
 // "DeleteExpiredClaims" - Deletes the expired (claim expiration > # of session passed since claim genesis) claims
 func (k Keeper) DeleteExpiredClaims(ctx sdk.Ctx) {
-	var msg = pc.MsgClaim{}
+	msg := pc.MsgClaim{}
 	store := ctx.KVStore(k.storeKey)
 	iterator, _ := sdk.KVStorePrefixIterator(store, pc.ClaimKey)
 	defer iterator.Close()

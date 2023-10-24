@@ -94,6 +94,7 @@ const (
 	CodeInvalidExpirationHeightErr       = 88
 	CodeInvalidMerkleRangeError          = 89
 	CodeEvidenceSealed                   = 90
+	CodeAppChainsOverLimitError          = 91
 )
 
 var (
@@ -186,6 +187,7 @@ var (
 	InvalidExpirationHeightErr       = errors.New("the expiration height included in the claim message is invalid (should not be set)")
 	InvalidMerkleRangeError          = errors.New("the merkle hash range is invalid")
 	SealedEvidenceError              = errors.New("the evidence is sealed, either max relays reached or claim already submitted")
+	AppChainsOverLimitError          = errors.New("the number of staked chains is over the limit")
 )
 
 func NewSealedEvidenceError(codespace sdk.CodespaceType) sdk.Error {
@@ -195,6 +197,7 @@ func NewSealedEvidenceError(codespace sdk.CodespaceType) sdk.Error {
 func NewUnsupportedBlockchainError(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeUnsupportedBlockchainError, UnsupportedBlockchainError.Error())
 }
+
 func NewNodeNotInSessionError(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeNodeNotInSessionError, NodeNotInSessionError.Error())
 }
@@ -250,9 +253,11 @@ func NewInvalidRootError(codespace sdk.CodespaceType) sdk.Error {
 func NewInvalidHashLengthError(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeInvalidHashLengthError, InvalidHashLengthError.Error())
 }
+
 func NewInvalidNetIDLengthError(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeInvalidNetworkIDError, InvalidNetworkIDLengthError.Error())
 }
+
 func NewInvalidAppPubKeyError(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeInvalidAppPubKeyError, InvalidAppPubKeyError.Error())
 }
@@ -460,6 +465,7 @@ func NewEmptyProofsError(codespace sdk.CodespaceType) sdk.Error {
 func NewEmptyBlockIDError(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeEmptyBlockIDError, EmptyBlockIDError.Error())
 }
+
 func NewEmptyChainError(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeEmptyChainError, EmptyNonNativeChainError.Error())
 }
@@ -474,4 +480,8 @@ func NewInvalidTokenError(codespace sdk.CodespaceType, err error) sdk.Error {
 
 func NewInvalidPKError(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeInvalidPkFileErr, InvalidPkFileErr.Error())
+}
+
+func NewAppChainsOverLimitError(codespace sdk.CodespaceType, gotChains, maxChains int64) sdk.Error {
+	return sdk.NewError(codespace, CodeAppChainsOverLimitError, fmt.Sprintf("%s: got %d, max %d", AppChainsOverLimitError.Error(), gotChains, maxChains))
 }
