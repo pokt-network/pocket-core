@@ -123,7 +123,8 @@ func (k Keeper) GetApplications(ctx sdk.Ctx, maxRetrieve uint16) (applications t
 
 // IterateAndExecuteOverApps - Goes through the application set and perform the provided function
 func (k Keeper) IterateAndExecuteOverApps(
-	ctx sdk.Ctx, fn func(index int64, application exported.ApplicationI) (stop bool)) {
+	ctx sdk.Ctx, fn func(index int64, application exported.ApplicationI) (stop bool),
+) {
 	store := ctx.KVStore(k.storeKey)
 	iterator, _ := sdk.KVStorePrefixIterator(store, types.AllApplicationsKey)
 	defer iterator.Close()

@@ -29,6 +29,7 @@ type AppsKeeper interface {
 	AllApplications(ctx sdk.Ctx) (applications []appexported.ApplicationI)
 	TotalTokens(ctx sdk.Ctx) sdk.BigInt
 	JailApplication(ctx sdk.Ctx, addr sdk.Address)
+	MaxChains(ctx sdk.Ctx) (maxChains int64)
 }
 
 type PocketKeeper interface {

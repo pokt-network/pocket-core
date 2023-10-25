@@ -134,7 +134,7 @@ func (k Keeper) ValidateClaim(ctx sdk.Ctx, claim pc.MsgClaim) (err sdk.Error) {
 	// Ensure that the app is not staked to more than the permitted number of chains
 	if pc.ModuleCdc.IsAfterEnforceMaxChainsUpgrade(ctx.BlockHeight()) &&
 		int64(len(app.GetChains())) > k.posKeeper.GetNodeMaxChains(sessionContext) {
-		return pc.NewAppChainsOverLimitError(pc.ModuleName, int64(len(app.GetChains())), k.posKeeper.GetNodeMaxChains(sessionContext))
+		return pc.NewAppChainsOverLimitError(pc.ModuleName, int64(len(app.GetChains())), k.appKeeper.MaxChains(sessionContext))
 	}
 	// get the session node count for the time of the session
 	sessionNodeCount := int(k.SessionNodeCount(sessionContext))
