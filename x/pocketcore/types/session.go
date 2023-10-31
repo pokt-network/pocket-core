@@ -113,7 +113,9 @@ func NewSessionNodes(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, chain string, se
 	var node exported.ValidatorI
 	// unique address map to avoid re-checking a pseudorandomly selected servicer
 	m := make(map[string]struct{})
-	// only select the nodesAddrs if not jailed
+	// only select the nodesAddrs if not jailed or the node is not over staked to chains
+	enforceMaxChain := ModuleCdc.IsAfterEnforceMaxChainsUpgrade(ctx.BlockHeight())
+	nodeMaxChains := keeper.GetNodeMaxChains(sessionCtx)
 	for i, numOfNodes := 0, 0; ; i++ {
 		// if this is true we already checked all nodes we got on getValidatorsBychain
 		if len(m) >= totalNodes {
@@ -136,10 +138,10 @@ func NewSessionNodes(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, chain string, se
 		node = keeper.Validator(ctx, n)
 		// if not found or jailed or staked chains is too large, don't add to session and continue
 		if node == nil ||
+			enforceMaxChain && nodeMaxChains > int64(len(node.GetChains())) ||
 			node.IsJailed() ||
 			!NodeHasChain(chain, node) ||
-			sessionNodes.Contains(node.GetAddress()) ||
-			InvalidMaxChains(ctx, keeper, node) {
+			sessionNodes.Contains(node.GetAddress()) {
 			continue
 		}
 		// else add the node to the session
@@ -287,8 +289,4 @@ func NodeHasChain(chain string, node exported.ValidatorI) bool {
 		}
 	}
 	return hasChain
-}
-
-func InvalidMaxChains(ctx sdk.Ctx, keeper PosKeeper, node exported.ValidatorI) bool {
-	return ModuleCdc.IsAfterEnforceMaxChainsUpgrade(ctx.BlockHeight()) && keeper.GetNodeMaxChains(ctx) > int64(len(node.GetChains()))
 }

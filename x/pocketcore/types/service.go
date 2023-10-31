@@ -60,7 +60,7 @@ func (r *Relay) Validate(ctx sdk.Ctx, posKeeper PosKeeper, appsKeeper AppsKeeper
 	// Ensure that the app is not staked to more than the permitted number of chains
 	lenAppChains := int64(len(app.GetChains()))
 	if ModuleCdc.IsAfterEnforceMaxChainsUpgrade(ctx.BlockHeight()) &&
-		lenAppChains > appsKeeper.MaxChains(ctx) {
+		lenAppChains > appsKeeper.MaxChains(sessionCtx) {
 		return sdk.ZeroInt(), NewAppChainsOverLimitError(ModuleName, lenAppChains, appsKeeper.MaxChains(ctx))
 	}
 	// get session node count from that session height
