@@ -321,6 +321,10 @@ func (m MockAppsKeeper) JailApplication(ctx sdk.Ctx, addr sdk.Address) {
 	panic("implement me")
 }
 
+func (m MockAppsKeeper) MaxChains(ctx sdk.Ctx) (res int64) {
+	return 15
+}
+
 type MockPosKeeper struct {
 	Validators []exported.ValidatorI
 }
