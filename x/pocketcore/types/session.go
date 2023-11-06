@@ -18,7 +18,7 @@ func (s Session) IsSealable() bool {
 }
 
 func (s Session) HashString() string {
-	return s.HashString()
+	return s.SessionHeader.HashString()
 }
 
 // "NewSession" - create a new session from seed data
@@ -113,9 +113,7 @@ func NewSessionNodes(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, chain string, se
 	var node exported.ValidatorI
 	// unique address map to avoid re-checking a pseudorandomly selected servicer
 	m := make(map[string]struct{})
-	// only select the nodesAddrs if not jailed or the node is not over staked to chains
-	enforceMaxChain := ModuleCdc.IsAfterEnforceMaxChainsUpgrade(ctx.BlockHeight())
-	nodeMaxChains := keeper.GetNodeMaxChains(sessionCtx)
+	// only select the nodesAddrs if not jailed
 	for i, numOfNodes := 0, 0; ; i++ {
 		// if this is true we already checked all nodes we got on getValidatorsBychain
 		if len(m) >= totalNodes {
@@ -136,9 +134,8 @@ func NewSessionNodes(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, chain string, se
 
 		// cross check the node from the `new` or `end` world state
 		node = keeper.Validator(ctx, n)
-		// if not found or jailed or staked chains is too large, don't add to session and continue
+		// if not found or jailed
 		if node == nil ||
-			enforceMaxChain && nodeMaxChains > int64(len(node.GetChains())) ||
 			node.IsJailed() ||
 			!NodeHasChain(chain, node) ||
 			sessionNodes.Contains(node.GetAddress()) {

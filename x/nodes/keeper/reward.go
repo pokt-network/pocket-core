@@ -14,6 +14,7 @@ func (k Keeper) RewardForRelays(ctx sdk.Ctx, relays sdk.BigInt, address sdk.Addr
 	// feature flags
 	isAfterRSCAL := k.Cdc.IsAfterNamedFeatureActivationHeight(ctx.BlockHeight(), codec.RSCALKey)
 	isNonCustodialActive := k.Cdc.IsAfterNonCustodialUpgrade(ctx.BlockHeight())
+	isEnforceMaxChains := k.Cdc.IsAfterEnforceMaxChainsUpgrade(ctx.BlockHeight())
 
 	// The conditions of the original non-custodial issue:
 	isDuringFirstNonCustodialIssue := isNonCustodialActive && isAfterRSCAL && ctx.BlockHeight() <= codec.NonCustodial1RollbackHeight
@@ -21,9 +22,16 @@ func (k Keeper) RewardForRelays(ctx sdk.Ctx, relays sdk.BigInt, address sdk.Addr
 	// get validator
 	validator, found := k.GetValidator(ctx, address)
 
-	//adding "&& (isAfterRSCAL || isAfterNonCustodial)" to sync from scratch as weighted stake and non-custodial introduced this requirement
+	// adding "&& (isAfterRSCAL || isAfterNonCustodial)" to sync from scratch as weighted stake and non-custodial introduced this requirement
 	if !found && (isAfterRSCAL || isNonCustodialActive) {
 		ctx.Logger().Error(fmt.Errorf("no validator found for address %s; at height %d\n", address.String(), ctx.BlockHeight()).Error())
+		return sdk.ZeroInt()
+	}
+
+	// check if the node is overstaked for max chains and if so  and if so dont reward them
+	// this ensures that nodes can still participate in the network but are not rewarded for relays
+	// if they are overstaked for max chains, ensuring that the network functions properly
+	if isEnforceMaxChains && int64(len(validator.GetChains())) > k.GetNodeMaxChains(ctx) {
 		return sdk.ZeroInt()
 	}
 
@@ -47,17 +55,17 @@ func (k Keeper) RewardForRelays(ctx sdk.Ctx, relays sdk.BigInt, address sdk.Addr
 
 	var coins sdk.BigInt
 
-	//check if PIP22 is enabled, if so scale the rewards
+	// check if PIP22 is enabled, if so scale the rewards
 	if isAfterRSCAL {
 		stake := validator.GetTokens()
-		//floorstake to the lowest bin multiple or take ceiling, whicherver is smaller
+		// floorstake to the lowest bin multiple or take ceiling, whicherver is smaller
 		flooredStake := sdk.MinInt(stake.Sub(stake.Mod(k.ServicerStakeFloorMultiplier(ctx))), k.ServicerStakeWeightCeiling(ctx).Sub(k.ServicerStakeWeightCeiling(ctx).Mod(k.ServicerStakeFloorMultiplier(ctx))))
-		//Convert from tokens to a BIN number
+		// Convert from tokens to a BIN number
 		bin := flooredStake.Quo(k.ServicerStakeFloorMultiplier(ctx))
-		//calculate the weight value, weight will be a floatng point number so cast to DEC here and then truncate back to big int
+		// calculate the weight value, weight will be a floatng point number so cast to DEC here and then truncate back to big int
 		weight := bin.ToDec().FracPow(k.ServicerStakeFloorMultiplierExponent(ctx), Pip22ExponentDenominator).Quo(k.ServicerStakeWeightMultiplier(ctx))
 		coinsDecimal := k.RelaysToTokensMultiplier(ctx).ToDec().Mul(relays.ToDec()).Mul(weight)
-		//truncate back to int
+		// truncate back to int
 		coins = coinsDecimal.TruncateInt()
 	} else {
 		coins = k.RelaysToTokensMultiplier(ctx).Mul(relays)
@@ -142,11 +150,10 @@ func (k Keeper) GetPreviousProposer(ctx sdk.Ctx) (addr sdk.Address) {
 	if b == nil {
 		k.Logger(ctx).Error("Previous proposer not set")
 		return nil
-		//os.Exit(1)
+		// os.Exit(1)
 	}
 	_ = k.Cdc.UnmarshalBinaryLengthPrefixed(b, &addr, ctx.BlockHeight())
 	return addr
-
 }
 
 // SetPreviousProposer -  Store proposer public key for this block
