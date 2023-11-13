@@ -234,12 +234,6 @@ func (k Keeper) AllValidators(ctx sdk.Ctx) (validators []exported.ValidatorI) {
 	return validators
 }
 
-// GetNodeMaxChains - Retrieve the maximum number of chains a node can have at the height
-// associated with the context
-func (k Keeper) GetNodeMaxChains(ctx sdk.Ctx) int64 {
-	return k.MaxChains(ctx)
-}
-
 // map of validator addresses to serialized power
 type valPowerMap map[[sdk.AddrLen]byte][]byte
 

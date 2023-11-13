@@ -123,8 +123,8 @@ func (k Keeper) ValidateClaim(ctx sdk.Ctx, claim pc.MsgClaim) (err sdk.Error) {
 	// Ensure that the servicer is not staked to more than the permitted number of chains
 	isEnforceMaxChains := k.Cdc.IsAfterEnforceMaxChainsUpgrade(ctx.BlockHeight())
 	lenNodeChains := int64(len(node.GetChains()))
-	if isEnforceMaxChains && lenNodeChains > k.posKeeper.GetNodeMaxChains(ctx) {
-		return pc.NewChainsOverLimitError(pc.ModuleName, lenNodeChains, k.posKeeper.GetNodeMaxChains(ctx))
+	if isEnforceMaxChains && lenNodeChains > k.posKeeper.MaxChains(ctx) {
+		return pc.NewChainsOverLimitError(pc.ModuleName, lenNodeChains, k.posKeeper.MaxChains(ctx))
 	}
 	// get the application (at the state of the start of the session)
 	app, found := k.GetAppFromPublicKey(sessionContext, claim.SessionHeader.ApplicationPubKey)

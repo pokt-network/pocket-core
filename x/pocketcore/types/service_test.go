@@ -398,6 +398,6 @@ func (m MockPosKeeper) StakeDenom(ctx sdk.Ctx) (res string) {
 	panic("implement me")
 }
 
-func (m MockPosKeeper) GetNodeMaxChains(ctx sdk.Ctx) (res int64) {
+func (m MockPosKeeper) MaxChains(ctx sdk.Ctx) (res int64) {
 	return 15
 }
