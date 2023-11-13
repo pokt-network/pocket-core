@@ -115,10 +115,16 @@ func (k Keeper) ValidateClaim(ctx sdk.Ctx, claim pc.MsgClaim) (err sdk.Error) {
 		return pc.NewChainNotSupportedErr(pc.ModuleName)
 	}
 	// get the node from the keeper (at the state of the start of the session)
-	_, found := k.GetNode(sessionContext, claim.FromAddress)
+	node, found := k.GetNode(sessionContext, claim.FromAddress)
 	// if not found return not found error
 	if !found {
 		return pc.NewNodeNotFoundErr(pc.ModuleName)
+	}
+	// Ensure that the servicer is not staked to more than the permitted number of chains
+	isEnforceMaxChains := k.Cdc.IsAfterEnforceMaxChainsUpgrade(ctx.BlockHeight())
+	lenNodeChains := int64(len(node.GetChains()))
+	if isEnforceMaxChains && lenNodeChains > k.posKeeper.GetNodeMaxChains(ctx) {
+		return pc.NewChainsOverLimitError(pc.ModuleName, lenNodeChains, k.posKeeper.GetNodeMaxChains(ctx))
 	}
 	// get the application (at the state of the start of the session)
 	app, found := k.GetAppFromPublicKey(sessionContext, claim.SessionHeader.ApplicationPubKey)
@@ -135,7 +141,7 @@ func (k Keeper) ValidateClaim(ctx sdk.Ctx, claim pc.MsgClaim) (err sdk.Error) {
 	lenAppChains := int64(len(app.GetChains()))
 	if pc.ModuleCdc.IsAfterEnforceMaxChainsUpgrade(ctx.BlockHeight()) &&
 		lenAppChains > k.appKeeper.MaxChains(sessionContext) {
-		return pc.NewAppChainsOverLimitError(pc.ModuleName, lenAppChains, k.appKeeper.MaxChains(sessionContext))
+		return pc.NewChainsOverLimitError(pc.ModuleName, lenAppChains, k.appKeeper.MaxChains(sessionContext))
 	}
 	// get the session node count for the time of the session
 	sessionNodeCount := int(k.SessionNodeCount(sessionContext))
