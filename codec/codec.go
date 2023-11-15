@@ -58,6 +58,7 @@ const (
 	OutputAddressEditKey         = "OEDIT"
 	ClearUnjailedValSessionKey   = "CRVAL"
 	PerChainRTTM                 = "PerChainRTTM"
+	AppTransferKey               = "AppTransfer"
 )
 
 func GetCodecUpgradeHeight() int64 {
@@ -283,6 +284,12 @@ func (cdc *Codec) IsAfterOutputAddressEditorUpgrade(height int64) bool {
 func (cdc *Codec) IsAfterPerChainRTTMUpgrade(height int64) bool {
 	return (UpgradeFeatureMap[PerChainRTTM] != 0 &&
 		height >= UpgradeFeatureMap[PerChainRTTM]) ||
+		TestMode <= -3
+}
+
+func (cdc *Codec) IsAfterAppTransferUpgrade(height int64) bool {
+	return (UpgradeFeatureMap[AppTransferKey] != 0 &&
+		height >= UpgradeFeatureMap[AppTransferKey]) ||
 		TestMode <= -3
 }
 

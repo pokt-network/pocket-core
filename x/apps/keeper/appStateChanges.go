@@ -10,6 +10,37 @@ import (
 	"github.com/pokt-network/pocket-core/x/apps/types"
 )
 
+func ensurePubKeyTypeSupported(
+	ctx sdk.Ctx,
+	pubKey crypto.PublicKey,
+	codespace sdk.CodespaceType,
+) sdk.Error {
+	params := ctx.ConsensusParams()
+	if params == nil {
+		return nil
+	}
+
+	// pubKey.PubKey() converts pocket's PublicKey to tendermint's PubKey
+	tmPubKey, err := crypto.CheckConsensusPubKey(pubKey.PubKey())
+	if err != nil {
+		return types.ErrApplicationPubKeyTypeNotSupported(
+			codespace,
+			err.Error(),
+			params.Validator.PubKeyTypes,
+		)
+	}
+
+	if !strings.StringInSlice(tmPubKey.Type, params.Validator.PubKeyTypes) {
+		return types.ErrApplicationPubKeyTypeNotSupported(
+			codespace,
+			tmPubKey.Type,
+			params.Validator.PubKeyTypes,
+		)
+	}
+
+	return nil
+}
+
 // ValidateApplicationStaking - Check application before staking
 func (k Keeper) ValidateApplicationStaking(ctx sdk.Ctx, application types.Application, amount sdk.BigInt) sdk.Error {
 	// convert the amount to sdk.Coin
@@ -29,19 +60,12 @@ func (k Keeper) ValidateApplicationStaking(ctx sdk.Ctx, application types.Applic
 			return types.ErrApplicationStatus(k.codespace)
 		}
 	} else {
-		// ensure public key type is supported
-		if ctx.ConsensusParams() != nil {
-			tmPubKey, err := crypto.CheckConsensusPubKey(application.PublicKey.PubKey())
-			if err != nil {
-				return types.ErrApplicationPubKeyTypeNotSupported(k.Codespace(),
-					err.Error(),
-					ctx.ConsensusParams().Validator.PubKeyTypes)
-			}
-			if !strings.StringInSlice(tmPubKey.Type, ctx.ConsensusParams().Validator.PubKeyTypes) {
-				return types.ErrApplicationPubKeyTypeNotSupported(k.Codespace(),
-					tmPubKey.Type,
-					ctx.ConsensusParams().Validator.PubKeyTypes)
-			}
+		if err := ensurePubKeyTypeSupported(
+			ctx,
+			application.PublicKey,
+			k.Codespace(),
+		); err != nil {
+			return err
 		}
 	}
 	// ensure the amount they are staking is < the minimum stake amount
@@ -75,6 +99,40 @@ func (k Keeper) ValidateEditStake(ctx sdk.Ctx, currentApp types.Application, amo
 		}
 	}
 	return nil
+}
+
+func (k Keeper) ValidateApplicationTransfer(
+	ctx sdk.Ctx,
+	signer crypto.PublicKey,
+	msg types.MsgStake,
+) (curApp types.Application, err sdk.Error) {
+	if !ctx.IsAfterUpgradeHeight() ||
+		!k.Cdc.IsAfterAppTransferUpgrade(ctx.BlockHeight()) {
+		err = types.ErrApplicationStatus(k.codespace)
+		return
+	}
+
+	// The signer must be a staked app
+	var found bool
+	curApp, found = k.GetApplication(ctx, sdk.Address(signer.Address()))
+	if !found || !curApp.IsStaked() {
+		err = types.ErrApplicationStatus(k.codespace)
+		return
+	}
+
+	err = ensurePubKeyTypeSupported(ctx, msg.PubKey, k.Codespace())
+	if err != nil {
+		return
+	}
+
+	// The pubkey in the message must not exist
+	newAppAddr := sdk.Address(msg.PubKey.Address())
+	if _, found = k.GetApplication(ctx, newAppAddr); found {
+		err = types.ErrApplicationStatus(k.codespace)
+		return
+	}
+
+	return
 }
 
 // StakeApplication - Store ops when a application stakes
@@ -294,6 +352,35 @@ func (k Keeper) ForceApplicationUnstake(ctx sdk.Ctx, application types.Applicati
 		k.SetApplication(ctx, validator)
 	}
 	ctx.Logger().Info("Force Unstaked validator " + application.Address.String())
+	return nil
+}
+
+// Transfer the ownership by adding a new app and delete the current app
+func (k Keeper) TransferApplication(
+	ctx sdk.Ctx,
+	curApp types.Application,
+	newAppPubKey crypto.PublicKey,
+) sdk.Error {
+	// Add a new staked application
+	// Since we don't change the staked amount, we can inherit all fields
+	// and don't need to move tokens.
+	newApp := curApp.UpdateStatus(sdk.Staked)
+	newApp.Address = sdk.Address(newAppPubKey.Address())
+	newApp.PublicKey = newAppPubKey
+	k.SetApplication(ctx, newApp)
+
+	// Delete the current application
+	// Before UpgradeCodecHeight, we used to keep the app with Unstaked status,
+	// but after UpgradeCodecHeight, we just delete the app.
+	// (See unstakeAllMatureApplications calling DeleteApplication)
+	k.deleteApplicationFromStakingSet(ctx, curApp)
+	k.DeleteApplication(ctx, curApp.Address)
+
+	ctx.Logger().Info(
+		"Finished transferring application",
+		"from", curApp.Address.String(),
+		"to", newApp.Address.String(),
+	)
 	return nil
 }
 

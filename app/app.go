@@ -88,6 +88,7 @@ func NewPocketCoreApp(genState GenesisState, keybase keys.Keybase, tmClient clie
 	app.nodesKeeper.PocketKeeper = app.pocketKeeper
 	app.appsKeeper.PocketKeeper = app.pocketKeeper
 	app.accountKeeper.POSKeeper = app.nodesKeeper
+	app.accountKeeper.AppKeeper = app.appsKeeper
 	// setup module manager
 	app.mm = module.NewManager(
 		auth.NewAppModule(app.accountKeeper),

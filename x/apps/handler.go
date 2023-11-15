@@ -2,15 +2,16 @@ package pos
 
 import (
 	"fmt"
+	"reflect"
+
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/apps/keeper"
 	"github.com/pokt-network/pocket-core/x/apps/types"
-	"reflect"
 )
 
 func NewHandler(k keeper.Keeper) sdk.Handler {
-	return func(ctx sdk.Ctx, msg sdk.Msg, _ crypto.PublicKey) sdk.Result {
+	return func(ctx sdk.Ctx, msg sdk.Msg, signer crypto.PublicKey) sdk.Result {
 		ctx = ctx.WithEventManager(sdk.NewEventManager())
 		// convert to value for switch consistency
 		if reflect.ValueOf(msg).Kind() == reflect.Ptr {
@@ -18,7 +19,7 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 		}
 		switch msg := msg.(type) {
 		case types.MsgStake:
-			return handleStake(ctx, msg, k)
+			return handleStake(ctx, msg, signer, k)
 		case types.MsgBeginUnstake:
 			return handleMsgBeginUnstake(ctx, msg, k)
 		case types.MsgUnjail:
@@ -30,25 +31,38 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 	}
 }
 
-func handleStake(ctx sdk.Ctx, msg types.MsgStake, k keeper.Keeper) sdk.Result {
+func handleStake(
+	ctx sdk.Ctx,
+	msg types.MsgStake,
+	signer crypto.PublicKey,
+	k keeper.Keeper,
+) sdk.Result {
 	pk := msg.PubKey
 	addr := pk.Address()
 	ctx.Logger().Info("Begin Staking App Message received from " + sdk.Address(pk.Address()).String())
 	// create application object using the message fields
 	application := types.NewApplication(sdk.Address(addr), pk, msg.Chains, sdk.ZeroInt())
 	ctx.Logger().Info("Validate App Can Stake " + sdk.Address(addr).String())
-	// check if they can stake
-	if err := k.ValidateApplicationStaking(ctx, application, msg.Value); err != nil {
-		ctx.Logger().Error(fmt.Sprintf("Validate App Can Stake Error, at height: %d with address: %s", ctx.BlockHeight(), sdk.Address(addr).String()))
-		return err.Result()
-	}
-	ctx.Logger().Info("Change App state to Staked " + sdk.Address(addr).String())
-	// change the application state to staked
-	err := k.StakeApplication(ctx, application, msg.Value)
-	if err != nil {
-		return err.Result()
+	// check if the msg is to transfer an app first
+	if curApp, err := k.ValidateApplicationTransfer(ctx, signer, msg); err == nil {
+		if err := k.TransferApplication(ctx, curApp, msg.PubKey); err != nil {
+			return err.Result()
+		}
+	} else {
+		// then check if they can stake
+		if err := k.ValidateApplicationStaking(ctx, application, msg.Value); err != nil {
+			ctx.Logger().Error(fmt.Sprintf("Validate App Can Stake Error, at height: %d with address: %s", ctx.BlockHeight(), sdk.Address(addr).String()))
+			return err.Result()
+		}
+
+		ctx.Logger().Info("Change App state to Staked " + sdk.Address(addr).String())
+		// change the application state to staked
+		if err := k.StakeApplication(ctx, application, msg.Value); err != nil {
+			return err.Result()
+		}
 	}
 	// create the event
+	senderAddrStr := sdk.Address(signer.Address()).String()
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeCreateApplication,
@@ -57,13 +71,13 @@ func handleStake(ctx sdk.Ctx, msg types.MsgStake, k keeper.Keeper) sdk.Result {
 		sdk.NewEvent(
 			types.EventTypeStake,
 			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, sdk.Address(addr).String()),
+			sdk.NewAttribute(sdk.AttributeKeySender, senderAddrStr),
 			sdk.NewAttribute(sdk.AttributeKeyAmount, msg.Value.String()),
 		),
 		sdk.NewEvent(
 			sdk.EventTypeMessage,
 			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, sdk.Address(addr).String()),
+			sdk.NewAttribute(sdk.AttributeKeySender, senderAddrStr),
 		),
 	})
 	return sdk.Result{Events: ctx.EventManager().Events()}

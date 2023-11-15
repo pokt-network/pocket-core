@@ -397,6 +397,52 @@ func UnstakeApp(fromAddr, passphrase, chainID string, fees int64, legacyCodec bo
 	}, nil
 }
 
+func TransferApp(
+	currentAppAddrStr, newAppPubKeyStr, passphrase, networkId string,
+	fee int64,
+	memo string,
+) (*rpc.SendRawTxParams, error) {
+	currentAppAddr, err := sdk.AddressFromHex(currentAppAddrStr)
+	if err != nil {
+		return nil, err
+	}
+
+	newAppPubKey, err := crypto.NewPublicKey(newAppPubKeyStr)
+	if err != nil {
+		return nil, err
+	}
+
+	keybase, err := app.GetKeybase()
+	if err != nil {
+		return nil, err
+	}
+
+	msg := appsType.MsgStake{PubKey: newAppPubKey}
+	if err = msg.ValidateBasic(); err != nil {
+		return nil, err
+	}
+
+	txBz, err := newTxBz(
+		app.Codec(),
+		&msg,
+		currentAppAddr,
+		networkId,
+		keybase,
+		passphrase,
+		fee,
+		memo,
+		false,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &rpc.SendRawTxParams{
+		Addr:        currentAppAddrStr,
+		RawHexBytes: hex.EncodeToString(txBz),
+	}, nil
+}
+
 func DAOTx(fromAddr, toAddr, passphrase string, amount sdk.BigInt, action, chainID string, fees int64, legacyCodec bool) (*rpc.SendRawTxParams, error) {
 	fa, err := sdk.AddressFromHex(fromAddr)
 	if err != nil {

@@ -1,10 +1,10 @@
-///*
-//Package baseapp contains data structures that provide basic data storage
-//functionality and act as a bridge between the ABCI interface and the SDK
-//abstractions.
+// /*
+// Package baseapp contains data structures that provide basic data storage
+// functionality and act as a bridge between the ABCI interface and the SDK
+// abstractions.
 //
-//BaseApp has no state except the CommitMultiStore you provide upon init.
-//*/
+// BaseApp has no state except the CommitMultiStore you provide upon init.
+// */
 package baseapp
 
 import (
@@ -12,7 +12,6 @@ import (
 	"fmt"
 	"github.com/pokt-network/pocket-core/codec/types"
 	"github.com/pokt-network/pocket-core/crypto"
-	types2 "github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/pocket-core/x/auth"
 	"github.com/tendermint/tendermint/evidence"
 	"github.com/tendermint/tendermint/node"
@@ -810,9 +809,8 @@ func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) (res abci.ResponseDeliv
 		msg := tx.GetMsg()
 		messageType = msg.Type()
 		recipient = msg.GetRecipient()
-		if signerPK == nil || messageType == types2.MsgAppStakeName {
-			signers := msg.GetSigners()
-			if len(signers) >= 1 {
+		if signerPK == nil {
+			if signers := msg.GetSigners(); len(signers) >= 1 {
 				signer = signers[0]
 			}
 		} else {

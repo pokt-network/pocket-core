@@ -1,11 +1,14 @@
 package keeper
 
 import (
-	"github.com/pokt-network/pocket-core/codec"
-	sdk "github.com/pokt-network/pocket-core/types"
-	"github.com/pokt-network/pocket-core/x/apps/types"
 	"reflect"
 	"testing"
+
+	"github.com/pokt-network/pocket-core/codec"
+	"github.com/pokt-network/pocket-core/crypto"
+	sdk "github.com/pokt-network/pocket-core/types"
+	"github.com/pokt-network/pocket-core/x/apps/types"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAppStateChange_ValidateApplicaitonBeginUnstaking(t *testing.T) {
@@ -370,4 +373,138 @@ func TestAppStateChange_BeginUnstakingApplication(t *testing.T) {
 			}
 		})
 	}
+}
+
+// Fund an account by minting tokens in a module account and sending it
+// to the given account.
+func fundAccount(
+	t *testing.T,
+	ctx *sdk.Context,
+	k *Keeper,
+	address sdk.Address,
+	amount sdk.BigInt,
+) {
+	minter := types.StakedPoolName
+	addMintedCoinsToModule(t, ctx, k, minter)
+	sendFromModuleToAccount(t, ctx, k, minter, address, amount)
+}
+
+func transferApp(
+	t *testing.T,
+	ctx *sdk.Context,
+	k *Keeper,
+	transferFrom, transferTo crypto.PublicKey,
+) sdk.Error {
+	curApp, err := k.ValidateApplicationTransfer(
+		ctx,
+		transferFrom,
+		types.MsgStake{
+			PubKey: transferTo,
+			Chains: nil,
+			Value:  sdk.ZeroInt(),
+		},
+	)
+	if err != nil {
+		return err
+	}
+	return k.TransferApplication(ctx, curApp, transferTo)
+}
+
+func TestAppStateChange_Transfer(t *testing.T) {
+	originalUpgradeHeight := codec.UpgradeHeight
+	originalTestMode := codec.TestMode
+	originalFeatKey := codec.UpgradeFeatureMap[codec.AppTransferKey]
+	t.Cleanup(func() {
+		codec.UpgradeHeight = originalUpgradeHeight
+		codec.TestMode = originalTestMode
+		codec.UpgradeFeatureMap[codec.AppTransferKey] = originalFeatKey
+	})
+	codec.UpgradeHeight = -1
+
+	ctx, _, keeper := createTestInput(t, true)
+
+	apps := make([]types.Application, 3)
+	pubKeys := make([]crypto.PublicKey, 4)
+	addrs := make([]sdk.Address, 4)
+	for i := range apps {
+		apps[i] = createNewApplication()
+		pubKeys[i] = apps[i].PublicKey
+		addrs[i] = sdk.Address(pubKeys[i].Address())
+		amount := sdk.NewInt(int64(i) * 10000000)
+		fundAccount(t, &ctx, &keeper, apps[i].Address, amount)
+		assert.Nil(t, keeper.StakeApplication(ctx, apps[i], amount))
+	}
+	pubKeys[3] = getRandomPubKey()
+	addrs[3] = sdk.Address(pubKeys[3].Address())
+
+	// apps[0]: staked
+	// apps[1]: unstaking
+	// apps[2]: staked and jailed
+	keeper.BeginUnstakingApplication(ctx, apps[1])
+	keeper.JailApplication(ctx, apps[2].Address)
+
+	stakedApps := keeper.GetApplications(ctx, uint16(len(apps)*2))
+	assert.Equal(t, len(apps), len(stakedApps))
+
+	// transfer: apps[0]-->apps[3](new) fails before ugprade
+	err := transferApp(t, &ctx, &keeper, pubKeys[0], pubKeys[3])
+	assert.NotNil(t, err)
+	assert.Equal(t, keeper.Codespace(), err.Codespace())
+	assert.Equal(t, types.CodeInvalidStatus, err.Code())
+
+	// upgrade!
+	codec.UpgradeFeatureMap[codec.AppTransferKey] = -1
+
+	// transfer: apps[0]-->apps[3](new) - success
+	err = transferApp(t, &ctx, &keeper, pubKeys[0], pubKeys[3])
+	assert.Nil(t, err)
+
+	// transfer: apps[3]-->apps[2](unstaking) - fail
+	err = transferApp(t, &ctx, &keeper, pubKeys[3], pubKeys[2])
+	assert.NotNil(t, err)
+	assert.Equal(t, keeper.Codespace(), err.Codespace())
+	assert.Equal(t, types.CodeInvalidStatus, err.Code())
+
+	// transfer: apps[3]-->apps[0](previous owner) success
+	err = transferApp(t, &ctx, &keeper, pubKeys[3], pubKeys[0])
+	assert.Nil(t, err)
+
+	// transfer an unstaking app - fail
+	err = transferApp(t, &ctx, &keeper, pubKeys[1], getRandomPubKey())
+	assert.NotNil(t, err)
+	assert.Equal(t, keeper.Codespace(), err.Codespace())
+	assert.Equal(t, types.CodeInvalidStatus, err.Code())
+
+	// transfer a new app - fail
+	err = transferApp(t, &ctx, &keeper, getRandomPubKey(), getRandomPubKey())
+	assert.NotNil(t, err)
+	assert.Equal(t, keeper.Codespace(), err.Codespace())
+	assert.Equal(t, types.CodeInvalidStatus, err.Code())
+
+	// verify the state
+	// app[0]: staked
+	// app[1]: unstaking
+	// app[2]: staked and jailed
+	stakedApps = keeper.GetApplications(ctx, uint16(len(apps)*2))
+	assert.Equal(t, 3, len(stakedApps))
+	stakedApp, found := keeper.GetApplication(ctx, addrs[0])
+	assert.True(t, found)
+	assert.True(t, stakedApp.IsStaked())
+	stakedApp, found = keeper.GetApplication(ctx, addrs[1])
+	assert.True(t, found)
+	assert.True(t, stakedApp.IsUnstaking())
+	stakedApp, found = keeper.GetApplication(ctx, addrs[2])
+	assert.True(t, found)
+	assert.True(t, stakedApp.IsStaked())
+	assert.True(t, stakedApp.IsJailed())
+
+	// transfer a jailed app - success
+	err = transferApp(t, &ctx, &keeper, pubKeys[2], pubKeys[3])
+	assert.Nil(t, err)
+	stakedApp, found = keeper.GetApplication(ctx, addrs[2])
+	assert.False(t, found)
+	stakedApp, found = keeper.GetApplication(ctx, addrs[3])
+	assert.True(t, found)
+	assert.True(t, stakedApp.IsStaked())
+	assert.True(t, stakedApp.IsJailed())
 }

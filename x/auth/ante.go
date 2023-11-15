@@ -72,6 +72,17 @@ func ValidateTransaction(ctx sdk.Ctx, k Keeper, stdTx types.StdTx, params Params
 			k.POSKeeper.GetMsgStakeOutputSigner(ctx, stdTx.Msg))
 	}
 
+	if ctx.IsAfterUpgradeHeight() &&
+		k.Cdc.IsAfterAppTransferUpgrade(ctx.BlockHeight()) {
+		msgSigner := sdk.Address(stdTx.Signature.Address())
+		// AppMsgStake has a special case of AppTransfer.  In that case, we accept
+		// a message where the pubkey is different from the signer, delegating
+		// most of validation work to the app's message handler after fee deduction.
+		if k.AppKeeper.IsMsgAppTransfer(ctx, msgSigner, stdTx.Msg) {
+			validSigners = append(validSigners, msgSigner)
+		}
+	}
+
 	var pk posCrypto.PublicKey
 	for _, signer := range validSigners {
 		// attempt to get the public key from the signature
