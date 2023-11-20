@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"log"
 
-	"golang.org/x/exp/slices"
-
 	sdk "github.com/pokt-network/pocket-core/types"
 	appexported "github.com/pokt-network/pocket-core/x/apps/exported"
 	"github.com/pokt-network/pocket-core/x/nodes/exported"
@@ -105,7 +103,7 @@ type SessionNodes []sdk.Address
 
 // "NewSessionNodes" - Generates nodes for the session
 func NewSessionNodes(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, chain string, sessionKey SessionKey, sessionNodesCount int) (sessionNodes SessionNodes, err sdk.Error) {
-	// Ensure that the servicer is not staked to more than the permitted number of chains
+	// retrieve the enforce max chains flag's value from the codec
 	isEnforceMaxChains := ModuleCdc.IsAfterEnforceMaxChainsUpgrade(ctx.BlockHeight())
 	// all nodesAddrs at session genesis
 	nodesAddrs, totalNodes := keeper.GetValidatorsByChain(sessionCtx, chain)
@@ -144,7 +142,14 @@ func NewSessionNodes(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, chain string, se
 		if isEnforceMaxChains && lenNodeChains > keeper.MaxChains(ctx) {
 			// Skip the node for selection if it's first n chains does not
 			// contain the desired chain, where n = pos/MaximumChains
-			if !slices.Contains(node.GetChains()[:keeper.MaxChains(ctx)], chain) {
+			found := false
+			for _, c := range node.GetChains()[:keeper.MaxChains(ctx)] {
+				if c == chain {
+					found = true
+					break
+				}
+			}
+			if !found {
 				continue
 			}
 		}
