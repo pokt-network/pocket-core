@@ -5,7 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"slices"
+
+	"golang.org/x/exp/slices"
 
 	sdk "github.com/pokt-network/pocket-core/types"
 	appexported "github.com/pokt-network/pocket-core/x/apps/exported"
