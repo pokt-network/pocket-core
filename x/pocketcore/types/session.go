@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"slices"
 
 	sdk "github.com/pokt-network/pocket-core/types"
 	appexported "github.com/pokt-network/pocket-core/x/apps/exported"
@@ -103,6 +104,8 @@ type SessionNodes []sdk.Address
 
 // "NewSessionNodes" - Generates nodes for the session
 func NewSessionNodes(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, chain string, sessionKey SessionKey, sessionNodesCount int) (sessionNodes SessionNodes, err sdk.Error) {
+	// Ensure that the servicer is not staked to more than the permitted number of chains
+	isEnforceMaxChains := ModuleCdc.IsAfterEnforceMaxChainsUpgrade(ctx.BlockHeight())
 	// all nodesAddrs at session genesis
 	nodesAddrs, totalNodes := keeper.GetValidatorsByChain(sessionCtx, chain)
 	// validate nodesAddrs
@@ -134,6 +137,16 @@ func NewSessionNodes(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, chain string, se
 
 		// cross check the node from the `new` or `end` world state
 		node = keeper.Validator(ctx, n)
+		// if the node is overstaked to chains, then only allow it to join
+		// sessions for those chains in the first n indicies of its chains
+		lenNodeChains := int64(len(node.GetChains()))
+		if isEnforceMaxChains && lenNodeChains > keeper.MaxChains(ctx) {
+			// Skip the node for selection if it's first n chains does not
+			// contain the desired chain, where n = pos/MaximumChains
+			if !slices.Contains(node.GetChains()[:keeper.MaxChains(ctx)], chain) {
+				continue
+			}
+		}
 		// if not found or jailed
 		if node == nil ||
 			node.IsJailed() ||

@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/tendermint/tendermint/rpc/client"
+
 	"github.com/pokt-network/pocket-core/codec"
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/auth"
 	"github.com/pokt-network/pocket-core/x/auth/util"
 	pc "github.com/pokt-network/pocket-core/x/pocketcore/types"
-	"github.com/tendermint/tendermint/rpc/client"
 )
 
 // "SendClaimTx" - Automatically sends a claim of work/challenge based on relays or challenges stored.
@@ -115,16 +116,10 @@ func (k Keeper) ValidateClaim(ctx sdk.Ctx, claim pc.MsgClaim) (err sdk.Error) {
 		return pc.NewChainNotSupportedErr(pc.ModuleName)
 	}
 	// get the node from the keeper (at the state of the start of the session)
-	node, found := k.GetNode(sessionContext, claim.FromAddress)
+	_, found := k.GetNode(sessionContext, claim.FromAddress)
 	// if not found return not found error
 	if !found {
 		return pc.NewNodeNotFoundErr(pc.ModuleName)
-	}
-	// Ensure that the servicer is not staked to more than the permitted number of chains
-	isEnforceMaxChains := k.Cdc.IsAfterEnforceMaxChainsUpgrade(ctx.BlockHeight())
-	lenNodeChains := int64(len(node.GetChains()))
-	if isEnforceMaxChains && lenNodeChains > k.posKeeper.MaxChains(ctx) {
-		return pc.NewChainsOverLimitError(pc.ModuleName, lenNodeChains, k.posKeeper.MaxChains(ctx))
 	}
 	// get the application (at the state of the start of the session)
 	app, found := k.GetAppFromPublicKey(sessionContext, claim.SessionHeader.ApplicationPubKey)
