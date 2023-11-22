@@ -136,25 +136,10 @@ func NewSessionNodes(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, chain string, se
 
 		// cross check the node from the `new` or `end` world state
 		node = keeper.Validator(ctx, n)
-		// if the node is overstaked to chains, then only allow it to join
-		// sessions for those chains in the first n indicies of its chains
 		lenNodeChains := int64(len(node.GetChains()))
-		if isEnforceMaxChains && lenNodeChains > keeper.MaxChains(ctx) {
-			// Skip the node for selection if it's first n chains does not
-			// contain the desired chain, where n = pos/MaximumChains
-			found := false
-			for _, c := range node.GetChains()[:keeper.MaxChains(ctx)] {
-				if c == chain {
-					found = true
-					break
-				}
-			}
-			if !found {
-				continue
-			}
-		}
-		// if not found or jailed
+		// if not found or jailed or is overstaked to chains
 		if node == nil ||
+			(isEnforceMaxChains && lenNodeChains > keeper.MaxChains(ctx)) ||
 			node.IsJailed() ||
 			!NodeHasChain(chain, node) ||
 			sessionNodes.Contains(node.GetAddress()) {
