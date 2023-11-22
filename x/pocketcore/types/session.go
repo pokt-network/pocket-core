@@ -22,7 +22,13 @@ func (s Session) HashString() string {
 }
 
 // "NewSession" - create a new session from seed data
-func NewSession(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, sessionHeader SessionHeader, blockHash string, sessionNodesCount int) (Session, sdk.Error) {
+func NewSession(
+	sessionCtx, ctx sdk.Ctx,
+	keeper PosKeeper,
+	sessionHeader SessionHeader,
+	blockHash string,
+	sessionNodesCount int,
+) (Session, sdk.Error) {
 	// first generate session key
 	sessionKey, err := NewSessionKey(sessionHeader.ApplicationPubKey, sessionHeader.Chain, blockHash)
 	if err != nil {
@@ -102,7 +108,13 @@ func (s Session) Key() ([]byte, error) {
 type SessionNodes []sdk.Address
 
 // "NewSessionNodes" - Generates nodes for the session
-func NewSessionNodes(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, chain string, sessionKey SessionKey, sessionNodesCount int) (sessionNodes SessionNodes, err sdk.Error) {
+func NewSessionNodes(
+	sessionCtx, ctx sdk.Ctx,
+	keeper PosKeeper,
+	chain string,
+	sessionKey SessionKey,
+	sessionNodesCount int,
+) (sessionNodes SessionNodes, err sdk.Error) {
 	// retrieve the enforce max chains flag's value from the codec
 	isEnforceMaxChains := ModuleCdc.IsAfterEnforceMaxChainsUpgrade(ctx.BlockHeight())
 	// all nodesAddrs at session genesis
@@ -139,7 +151,7 @@ func NewSessionNodes(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, chain string, se
 		lenNodeChains := int64(len(node.GetChains()))
 		// if not found or jailed or is overstaked to chains
 		if node == nil ||
-			(isEnforceMaxChains && lenNodeChains > keeper.MaxChains(ctx)) ||
+			isEnforceMaxChains && lenNodeChains > keeper.MaxChains(ctx) ||
 			node.IsJailed() ||
 			!NodeHasChain(chain, node) ||
 			sessionNodes.Contains(node.GetAddress()) {
