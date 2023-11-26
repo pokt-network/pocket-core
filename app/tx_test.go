@@ -11,6 +11,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+	rand2 "github.com/tendermint/tendermint/libs/rand"
+	"github.com/tendermint/tendermint/node"
+	tmTypes "github.com/tendermint/tendermint/types"
+
 	"github.com/pokt-network/pocket-core/codec"
 	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/crypto/keys"
@@ -23,10 +28,6 @@ import (
 	"github.com/pokt-network/pocket-core/x/nodes"
 	nodeTypes "github.com/pokt-network/pocket-core/x/nodes/types"
 	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
-	"github.com/stretchr/testify/assert"
-	rand2 "github.com/tendermint/tendermint/libs/rand"
-	"github.com/tendermint/tendermint/node"
-	tmTypes "github.com/tendermint/tendermint/types"
 )
 
 func TestMain(m *testing.M) {
@@ -41,8 +42,16 @@ func TestUnstakeApp(t *testing.T) {
 		memoryNodeFn func(t *testing.T, genesisState []byte) (tendermint *node.Node, keybase keys.Keybase, cleanup func())
 		*upgrades
 	}{
-		{name: "unstake an amino app with amino codec", memoryNodeFn: NewInMemoryTendermintNodeAmino, upgrades: &upgrades{codecUpgrade: codecUpgrade{false, 7000}}},
-		{name: "unstake a proto app with proto codec", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}}}, // todo: FULL PROTO SCENARIO
+		{
+			name:         "unstake an amino app with amino codec",
+			memoryNodeFn: NewInMemoryTendermintNodeAmino,
+			upgrades:     &upgrades{codecUpgrade: codecUpgrade{false, 7000}},
+		},
+		{
+			name:         "unstake a proto app with proto codec",
+			memoryNodeFn: NewInMemoryTendermintNodeProto,
+			upgrades:     &upgrades{codecUpgrade: codecUpgrade{true, 2}},
+		}, // todo: FULL PROTO SCENARIO
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
@@ -56,7 +65,7 @@ func TestUnstakeApp(t *testing.T) {
 			assert.Nil(t, err)
 			_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 			var tx *sdk.TxResponse
-			var chains = []string{"0001"}
+			chains := []string{"0001"}
 			<-evtChan // Wait for block
 			memCli, _, evtChan := subscribeTo(t, tmTypes.EventTx)
 			tx, err = apps.StakeTx(memCodec(), memCli, kb, chains, sdk.NewInt(1000000), kp, "test", tc.codecUpgrade.upgradeMod)
@@ -66,7 +75,8 @@ func TestUnstakeApp(t *testing.T) {
 			<-evtChan // Wait for tx
 			got, err := PCA.QueryApps(PCA.LastBlockHeight(), appsTypes.QueryApplicationsWithOpts{
 				Page:  1,
-				Limit: 1})
+				Limit: 1,
+			})
 			assert.Nil(t, err)
 			res := got.Result.(appsTypes.Applications)
 			assert.Equal(t, 1, len(res))
@@ -96,14 +106,23 @@ func TestUnstakeApp(t *testing.T) {
 		})
 	}
 }
+
 func TestStakeApp(t *testing.T) {
 	tt := []struct {
 		name         string
 		memoryNodeFn func(t *testing.T, genesisState []byte) (tendermint *node.Node, keybase keys.Keybase, cleanup func())
 		*upgrades
 	}{
-		{name: "stake app with amino codec", memoryNodeFn: NewInMemoryTendermintNodeAmino, upgrades: &upgrades{codecUpgrade: codecUpgrade{false, 7000}}},
-		{name: "stake a proto app with proto codec", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}}}, // TODO FULL PROTO SCENARIO
+		{
+			name:         "stake app with amino codec",
+			memoryNodeFn: NewInMemoryTendermintNodeAmino,
+			upgrades:     &upgrades{codecUpgrade: codecUpgrade{false, 7000}},
+		},
+		{
+			name:         "stake a proto app with proto codec",
+			memoryNodeFn: NewInMemoryTendermintNodeProto,
+			upgrades:     &upgrades{codecUpgrade: codecUpgrade{true, 2}},
+		}, // TODO FULL PROTO SCENARIO
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
@@ -118,7 +137,7 @@ func TestStakeApp(t *testing.T) {
 			assert.Nil(t, err)
 			_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 			var tx *sdk.TxResponse
-			var chains = []string{"0001"}
+			chains := []string{"0001"}
 
 			<-evtChan // Wait for block
 			memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
@@ -140,13 +159,18 @@ func TestStakeApp(t *testing.T) {
 		})
 	}
 }
+
 func TestEditStakeApp(t *testing.T) {
 	tt := []struct {
 		name         string
 		memoryNodeFn func(t *testing.T, genesisState []byte) (tendermint *node.Node, keybase keys.Keybase, cleanup func())
 		*upgrades
 	}{
-		{name: "editStake a proto application with proto codec", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}}},
+		{
+			name:         "editStake a proto application with proto codec",
+			memoryNodeFn: NewInMemoryTendermintNodeProto,
+			upgrades:     &upgrades{codecUpgrade: codecUpgrade{true, 2}},
+		},
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
@@ -154,7 +178,7 @@ func TestEditStakeApp(t *testing.T) {
 				codec.UpgradeHeight = tc.upgrades.codecUpgrade.height
 				_ = memCodecMod(tc.upgrades.codecUpgrade.upgradeMod)
 			}
-			var newChains = []string{"2121"}
+			newChains := []string{"2121"}
 			_, kb, cleanup := tc.memoryNodeFn(t, oneAppTwoNodeGenesis())
 			time.Sleep(1 * time.Second)
 			kp, err := kb.GetCoinbase()
@@ -175,7 +199,7 @@ func TestEditStakeApp(t *testing.T) {
 			assert.Nil(t, err)
 			n, err := PCA.QueryApp(kp.GetAddress().String(), PCA.LastBlockHeight())
 			assert.Nil(t, err)
-			var newBalance = balance.Sub(sdk.NewInt(100000)).Add(n.StakedTokens)
+			newBalance := balance.Sub(sdk.NewInt(100000)).Add(n.StakedTokens)
 			tx, err = apps.StakeTx(memCodec(), memCli, kb, newChains, newBalance, kp, "test", tc.upgrades.codecUpgrade.upgradeMod)
 			assert.Nil(t, err)
 			assert.NotNil(t, tx)
@@ -201,9 +225,21 @@ func TestUnstakeNode(t *testing.T) {
 		outputIsSigner bool
 		*upgrades
 	}{
-		{name: "unstake a proto node with proto codec", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}}},
-		{name: "unstake an amino node with amino codec", memoryNodeFn: NewInMemoryTendermintNodeAmino, upgrades: &upgrades{codecUpgrade: codecUpgrade{false, 7000}}},
-		{name: "unstake a node with new msg before 8 upgrade", memoryNodeFn: NewInMemoryTendermintNodeAmino, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}, eight0Upgrade: upgrade{height: 999999}}},
+		{
+			name:         "unstake a proto node with proto codec",
+			memoryNodeFn: NewInMemoryTendermintNodeProto,
+			upgrades:     &upgrades{codecUpgrade: codecUpgrade{true, 2}},
+		},
+		{
+			name:         "unstake an amino node with amino codec",
+			memoryNodeFn: NewInMemoryTendermintNodeAmino,
+			upgrades:     &upgrades{codecUpgrade: codecUpgrade{false, 7000}},
+		},
+		{
+			name:         "unstake a node with new msg before 8 upgrade",
+			memoryNodeFn: NewInMemoryTendermintNodeAmino,
+			upgrades:     &upgrades{codecUpgrade: codecUpgrade{true, 2}, eight0Upgrade: upgrade{height: 999999}},
+		},
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
@@ -219,7 +255,7 @@ func TestUnstakeNode(t *testing.T) {
 				isAfter8 = true
 			}
 
-			var chains = []string{"0001"}
+			chains := []string{"0001"}
 			gen, _ := twoValTwoNodeGenesisState()
 			_, kb, cleanup := tc.memoryNodeFn(t, gen)
 			time.Sleep(1 * time.Second)
@@ -288,8 +324,8 @@ func TestUnstakeNode(t *testing.T) {
 			}
 		})
 	}
-
 }
+
 func TestStakeNode(t *testing.T) {
 	tt := []struct {
 		name           string
@@ -297,10 +333,28 @@ func TestStakeNode(t *testing.T) {
 		outputIsSigner bool
 		*upgrades
 	}{
-		{name: "stake node with amino codec", memoryNodeFn: NewInMemoryTendermintNodeAmino, upgrades: &upgrades{codecUpgrade: codecUpgrade{false, 7000}}},
-		{name: "stake a proto node with proto codec", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}}},
-		{name: "stake a proto node with proto codec bad signer", memoryNodeFn: NewInMemoryTendermintNodeProto, outputIsSigner: true, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}}},
-		{name: "stake non-custodial before 8 upgrade ", memoryNodeFn: NewInMemoryTendermintNodeProto, outputIsSigner: false, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}, eight0Upgrade: upgrade{height: 999999}}},
+		{
+			name:         "stake node with amino codec",
+			memoryNodeFn: NewInMemoryTendermintNodeAmino,
+			upgrades:     &upgrades{codecUpgrade: codecUpgrade{false, 7000}},
+		},
+		{
+			name:         "stake a proto node with proto codec",
+			memoryNodeFn: NewInMemoryTendermintNodeProto,
+			upgrades:     &upgrades{codecUpgrade: codecUpgrade{true, 2}},
+		},
+		{
+			name:           "stake a proto node with proto codec bad signer",
+			memoryNodeFn:   NewInMemoryTendermintNodeProto,
+			outputIsSigner: true,
+			upgrades:       &upgrades{codecUpgrade: codecUpgrade{true, 2}},
+		},
+		{
+			name:           "stake non-custodial before 8 upgrade ",
+			memoryNodeFn:   NewInMemoryTendermintNodeProto,
+			outputIsSigner: false,
+			upgrades:       &upgrades{codecUpgrade: codecUpgrade{true, 2}, eight0Upgrade: upgrade{height: 999999}},
+		},
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
@@ -330,10 +384,23 @@ func TestStakeNode(t *testing.T) {
 			assert.Nil(t, err)
 			_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 			var tx *sdk.TxResponse
-			var chains = []string{"0001"}
+			chains := []string{"0001"}
 			<-evtChan // Wait for block
 			memCli, stopCli, _ := subscribeTo(t, tmTypes.EventTx)
-			tx, err = nodes.StakeTx(memCodec(), memCli, kb, chains, "https://myPocketNode.com:8080", sdk.NewInt(10000000), kp, signer, "test", tc.upgrades.codecUpgrade.upgradeMod, isAfter8, signer)
+			tx, err = nodes.StakeTx(
+				memCodec(),
+				memCli,
+				kb,
+				chains,
+				"https://myPocketNode.com:8080",
+				sdk.NewInt(10000000),
+				kp,
+				signer,
+				"test",
+				tc.upgrades.codecUpgrade.upgradeMod,
+				isAfter8,
+				signer,
+			)
 			assert.Nil(t, err)
 			assert.NotNil(t, tx)
 			if isAfter8 == false && tc.outputIsSigner {
@@ -345,10 +412,10 @@ func TestStakeNode(t *testing.T) {
 			}
 			cleanup()
 			stopCli()
-
 		})
 	}
 }
+
 func TestEditStakeNode(t *testing.T) {
 	tt := []struct {
 		name           string
@@ -356,7 +423,12 @@ func TestEditStakeNode(t *testing.T) {
 		outputIsSigner bool
 		*upgrades
 	}{
-		{name: "editStake after proto upgrade", memoryNodeFn: NewInMemoryTendermintNodeProto, outputIsSigner: false, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}}},
+		{
+			name:           "editStake after proto upgrade",
+			memoryNodeFn:   NewInMemoryTendermintNodeProto,
+			outputIsSigner: false,
+			upgrades:       &upgrades{codecUpgrade: codecUpgrade{true, 2}},
+		},
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
@@ -374,8 +446,8 @@ func TestEditStakeNode(t *testing.T) {
 			} else {
 				codec.TestMode = -2
 			}
-			var newChains = []string{"2121"}
-			var newServiceURL = "https://newServiceUrl.com:8081"
+			newChains := []string{"2121"}
+			newServiceURL := "https://newServiceUrl.com:8081"
 			gen, vals := twoValTwoNodeGenesisState()
 			_, kb, cleanup := tc.memoryNodeFn(t, gen)
 			time.Sleep(1 * time.Second)
@@ -398,9 +470,22 @@ func TestEditStakeNode(t *testing.T) {
 			assert.Nil(t, err)
 			n, err := PCA.QueryNode(kp.GetAddress().String(), PCA.LastBlockHeight())
 			assert.Nil(t, err)
-			var newBalance = balance.Sub(sdk.NewInt(100000)).Add(n.StakedTokens)
+			newBalance := balance.Sub(sdk.NewInt(100000)).Add(n.StakedTokens)
 			fmt.Println(signer.String())
-			tx, err = nodes.StakeTx(memCodec(), memCli, kb, newChains, newServiceURL, newBalance, kp, signer, "test", tc.upgrades.codecUpgrade.upgradeMod, isAfter8, signer)
+			tx, err = nodes.StakeTx(
+				memCodec(),
+				memCli,
+				kb,
+				newChains,
+				newServiceURL,
+				newBalance,
+				kp,
+				signer,
+				"test",
+				tc.upgrades.codecUpgrade.upgradeMod,
+				isAfter8,
+				signer,
+			)
 			assert.Nil(t, err)
 			assert.NotNil(t, tx)
 			<-evtChan // Wait for tx
@@ -427,7 +512,12 @@ func TestEditStakeNodeOutput(t *testing.T) {
 		outputIsSigner bool
 		*upgrades
 	}{
-		{name: "editStake output update flow", memoryNodeFn: NewInMemoryTendermintNodeProto, outputIsSigner: true, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}}},
+		{
+			name:           "editStake output update flow",
+			memoryNodeFn:   NewInMemoryTendermintNodeProto,
+			outputIsSigner: true,
+			upgrades:       &upgrades{codecUpgrade: codecUpgrade{true, 2}},
+		},
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
@@ -437,8 +527,8 @@ func TestEditStakeNodeOutput(t *testing.T) {
 				_ = memCodecMod(tc.upgrades.codecUpgrade.upgradeMod)
 			}
 			codec.TestMode = -2
-			var newChains = []string{"2121"}
-			var newServiceURL = "https://newServiceUrl.com:8081"
+			newChains := []string{"2121"}
+			newServiceURL := "https://newServiceUrl.com:8081"
 			gen, _ := twoValTwoNodeGenesisState()
 			_, kb, cleanup := tc.memoryNodeFn(t, gen)
 			time.Sleep(1 * time.Second)
@@ -454,8 +544,21 @@ func TestEditStakeNodeOutput(t *testing.T) {
 			assert.Nil(t, err)
 			n, err := PCA.QueryNode(kp.GetAddress().String(), PCA.LastBlockHeight())
 			assert.Nil(t, err)
-			var newBalance = balance.Sub(sdk.NewInt(100000)).Add(n.StakedTokens)
-			tx, err = nodes.StakeTx(memCodec(), memCli, kb, newChains, newServiceURL, newBalance, kp, signer, "test", tc.upgrades.codecUpgrade.upgradeMod, false, signer)
+			newBalance := balance.Sub(sdk.NewInt(100000)).Add(n.StakedTokens)
+			tx, err = nodes.StakeTx(
+				memCodec(),
+				memCli,
+				kb,
+				newChains,
+				newServiceURL,
+				newBalance,
+				kp,
+				signer,
+				"test",
+				tc.upgrades.codecUpgrade.upgradeMod,
+				false,
+				signer,
+			)
 			assert.Nil(t, err)
 			assert.NotNil(t, tx)
 			<-evtChan // Wait for tx
@@ -475,7 +578,20 @@ func TestEditStakeNodeOutput(t *testing.T) {
 			codec.UpgradeFeatureMap[codec.NonCustodialUpdateKey] = tc.eight0Upgrade.height
 			isAfter8 := true
 			newBalance = nodeUpdated.StakedTokens.Add(sdk.NewInt(1000))
-			tx, err = nodes.StakeTx(memCodec(), memCli, kb, newChains, newServiceURL, newBalance, kp, signer, "test", tc.upgrades.codecUpgrade.upgradeMod, isAfter8, signer)
+			tx, err = nodes.StakeTx(
+				memCodec(),
+				memCli,
+				kb,
+				newChains,
+				newServiceURL,
+				newBalance,
+				kp,
+				signer,
+				"test",
+				tc.upgrades.codecUpgrade.upgradeMod,
+				isAfter8,
+				signer,
+			)
 			assert.Nil(t, err)
 			assert.NotNil(t, tx)
 			<-evtChan // Wait for tx
@@ -497,8 +613,18 @@ func TestUnstakeNode8(t *testing.T) {
 		outputIsSigner bool
 		*upgrades
 	}{
-		{name: "unstake after 8.0 upgrade; output is signer", memoryNodeFn: NewInMemoryTendermintNodeProto, outputIsSigner: true, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}, eight0Upgrade: upgrade{3}}},
-		{name: "unstake after 8.0 upgrade; output is not signer", memoryNodeFn: NewInMemoryTendermintNodeProto, outputIsSigner: false, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}, eight0Upgrade: upgrade{3}}},
+		{
+			name:           "unstake after 8.0 upgrade; output is signer",
+			memoryNodeFn:   NewInMemoryTendermintNodeProto,
+			outputIsSigner: true,
+			upgrades:       &upgrades{codecUpgrade: codecUpgrade{true, 2}, eight0Upgrade: upgrade{3}},
+		},
+		{
+			name:           "unstake after 8.0 upgrade; output is not signer",
+			memoryNodeFn:   NewInMemoryTendermintNodeProto,
+			outputIsSigner: false,
+			upgrades:       &upgrades{codecUpgrade: codecUpgrade{true, 2}, eight0Upgrade: upgrade{3}},
+		},
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
@@ -513,7 +639,7 @@ func TestUnstakeNode8(t *testing.T) {
 				codec.UpgradeFeatureMap[codec.NonCustodialUpdateKey] = tc.eight0Upgrade.height
 				isAfter8 = true
 			}
-			var chains = []string{"0001"}
+			chains := []string{"0001"}
 			gen, vals := twoValTwoNodeGenesisState8()
 			_, kb, cleanup := tc.memoryNodeFn(t, gen)
 			time.Sleep(1 * time.Second)
@@ -543,7 +669,20 @@ func TestUnstakeNode8(t *testing.T) {
 				}
 			}
 			// set output address
-			tx, err = nodes.StakeTx(memCodec(), memCli, kb, chains, "https://myPocketNode.com:8080", sdk.NewInt(1000000000000000), kp, output, "test", tc.upgrades.codecUpgrade.upgradeMod, isAfter8, signer)
+			tx, err = nodes.StakeTx(
+				memCodec(),
+				memCli,
+				kb,
+				chains,
+				"https://myPocketNode.com:8080",
+				sdk.NewInt(1000000000000000),
+				kp,
+				output,
+				"test",
+				tc.upgrades.codecUpgrade.upgradeMod,
+				isAfter8,
+				signer,
+			)
 			assert.Nil(t, err)
 			assert.NotNil(t, tx)
 			<-evtChan // Wait for tx
@@ -556,18 +695,27 @@ func TestUnstakeNode8(t *testing.T) {
 				select {
 				case res := <-evtChan:
 					if len(res.Events["begin_unstake.module"]) == 1 {
-						got, err := PCA.QueryNodes(PCA.LastBlockHeight(), nodeTypes.QueryValidatorsParams{StakingStatus: 1, JailedStatus: 0, Blockchain: "", Page: 1, Limit: 1}) // unstaking
+						got, err := PCA.QueryNodes(
+							PCA.LastBlockHeight(),
+							nodeTypes.QueryValidatorsParams{StakingStatus: 1, JailedStatus: 0, Blockchain: "", Page: 1, Limit: 1},
+						) // unstaking
 						assert.Nil(t, err)
 						res := got.Result.([]nodeTypes.Validator)
 						assert.Equal(t, 1, len(res))
-						got, err = PCA.QueryNodes(PCA.LastBlockHeight(), nodeTypes.QueryValidatorsParams{StakingStatus: 2, JailedStatus: 0, Blockchain: "", Page: 1, Limit: 1}) // staked
+						got, err = PCA.QueryNodes(
+							PCA.LastBlockHeight(),
+							nodeTypes.QueryValidatorsParams{StakingStatus: 2, JailedStatus: 0, Blockchain: "", Page: 1, Limit: 1},
+						) // staked
 						assert.Nil(t, err)
 						res = got.Result.([]nodeTypes.Validator)
 						assert.Equal(t, 1, len(res))
 						memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlockHeader)
 						header := <-evtChan // Wait for header
 						if len(header.Events["unstake.module"]) == 1 {
-							got, err := PCA.QueryNodes(PCA.LastBlockHeight(), nodeTypes.QueryValidatorsParams{StakingStatus: 0, JailedStatus: 0, Blockchain: "", Page: 1, Limit: 1})
+							got, err := PCA.QueryNodes(
+								PCA.LastBlockHeight(),
+								nodeTypes.QueryValidatorsParams{StakingStatus: 0, JailedStatus: 0, Blockchain: "", Page: 1, Limit: 1},
+							)
 							assert.Nil(t, err)
 							res := got.Result.([]nodeTypes.Validator)
 							assert.Equal(t, 1, len(res))
@@ -576,7 +724,20 @@ func TestUnstakeNode8(t *testing.T) {
 							balance, err := PCA.QueryBalance(addr.String(), PCA.LastBlockHeight())
 							assert.Nil(t, err)
 							assert.NotEqual(t, balance, sdk.ZeroInt())
-							tx, err = nodes.StakeTx(memCodec(), memCli, kb, chains, "https://myPocketNode.com:8080", sdk.NewInt(10000000), kp, signer, "test", tc.upgrades.codecUpgrade.upgradeMod, isAfter8, signer)
+							tx, err = nodes.StakeTx(
+								memCodec(),
+								memCli,
+								kb,
+								chains,
+								"https://myPocketNode.com:8080",
+								sdk.NewInt(10000000),
+								kp,
+								signer,
+								"test",
+								tc.upgrades.codecUpgrade.upgradeMod,
+								isAfter8,
+								signer,
+							)
 							assert.Nil(t, err)
 							assert.NotNil(t, tx)
 							assert.Equal(t, tx.Code, uint32(0x0))
@@ -592,8 +753,8 @@ func TestUnstakeNode8(t *testing.T) {
 			}
 		})
 	}
-
 }
+
 func TestStakeNodeAfter8(t *testing.T) {
 	tt := []struct {
 		name           string
@@ -601,8 +762,18 @@ func TestStakeNodeAfter8(t *testing.T) {
 		outputIsSigner bool
 		*upgrades
 	}{
-		{name: "stake after 8.0 upgrade; output is signer", memoryNodeFn: NewInMemoryTendermintNodeProto, outputIsSigner: true, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}, eight0Upgrade: upgrade{height: 2}}},
-		{name: "stake after 8.0 upgrade; output is not signer", memoryNodeFn: NewInMemoryTendermintNodeProto, outputIsSigner: false, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}, eight0Upgrade: upgrade{height: 2}}},
+		{
+			name:           "stake after 8.0 upgrade; output is signer",
+			memoryNodeFn:   NewInMemoryTendermintNodeProto,
+			outputIsSigner: true,
+			upgrades:       &upgrades{codecUpgrade: codecUpgrade{true, 2}, eight0Upgrade: upgrade{height: 2}},
+		},
+		{
+			name:           "stake after 8.0 upgrade; output is not signer",
+			memoryNodeFn:   NewInMemoryTendermintNodeProto,
+			outputIsSigner: false,
+			upgrades:       &upgrades{codecUpgrade: codecUpgrade{true, 2}, eight0Upgrade: upgrade{height: 2}},
+		},
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
@@ -631,10 +802,23 @@ func TestStakeNodeAfter8(t *testing.T) {
 			assert.Nil(t, err)
 			_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 			var tx *sdk.TxResponse
-			var chains = []string{"0001"}
+			chains := []string{"0001"}
 			<-evtChan // Wait for block
 			memCli, stopCli, _ := subscribeTo(t, tmTypes.EventTx)
-			tx, err = nodes.StakeTx(memCodec(), memCli, kb, chains, "https://myPocketNode.com:8080", sdk.NewInt(10000000), kp, signer, "test", tc.upgrades.codecUpgrade.upgradeMod, isAfter8, signer)
+			tx, err = nodes.StakeTx(
+				memCodec(),
+				memCli,
+				kb,
+				chains,
+				"https://myPocketNode.com:8080",
+				sdk.NewInt(10000000),
+				kp,
+				signer,
+				"test",
+				tc.upgrades.codecUpgrade.upgradeMod,
+				isAfter8,
+				signer,
+			)
 			assert.Nil(t, err)
 			assert.NotNil(t, tx)
 			if isAfter8 == false && tc.outputIsSigner {
@@ -644,10 +828,10 @@ func TestStakeNodeAfter8(t *testing.T) {
 			}
 			cleanup()
 			stopCli()
-
 		})
 	}
 }
+
 func TestEditStakeNode8(t *testing.T) {
 	tt := []struct {
 		name           string
@@ -655,7 +839,12 @@ func TestEditStakeNode8(t *testing.T) {
 		outputIsSigner bool
 		*upgrades
 	}{
-		{name: "editStake after 8.0 upgrade", memoryNodeFn: NewInMemoryTendermintNodeProto, outputIsSigner: true, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}, eight0Upgrade: upgrade{height: 3}}},
+		{
+			name:           "editStake after 8.0 upgrade",
+			memoryNodeFn:   NewInMemoryTendermintNodeProto,
+			outputIsSigner: true,
+			upgrades:       &upgrades{codecUpgrade: codecUpgrade{true, 2}, eight0Upgrade: upgrade{height: 3}},
+		},
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
@@ -673,8 +862,8 @@ func TestEditStakeNode8(t *testing.T) {
 			} else {
 				codec.TestMode = -2
 			}
-			var newChains = []string{"2121"}
-			var newServiceURL = "https://newServiceUrl.com:8081"
+			newChains := []string{"2121"}
+			newServiceURL := "https://newServiceUrl.com:8081"
 			gen, vals := twoValTwoNodeGenesisState8()
 			_, kb, cleanup := tc.memoryNodeFn(t, gen)
 			time.Sleep(1 * time.Second)
@@ -697,9 +886,22 @@ func TestEditStakeNode8(t *testing.T) {
 			assert.Nil(t, err)
 			n, err := PCA.QueryNode(kp.GetAddress().String(), PCA.LastBlockHeight())
 			assert.Nil(t, err)
-			var newBalance = balance.Sub(sdk.NewInt(100000)).Add(n.StakedTokens)
+			newBalance := balance.Sub(sdk.NewInt(100000)).Add(n.StakedTokens)
 			fmt.Println(signer.String())
-			tx, err = nodes.StakeTx(memCodec(), memCli, kb, newChains, newServiceURL, newBalance, kp, signer, "test", tc.upgrades.codecUpgrade.upgradeMod, isAfter8, signer)
+			tx, err = nodes.StakeTx(
+				memCodec(),
+				memCli,
+				kb,
+				newChains,
+				newServiceURL,
+				newBalance,
+				kp,
+				signer,
+				"test",
+				tc.upgrades.codecUpgrade.upgradeMod,
+				isAfter8,
+				signer,
+			)
 			assert.Nil(t, err)
 			assert.NotNil(t, tx)
 			<-evtChan // Wait for tx
@@ -725,8 +927,16 @@ func TestSendTransaction(t *testing.T) {
 		memoryNodeFn func(t *testing.T, genesisState []byte) (tendermint *node.Node, keybase keys.Keybase, cleanup func())
 		*upgrades
 	}{
-		{name: "send tx from an amino account with amino codec", memoryNodeFn: NewInMemoryTendermintNodeAmino, upgrades: &upgrades{codecUpgrade: codecUpgrade{false, 7000}}},
-		{name: "send tx from a proto account with proto codec", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}}},
+		{
+			name:         "send tx from an amino account with amino codec",
+			memoryNodeFn: NewInMemoryTendermintNodeAmino,
+			upgrades:     &upgrades{codecUpgrade: codecUpgrade{false, 7000}},
+		},
+		{
+			name:         "send tx from a proto account with proto codec",
+			memoryNodeFn: NewInMemoryTendermintNodeProto,
+			upgrades:     &upgrades{codecUpgrade: codecUpgrade{true, 2}},
+		},
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
@@ -741,12 +951,21 @@ func TestSendTransaction(t *testing.T) {
 			kp, err := kb.Create("test")
 			assert.Nil(t, err)
 			_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-			var transferAmount = sdk.NewInt(1000)
+			transferAmount := sdk.NewInt(1000)
 			var tx *sdk.TxResponse
 
 			<-evtChan // Wait for block
 			memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
-			tx, err = nodes.Send(memCodec(), memCli, kb, cb.GetAddress(), kp.GetAddress(), "test", transferAmount, tc.upgrades.codecUpgrade.upgradeMod)
+			tx, err = nodes.Send(
+				memCodec(),
+				memCli,
+				kb,
+				cb.GetAddress(),
+				kp.GetAddress(),
+				"test",
+				transferAmount,
+				tc.upgrades.codecUpgrade.upgradeMod,
+			)
 			assert.Nil(t, err)
 			assert.NotNil(t, tx)
 			assert.Equal(t, int(tx.Code), 0)
@@ -770,8 +989,16 @@ func TestDuplicateTxWithRawTx(t *testing.T) {
 		memoryNodeFn func(t *testing.T, genesisState []byte) (tendermint *node.Node, keybase keys.Keybase, cleanup func())
 		*upgrades
 	}{
-		{name: "send duplicate tx from an amino account with amino codec", memoryNodeFn: NewInMemoryTendermintNodeAmino, upgrades: &upgrades{codecUpgrade: codecUpgrade{false, 7000}}},
-		{name: "send duplicate tx from a proto account with proto codec", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}}}, // TODO:  FULL PROTO SCENARIO
+		{
+			name:         "send duplicate tx from an amino account with amino codec",
+			memoryNodeFn: NewInMemoryTendermintNodeAmino,
+			upgrades:     &upgrades{codecUpgrade: codecUpgrade{false, 7000}},
+		},
+		{
+			name:         "send duplicate tx from a proto account with proto codec",
+			memoryNodeFn: NewInMemoryTendermintNodeProto,
+			upgrades:     &upgrades{codecUpgrade: codecUpgrade{true, 2}},
+		}, // TODO:  FULL PROTO SCENARIO
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
@@ -828,7 +1055,6 @@ func TestDuplicateTxWithRawTx(t *testing.T) {
 			stopCli()
 		})
 	}
-
 }
 
 func TestChangeParamsComplexTypeTx(t *testing.T) {
@@ -837,8 +1063,16 @@ func TestChangeParamsComplexTypeTx(t *testing.T) {
 		memoryNodeFn func(t *testing.T, genesisState []byte) (tendermint *node.Node, keybase keys.Keybase, cleanup func())
 		*upgrades
 	}{
-		{name: "change complex type params from an amino account with amino codec", memoryNodeFn: NewInMemoryTendermintNodeAmino, upgrades: &upgrades{codecUpgrade: codecUpgrade{false, 7000}}},
-		{name: "change complex type params from a proto account with proto codec", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}}}, // TODO: FIX !!
+		{
+			name:         "change complex type params from an amino account with amino codec",
+			memoryNodeFn: NewInMemoryTendermintNodeAmino,
+			upgrades:     &upgrades{codecUpgrade: codecUpgrade{false, 7000}},
+		},
+		{
+			name:         "change complex type params from a proto account with proto codec",
+			memoryNodeFn: NewInMemoryTendermintNodeProto,
+			upgrades:     &upgrades{codecUpgrade: codecUpgrade{true, 2}},
+		}, // TODO: FIX !!
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
@@ -864,7 +1098,7 @@ func TestChangeParamsComplexTypeTx(t *testing.T) {
 			assert.NotNil(t, tx)
 			select {
 			case _ = <-evtChan:
-				//fmt.Println(res)
+				// fmt.Println(res)
 				acl, err := PCA.QueryACL(PCA.LastBlockHeight())
 				assert.Nil(t, err)
 				o := acl.GetOwner("gov/acl")
@@ -877,14 +1111,21 @@ func TestChangeParamsComplexTypeTx(t *testing.T) {
 }
 
 func TestChangeParamsSimpleTx(t *testing.T) {
-
 	tt := []struct {
 		name         string
 		memoryNodeFn func(t *testing.T, genesisState []byte) (tendermint *node.Node, keybase keys.Keybase, cleanup func())
 		*upgrades
 	}{
-		{name: "change complex type params from an amino account with amino codec", memoryNodeFn: NewInMemoryTendermintNodeAmino, upgrades: &upgrades{codecUpgrade: codecUpgrade{false, 7000}}},
-		{name: "change complex type params from a proto account with proto codec", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}}}, // TODO: FULL PROTO SCENARIO
+		{
+			name:         "change complex type params from an amino account with amino codec",
+			memoryNodeFn: NewInMemoryTendermintNodeAmino,
+			upgrades:     &upgrades{codecUpgrade: codecUpgrade{false, 7000}},
+		},
+		{
+			name:         "change complex type params from a proto account with proto codec",
+			memoryNodeFn: NewInMemoryTendermintNodeProto,
+			upgrades:     &upgrades{codecUpgrade: codecUpgrade{true, 2}},
+		}, // TODO: FULL PROTO SCENARIO
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
@@ -907,7 +1148,7 @@ func TestChangeParamsSimpleTx(t *testing.T) {
 			assert.NotNil(t, tx)
 			select {
 			case _ = <-evtChan:
-				//fmt.Println(res)
+				// fmt.Println(res)
 				assert.Nil(t, err)
 				o, _ := PCA.QueryParam(PCA.LastBlockHeight(), "application/StabilityAdjustment")
 				assert.Equal(t, "100", o.Value)
@@ -1057,7 +1298,17 @@ func TestBlockSize_ChangeAndFillBlockSize(t *testing.T) {
 	assert.Nil(t, err)
 
 	// Set the block size to a small initial value
-	tx, err := gov.ChangeParamsTx(memCodec(), getInMemoryTMClient(), kb, cb.GetAddress(), blockSizeKey, fmt.Sprintf("%d", blockParamsMaxBytes), "test", 10000, false)
+	tx, err := gov.ChangeParamsTx(
+		memCodec(),
+		getInMemoryTMClient(),
+		kb,
+		cb.GetAddress(),
+		blockSizeKey,
+		fmt.Sprintf("%d", blockParamsMaxBytes),
+		"test",
+		10000,
+		false,
+	)
 	assert.Nil(t, err)
 	assert.NotNil(t, tx)
 
@@ -1105,7 +1356,11 @@ func TestBlockSize_ChangeAndFillBlockSize(t *testing.T) {
 
 				// Grab all the latest transactions from the block
 				height := PCA.LastBlockHeight()
-				res, err := PCA.QueryAllBlockTxs(height, 0, 1000) // we do not expect more than 1000 transactions to accumulate, hence one page is enough
+				res, err := PCA.QueryAllBlockTxs(
+					height,
+					0,
+					1000,
+				) // we do not expect more than 1000 transactions to accumulate, hence one page is enough
 				assert.Nil(t, err)
 
 				// Count the size of all the transactions
@@ -1119,11 +1374,28 @@ func TestBlockSize_ChangeAndFillBlockSize(t *testing.T) {
 				// Current max value
 				queryRes, err := PCA.QueryParam(height, blockSizeKey)
 				assert.Nil(t, err)
-				t.Logf("Transactions accumulated at height=%d: totalTxBytes=%d, len(res.Txs)=%d, TotalTxCount=%d, blockSize=%s", height, total, len(res.Txs), res.TotalCount, queryRes.Value)
+				t.Logf(
+					"Transactions accumulated at height=%d: totalTxBytes=%d, len(res.Txs)=%d, TotalTxCount=%d, blockSize=%s",
+					height,
+					total,
+					len(res.Txs),
+					res.TotalCount,
+					queryRes.Value,
+				)
 
 				// Double the block size
 				blockParamsMaxBytes *= 2
-				tx, err := gov.ChangeParamsTx(memCodec(), getInMemoryTMClient(), kb, cb.GetAddress(), blockSizeKey, fmt.Sprintf("%d", blockParamsMaxBytes), "test", 10000, false)
+				tx, err := gov.ChangeParamsTx(
+					memCodec(),
+					getInMemoryTMClient(),
+					kb,
+					cb.GetAddress(),
+					blockSizeKey,
+					fmt.Sprintf("%d", blockParamsMaxBytes),
+					"test",
+					10000,
+					false,
+				)
 				assert.Nil(t, err)
 				assert.NotNil(t, tx)
 
@@ -1138,13 +1410,16 @@ func TestBlockSize_ChangeAndFillBlockSize(t *testing.T) {
 }
 
 func TestChangepip22ParamsBeforeActivationHeight(t *testing.T) {
-
 	tt := []struct {
 		name         string
 		memoryNodeFn func(t *testing.T, genesisState []byte) (tendermint *node.Node, keybase keys.Keybase, cleanup func())
 		*upgrades
 	}{
-		{name: "change pip22 parameter before activation height", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}}}, // TODO: FULL PROTO SCENARIO
+		{
+			name:         "change pip22 parameter before activation height",
+			memoryNodeFn: NewInMemoryTendermintNodeProto,
+			upgrades:     &upgrades{codecUpgrade: codecUpgrade{true, 2}},
+		}, // TODO: FULL PROTO SCENARIO
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
@@ -1162,20 +1437,20 @@ func TestChangepip22ParamsBeforeActivationHeight(t *testing.T) {
 			assert.Nil(t, err)
 			_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 			<-evtChan // Wait for block
-			//Before Activation of the parameter ACL do not exist and the value and parameter should be 0 or nil
+			// Before Activation of the parameter ACL do not exist and the value and parameter should be 0 or nil
 			firstquery, _ := PCA.QueryParam(PCA.LastBlockHeight(), "pos/ServicerStakeWeightMultiplier")
 			assert.Equal(t, "", firstquery.Value)
 			memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
-			//Tx wont modify anything as ACL is not configured (Txresult should be gov code 5)
+			// Tx wont modify anything as ACL is not configured (Txresult should be gov code 5)
 			tx, err := gov.ChangeParamsTx(memCodec(), memCli, kb, cb.GetAddress(), "pos/ServicerStakeWeightMultiplier", 1, "test", 10000, false)
 			assert.Nil(t, err)
 			assert.NotNil(t, tx)
 			select {
 			case _ = <-evtChan:
-				//fmt.Println(res)
+				// fmt.Println(res)
 				assert.Nil(t, err)
 				o, _ := PCA.QueryParam(PCA.LastBlockHeight(), "pos/ServicerStakeWeightMultiplier")
-				//value should be equal to the first query of the param
+				// value should be equal to the first query of the param
 				assert.Equal(t, firstquery.Value, o.Value)
 				cleanup()
 				stopCli()
@@ -1185,13 +1460,16 @@ func TestChangepip22ParamsBeforeActivationHeight(t *testing.T) {
 }
 
 func TestChangeParamspip22afterActivationHeight(t *testing.T) {
-
 	tt := []struct {
 		name         string
 		memoryNodeFn func(t *testing.T, genesisState []byte) (tendermint *node.Node, keybase keys.Keybase, cleanup func())
 		*upgrades
 	}{
-		{name: "change pip22 parameter past activation height", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}}}, // TODO: FULL PROTO SCENARIO
+		{
+			name:         "change pip22 parameter past activation height",
+			memoryNodeFn: NewInMemoryTendermintNodeProto,
+			upgrades:     &upgrades{codecUpgrade: codecUpgrade{true, 2}},
+		}, // TODO: FULL PROTO SCENARIO
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
@@ -1211,16 +1489,26 @@ func TestChangeParamspip22afterActivationHeight(t *testing.T) {
 			_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 			<-evtChan // Wait for block
 			<-evtChan // Wait for another block
-			//After Activation of the parameter ACL should be created(allowing modifying the value) and parameter should have default value of 4000000
+			// After Activation of the parameter ACL should be created(allowing modifying the value) and parameter should have default value of 4000000
 			o, _ := PCA.QueryParam(PCA.LastBlockHeight(), "pos/ServicerStakeFloorMultiplier")
 			assert.Equal(t, "15000000000", o.Value)
 			memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
-			tx, err := gov.ChangeParamsTx(memCodec(), memCli, kb, cb.GetAddress(), "pos/ServicerStakeFloorMultiplier", 16000000000, "test", 10000, false)
+			tx, err := gov.ChangeParamsTx(
+				memCodec(),
+				memCli,
+				kb,
+				cb.GetAddress(),
+				"pos/ServicerStakeFloorMultiplier",
+				16000000000,
+				"test",
+				10000,
+				false,
+			)
 			assert.Nil(t, err)
 			assert.NotNil(t, tx)
 			select {
 			case _ = <-evtChan:
-				//fmt.Println(res)
+				// fmt.Println(res)
 				assert.Nil(t, err)
 				o, _ := PCA.QueryParam(PCA.LastBlockHeight(), "pos/ServicerStakeFloorMultiplier")
 				assert.Equal(t, "16000000000", o.Value)
@@ -1237,8 +1525,16 @@ func TestUpgrade(t *testing.T) {
 		memoryNodeFn func(t *testing.T, genesisState []byte) (tendermint *node.Node, keybase keys.Keybase, cleanup func())
 		*upgrades
 	}{
-		{name: "change complex type params from an amino account with amino codec", memoryNodeFn: NewInMemoryTendermintNodeAmino, upgrades: &upgrades{codecUpgrade: codecUpgrade{false, 7000}}},
-		{name: "change complex type params from a proto account with proto codec", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}}},
+		{
+			name:         "change complex type params from an amino account with amino codec",
+			memoryNodeFn: NewInMemoryTendermintNodeAmino,
+			upgrades:     &upgrades{codecUpgrade: codecUpgrade{false, 7000}},
+		},
+		{
+			name:         "change complex type params from a proto account with proto codec",
+			memoryNodeFn: NewInMemoryTendermintNodeProto,
+			upgrades:     &upgrades{codecUpgrade: codecUpgrade{true, 2}},
+		},
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
@@ -1278,8 +1574,16 @@ func TestDAOTransfer(t *testing.T) {
 		memoryNodeFn func(t *testing.T, genesisState []byte) (tendermint *node.Node, keybase keys.Keybase, cleanup func())
 		*upgrades
 	}{
-		{name: "change complex type params from an amino account with amino codec", memoryNodeFn: NewInMemoryTendermintNodeAmino, upgrades: &upgrades{codecUpgrade: codecUpgrade{false, 7000}}},
-		{name: "change complex type params from a proto account with proto codec", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}}},
+		{
+			name:         "change complex type params from an amino account with amino codec",
+			memoryNodeFn: NewInMemoryTendermintNodeAmino,
+			upgrades:     &upgrades{codecUpgrade: codecUpgrade{false, 7000}},
+		},
+		{
+			name:         "change complex type params from a proto account with proto codec",
+			memoryNodeFn: NewInMemoryTendermintNodeProto,
+			upgrades:     &upgrades{codecUpgrade: codecUpgrade{true, 2}},
+		},
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
@@ -1295,7 +1599,18 @@ func TestDAOTransfer(t *testing.T) {
 			var tx *sdk.TxResponse
 			<-evtChan // Wait for block
 			memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
-			tx, err = gov.DAOTransferTx(memCodec(), memCli, kb, cb.GetAddress(), nil, sdk.OneInt(), govTypes.DAOBurn.String(), "test", 1000000, tc.codecUpgrade.upgradeMod)
+			tx, err = gov.DAOTransferTx(
+				memCodec(),
+				memCli,
+				kb,
+				cb.GetAddress(),
+				nil,
+				sdk.OneInt(),
+				govTypes.DAOBurn.String(),
+				"test",
+				1000000,
+				tc.codecUpgrade.upgradeMod,
+			)
 			assert.Nil(t, err)
 			assert.NotNil(t, tx)
 
@@ -1319,7 +1634,11 @@ func TestClaimAminoTx(t *testing.T) {
 		memoryNodeFn func(t *testing.T, genesisState []byte) (tendermint *node.Node, keybase keys.Keybase, cleanup func())
 		*upgrades
 	}{
-		{name: "claim tx from amino with amino codec ", memoryNodeFn: NewInMemoryTendermintNodeAmino, upgrades: &upgrades{codecUpgrade: codecUpgrade{false, 7000}}},
+		{
+			name:         "claim tx from amino with amino codec ",
+			memoryNodeFn: NewInMemoryTendermintNodeAmino,
+			upgrades:     &upgrades{codecUpgrade: codecUpgrade{false, 7000}},
+		},
 		//{name: "claim tx from a proto with proto codec", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 4}}},
 	}
 
@@ -1395,7 +1714,11 @@ func TestClaimProtoTx(t *testing.T) {
 		*upgrades
 	}{
 		//{name: "claim tx from amino with amino codec ", memoryNodeFn: NewInMemoryTendermintNodeAmino, upgrades: &upgrades{codecUpgrade: codecUpgrade{false, 7000}}},
-		{name: "claim tx from a proto with proto codec", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 5}}},
+		{
+			name:         "claim tx from a proto with proto codec",
+			memoryNodeFn: NewInMemoryTendermintNodeProto,
+			upgrades:     &upgrades{codecUpgrade: codecUpgrade{true, 5}},
+		},
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
@@ -1469,7 +1792,11 @@ func TestAminoClaimTxChallenge(t *testing.T) {
 		memoryNodeFn func(t *testing.T, genesisState []byte) (tendermint *node.Node, keybase keys.Keybase, cleanup func())
 		*upgrades
 	}{
-		{name: "challenge a claim tx from amino with amino codec ", memoryNodeFn: NewInMemoryTendermintNodeAmino, upgrades: &upgrades{codecUpgrade: codecUpgrade{false, 7000}}},
+		{
+			name:         "challenge a claim tx from amino with amino codec ",
+			memoryNodeFn: NewInMemoryTendermintNodeAmino,
+			upgrades:     &upgrades{codecUpgrade: codecUpgrade{false, 7000}},
+		},
 		//{name: "challenge a claim tx from a proto with proto codec", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}}}, // TODO: FULL PROT SCENARIO
 	}
 	for _, tc := range tt {
@@ -1507,7 +1834,11 @@ func TestProtoClaimTxChallenge(t *testing.T) {
 		*upgrades
 	}{
 		//{name: "challenge a claim tx from amino with amino codec ", memoryNodeFn: NewInMemoryTendermintNodeAmino, upgrades: &upgrades{codecUpgrade: codecUpgrade{false, 7000}}},
-		{name: "challenge a claim tx from a proto with proto codec", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}}}, // TODO: FULL PROT SCENARIO
+		{
+			name:         "challenge a claim tx from a proto with proto codec",
+			memoryNodeFn: NewInMemoryTendermintNodeProto,
+			upgrades:     &upgrades{codecUpgrade: codecUpgrade{true, 2}},
+		}, // TODO: FULL PROT SCENARIO
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
@@ -1535,7 +1866,6 @@ func TestProtoClaimTxChallenge(t *testing.T) {
 }
 
 func NewValidChallengeProof(t *testing.T, privateKeys []crypto.PrivateKey, numOfChallenges int) (challenge []pocketTypes.ChallengeProofInvalidData) {
-
 	appPrivateKey := privateKeys[1]
 	servicerPrivKey1 := privateKeys[4]
 	servicerPrivKey2 := privateKeys[2]

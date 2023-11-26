@@ -16,25 +16,24 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/julienschmidt/httprouter"
+	"github.com/stretchr/testify/assert"
+	rand2 "github.com/tendermint/tendermint/libs/rand"
+	"github.com/tendermint/tendermint/rpc/client"
+	core_types "github.com/tendermint/tendermint/rpc/core/types"
+	tmTypes "github.com/tendermint/tendermint/types"
+	"gopkg.in/h2non/gock.v1"
+
 	"github.com/pokt-network/pocket-core/app"
 	"github.com/pokt-network/pocket-core/codec"
 	"github.com/pokt-network/pocket-core/crypto"
-	rand2 "github.com/tendermint/tendermint/libs/rand"
-	"github.com/tendermint/tendermint/rpc/client"
-
-	types3 "github.com/pokt-network/pocket-core/x/apps/types"
-
-	"github.com/julienschmidt/httprouter"
 	"github.com/pokt-network/pocket-core/types"
+	types3 "github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/pocket-core/x/auth"
 	authTypes "github.com/pokt-network/pocket-core/x/auth/types"
 	"github.com/pokt-network/pocket-core/x/nodes"
 	types2 "github.com/pokt-network/pocket-core/x/nodes/types"
 	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
-	"github.com/stretchr/testify/assert"
-	core_types "github.com/tendermint/tendermint/rpc/core/types"
-	tmTypes "github.com/tendermint/tendermint/types"
-	"gopkg.in/h2non/gock.v1"
 )
 
 const (
@@ -48,7 +47,7 @@ func TestRPC_QueryBlock(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 
-	var params = HeightParams{
+	params := HeightParams{
 		Height: 1,
 	}
 
@@ -94,7 +93,7 @@ func TestRPC_QueryTX(t *testing.T) {
 	assert.Nil(t, err)
 
 	<-evtChan // Wait for tx
-	var params = HashAndProveParams{
+	params := HashAndProveParams{
 		Hash: tx.TxHash,
 	}
 	q := newQueryRequest("tx", newBody(params))
@@ -164,7 +163,7 @@ func TestRPC_QueryUnconfirmedTx(t *testing.T) {
 	tx, err = nodes.Send(memCodec(), memCLI, kb, cb.GetAddress(), kp.GetAddress(), "test", types.NewInt(1000), false)
 	assert.Nil(t, err)
 
-	var params = HashAndProveParams{
+	params := HashAndProveParams{
 		Hash: tx.TxHash,
 	}
 	q := newQueryRequest("unconfirmedtx", newBody(params))
@@ -248,7 +247,7 @@ func TestRPC_QueryUnconfirmedTxs(t *testing.T) {
 	}
 	wg.Wait()
 
-	var params = PaginatedHeightParams{
+	params := PaginatedHeightParams{
 		Page:    1,
 		PerPage: 1,
 	}
@@ -306,7 +305,7 @@ func TestRPC_QueryAccountTXs(t *testing.T) {
 	<-evtChan // Wait for tx
 
 	// query for account txs
-	var params = PaginateAddrParams{
+	params := PaginateAddrParams{
 		Address: cb.GetAddress().String(),
 	}
 	resTXs := queryAccountTxsOrThrow(t, params)
@@ -321,7 +320,7 @@ func TestRPC_QueryAccountTXs(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, tx)
 
-	var confirmedTx = <-evtChan // Wait for tx
+	confirmedTx := <-evtChan // Wait for tx
 
 	// query with second tx block height returns only second tx
 	params = PaginateAddrParams{
@@ -366,7 +365,7 @@ func TestRPC_QueryBlockTXs(t *testing.T) {
 	var tx *types.TxResponse
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	memCLI, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-	<-evtChan //Wait for block
+	<-evtChan // Wait for block
 	var err error
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
 	kb := getInMemoryKeybase()
@@ -377,7 +376,7 @@ func TestRPC_QueryBlockTXs(t *testing.T) {
 
 	<-evtChan // Wait for tx
 	// Step 1: Get the transaction by it's hash
-	var params = HashAndProveParams{
+	params := HashAndProveParams{
 		Hash: tx.TxHash,
 	}
 	q := newQueryRequest("tx", newBody(params))
@@ -392,7 +391,7 @@ func TestRPC_QueryBlockTXs(t *testing.T) {
 	assert.NotEmpty(t, resTX.Height)
 
 	// Step 2: Get the transaction by it's height
-	var heightParams = PaginatedHeightParams{
+	heightParams := PaginatedHeightParams{
 		Height: resTX.Height,
 	}
 	heightQ := newQueryRequest("blocktxs", newBody(heightParams))
@@ -432,7 +431,7 @@ func TestRPC_QueryBalance(t *testing.T) {
 	kb := getInMemoryKeybase()
 	cb, err := kb.GetCoinbase()
 	assert.Nil(t, err)
-	var params = HeightAndAddrParams{
+	params := HeightAndAddrParams{
 		Height:  0,
 		Address: cb.GetAddress().String(),
 	}
@@ -476,7 +475,7 @@ func TestRPC_QueryAccount(t *testing.T) {
 	kb := getInMemoryKeybase()
 	cb, err := kb.GetCoinbase()
 	assert.Nil(t, err)
-	var params = HeightAndAddrParams{
+	params := HeightAndAddrParams{
 		Height:  0,
 		Address: cb.GetAddress().String(),
 	}
@@ -505,7 +504,7 @@ func TestRPC_QueryAccounts(t *testing.T) {
 	kb := getInMemoryKeybase()
 	cb, err := kb.GetCoinbase()
 	assert.Nil(t, err)
-	var params = PaginatedHeightParams{
+	params := PaginatedHeightParams{
 		Height: 0,
 	}
 	address := cb.GetAddress().String()
@@ -528,7 +527,7 @@ func TestRPC_QueryNodes(t *testing.T) {
 	kb := getInMemoryKeybase()
 	cb, err := kb.GetCoinbase()
 	assert.Nil(t, err)
-	var params = HeightAndValidatorOptsParams{
+	params := HeightAndValidatorOptsParams{
 		Height: 0,
 		Opts: types2.QueryValidatorsParams{
 			StakingStatus: types.Staked,
@@ -564,7 +563,7 @@ func TestRPC_QueryNode(t *testing.T) {
 	kb := getInMemoryKeybase()
 	cb, err := kb.GetCoinbase()
 	assert.Nil(t, err)
-	var params = HeightAndAddrParams{
+	params := HeightAndAddrParams{
 		Height:  0,
 		Address: cb.GetAddress().String(),
 	}
@@ -599,7 +598,7 @@ func TestRPC_QueryApp(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t, gBZ)
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for block
-	var params = HeightAndAddrParams{
+	params := HeightAndAddrParams{
 		Height:  0,
 		Address: app.GetAddress().String(),
 	}
@@ -634,7 +633,7 @@ func TestRPC_QueryApps(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t, gBZ)
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for block
-	var params = HeightAndApplicaitonOptsParams{
+	params := HeightAndApplicaitonOptsParams{
 		Height: 0,
 		Opts: types3.QueryApplicationsWithOpts{
 			StakingStatus: types.Staked,
@@ -675,7 +674,7 @@ func TestRPC_QueryNodeParams(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t, gBZ)
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for block
-	var params = HeightParams{
+	params := HeightParams{
 		Height: 0,
 	}
 	q := newQueryRequest("nodeparams", newBody(params))
@@ -708,7 +707,7 @@ func TestRPC_QueryAppParams(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t, gBZ)
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for block
-	var params = HeightParams{
+	params := HeightParams{
 		Height: 0,
 	}
 	q := newQueryRequest("appparams", newBody(params))
@@ -741,7 +740,7 @@ func TestRPC_QueryPocketParams(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t, gBZ)
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan
-	var params = HeightParams{
+	params := HeightParams{
 		Height: 0,
 	}
 	q := newQueryRequest("pocketparams", newBody(params))
@@ -773,7 +772,7 @@ func TestRPC_QuerySupportedChains(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for block
-	var params = HeightParams{
+	params := HeightParams{
 		Height: 0,
 	}
 	q := newQueryRequest("supportedchains", newBody(params))
@@ -799,12 +798,13 @@ func TestRPC_QuerySupportedChains(t *testing.T) {
 	cleanup()
 	stopCli()
 }
+
 func TestRPC_QuerySupply(t *testing.T) {
 	codec.UpgradeHeight = 7000
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for block
-	var params = HeightParams{
+	params := HeightParams{
 		Height: 0,
 	}
 	q := newQueryRequest("supply", newBody(params))
@@ -848,7 +848,7 @@ func TestRPC_QueryDAOOwner(t *testing.T) {
 	assert.Nil(t, err)
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for block
-	var params = HeightParams{
+	params := HeightParams{
 		Height: 0,
 	}
 	q := newQueryRequest("DAOOwner", newBody(params))
@@ -880,7 +880,7 @@ func TestRPC_QueryUpgrade(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for block
-	var params = HeightParams{
+	params := HeightParams{
 		Height: 0,
 	}
 	q := newQueryRequest("Upgrade", newBody(params))
@@ -912,7 +912,7 @@ func TestRPCQueryACL(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for block
-	var params = HeightParams{
+	params := HeightParams{
 		Height: 0,
 	}
 	q := newQueryRequest("ACL", newBody(params))
@@ -942,7 +942,7 @@ func TestRPCQueryAllParams(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for block
-	var params = HeightParams{
+	params := HeightParams{
 		Height: 0,
 	}
 	q := newQueryRequest("allparams", newBody(params))
@@ -971,7 +971,7 @@ func TestRPCQueryParam(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for block
-	var params = HeightAndKeyParams{
+	params := HeightAndKeyParams{
 		Height: 0,
 		Key:    "gov/upgrade",
 	}
@@ -1011,7 +1011,7 @@ func TestRPC_ChallengeCORS(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping in short mode")
 	}
-	//kb := getInMemoryKeybase()
+	// kb := getInMemoryKeybase()
 	genBZ, _, _, _ := fiveValidatorsOneAppGenesis()
 	_, _, cleanup := NewInMemoryTendermintNode(t, genBZ)
 	// setup the query
@@ -1030,7 +1030,7 @@ func TestRPC_RelayCORS(t *testing.T) {
 		t.Skip("skipping in short mode")
 	}
 	codec.UpgradeHeight = 7000
-	//kb := getInMemoryKeybase()
+	// kb := getInMemoryKeybase()
 	genBZ, _, _, _ := fiveValidatorsOneAppGenesis()
 	_, _, cleanup := NewInMemoryTendermintNode(t, genBZ)
 	// setup the query
@@ -1056,7 +1056,7 @@ func TestRPC_DispatchCORS(t *testing.T) {
 		t.Skip("skipping in short mode")
 	}
 	codec.UpgradeHeight = 7000
-	//kb := getInMemoryKeybase()
+	// kb := getInMemoryKeybase()
 	genBZ, _, _, _ := fiveValidatorsOneAppGenesis()
 	_, _, cleanup := NewInMemoryTendermintNode(t, genBZ)
 	// setup the query
@@ -1224,7 +1224,6 @@ func TestRPC_Dispatch(t *testing.T) {
 	}
 	cleanup()
 	stopCli()
-
 }
 
 func TestRPC_RawTX(t *testing.T) {
@@ -1304,7 +1303,7 @@ func TestRPC_QueryNodeClaims(t *testing.T) {
 	kb := getInMemoryKeybase()
 	cb, err := kb.GetCoinbase()
 	assert.Nil(t, err)
-	var params = PaginatedHeightAndAddrParams{
+	params := PaginatedHeightAndAddrParams{
 		Height: 0,
 		Addr:   cb.GetAddress().String(),
 	}
@@ -1335,7 +1334,7 @@ func TestRPC_QueryNodeClaim(t *testing.T) {
 	kb := getInMemoryKeybase()
 	cb, err := kb.GetCoinbase()
 	assert.Nil(t, err)
-	var params = QueryNodeReceiptParam{
+	params := QueryNodeReceiptParam{
 		Address:      cb.GetAddress().String(),
 		Blockchain:   "0001",
 		AppPubKey:    cb.PublicKey.RawString(),
