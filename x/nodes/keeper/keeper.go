@@ -28,8 +28,7 @@ type Keeper struct {
 
 // NewKeeper creates a new staking Keeper instance
 func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, accountKeeper types.AuthKeeper,
-	paramstore sdk.Subspace, codespace sdk.CodespaceType,
-) Keeper {
+	paramstore sdk.Subspace, codespace sdk.CodespaceType) Keeper {
 	// ensure staked module accounts are set
 	if addr := accountKeeper.GetModuleAddress(types.StakedPoolName); addr == nil {
 		log2.Fatal(fmt.Errorf("%s module account has not been set", types.StakedPoolName))

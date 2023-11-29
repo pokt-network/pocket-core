@@ -188,8 +188,7 @@ func (k Keeper) ClearSessionCache() {
 
 // IterateAndExecuteOverVals - Goes through the validator set and executes handler
 func (k Keeper) IterateAndExecuteOverVals(
-	ctx sdk.Ctx, fn func(index int64, validator exported.ValidatorI) (stop bool),
-) {
+	ctx sdk.Ctx, fn func(index int64, validator exported.ValidatorI) (stop bool)) {
 	store := ctx.KVStore(k.storeKey)
 	iterator, _ := sdk.KVStorePrefixIterator(store, types.AllValidatorsKey)
 	defer iterator.Close()

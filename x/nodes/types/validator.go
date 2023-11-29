@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/pokt-network/pocket-core/codec"
 	"strings"
 	"time"
 
-	"github.com/pokt-network/pocket-core/codec"
 	"github.com/pokt-network/pocket-core/crypto"
 
 	sdk "github.com/pokt-network/pocket-core/types"
