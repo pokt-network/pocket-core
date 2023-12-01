@@ -26,7 +26,15 @@ type Relay struct {
 }
 
 // "Validate" - Checks the validity of a relay request using store data
-func (r *Relay) Validate(ctx sdk.Ctx, posKeeper PosKeeper, appsKeeper AppsKeeper, pocketKeeper PocketKeeper, hb *HostedBlockchains, sessionBlockHeight int64, node *PocketNode) (maxPossibleRelays sdk.BigInt, err sdk.Error) {
+func (r *Relay) Validate(
+	ctx sdk.Ctx,
+	posKeeper PosKeeper,
+	appsKeeper AppsKeeper,
+	pocketKeeper PocketKeeper,
+	hb *HostedBlockchains,
+	sessionBlockHeight int64,
+	node *PocketNode,
+) (maxPossibleRelays sdk.BigInt, err sdk.Error) {
 	// validate payload
 	if err := r.Payload.Validate(); err != nil {
 		return sdk.ZeroInt(), NewEmptyPayloadDataError(ModuleName)
@@ -58,10 +66,10 @@ func (r *Relay) Validate(ctx sdk.Ctx, posKeeper PosKeeper, appsKeeper AppsKeeper
 		return sdk.ZeroInt(), NewAppNotFoundError(ModuleName)
 	}
 	// Ensure that the app is not staked to more than the permitted number of chains
-	lenAppChains := int64(len(app.GetChains()))
+	numAppChains := int64(len(app.GetChains()))
 	if ModuleCdc.IsAfterEnforceMaxChainsUpgrade(ctx.BlockHeight()) &&
-		lenAppChains > appsKeeper.MaxChains(sessionCtx) {
-		return sdk.ZeroInt(), NewChainsOverLimitError(ModuleName, lenAppChains, appsKeeper.MaxChains(ctx))
+		numAppChains > appsKeeper.MaxChains(sessionCtx) {
+		return sdk.ZeroInt(), NewChainsOverLimitError(ModuleName, numAppChains, appsKeeper.MaxChains(ctx))
 	}
 	// get session node count from that session height
 	sessionNodeCount := pocketKeeper.SessionNodeCount(sessionCtx)
@@ -250,7 +258,8 @@ type RelayMeta struct {
 // "Validate" - Validates the relay meta object
 func (m RelayMeta) Validate(ctx sdk.Ctx) sdk.Error {
 	// ensures the block height is within the acceptable range
-	if ctx.BlockHeight()+int64(GlobalPocketConfig.ClientBlockSyncAllowance) < m.BlockHeight || ctx.BlockHeight()-int64(GlobalPocketConfig.ClientBlockSyncAllowance) > m.BlockHeight {
+	if ctx.BlockHeight()+int64(GlobalPocketConfig.ClientBlockSyncAllowance) < m.BlockHeight ||
+		ctx.BlockHeight()-int64(GlobalPocketConfig.ClientBlockSyncAllowance) > m.BlockHeight {
 		return NewOutOfSyncRequestError(ModuleName)
 	}
 	return nil

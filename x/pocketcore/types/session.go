@@ -151,7 +151,7 @@ func NewSessionNodes(
 		lenNodeChains := int64(len(node.GetChains()))
 		// if not found or jailed or is overstaked to chains
 		if node == nil ||
-			isEnforceMaxChains && lenNodeChains > keeper.MaxChains(ctx) ||
+			(isEnforceMaxChains && lenNodeChains > keeper.MaxChains(ctx)) ||
 			node.IsJailed() ||
 			!NodeHasChain(chain, node) ||
 			sessionNodes.Contains(node.GetAddress()) {
