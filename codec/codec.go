@@ -57,7 +57,7 @@ const (
 	VEDITKey                     = "VEDIT"
 	OutputAddressEditKey         = "OEDIT"
 	ClearUnjailedValSessionKey   = "CRVAL"
-	PerChainRTTM                 = "RTTM2"
+	PerChainRTTM                 = "PerChainRTTM"
 )
 
 func GetCodecUpgradeHeight() int64 {

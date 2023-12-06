@@ -425,7 +425,7 @@ func TestKeeper_rewardFromRelaysPIP22EXP(t *testing.T) {
 
 func TestKeeper_RewardForRelaysPerChain(t *testing.T) {
 	Height_PIP22 := int64(3)
-	Height_RTTM2 := int64(10)
+	Height_PerChainRTTM := int64(10)
 	Chain_Normal := "0001"
 	Chain_HighProfit := "0002"
 	RTTM_Default := int64(10000)
@@ -444,7 +444,7 @@ func TestKeeper_RewardForRelaysPerChain(t *testing.T) {
 	}
 
 	codec.UpgradeFeatureMap[codec.RSCALKey] = Height_PIP22
-	codec.UpgradeFeatureMap[codec.PerChainRTTM] = Height_RTTM2
+	codec.UpgradeFeatureMap[codec.PerChainRTTM] = Height_PerChainRTTM
 
 	ctx, _, keeper := createTestInput(t, true)
 
@@ -467,16 +467,16 @@ func TestKeeper_RewardForRelaysPerChain(t *testing.T) {
 	p.ServicerStakeFloorMultiplierExponent = sdk.NewDec(1)
 	keeper.SetParams(ctx, p)
 
-	// Make sure RTTM2 is empty
+	// Make sure PerChainRTTM is empty
 	assert.NotNil(t, p.RelaysToTokensMultiplierMap)
 	assert.Zero(t, len(p.RelaysToTokensMultiplierMap))
 
-	// Set RTTM2
-	ctx = ctx.WithBlockHeight(Height_RTTM2)
+	// Set PerChainRTTM
+	ctx = ctx.WithBlockHeight(Height_PerChainRTTM)
 	p.RelaysToTokensMultiplierMap[Chain_HighProfit] = RTTM_High
 	keeper.SetParams(ctx, p)
 
-	// Make sure the default RTTM and RTTM2
+	// Make sure the default RTTM and PerChainRTTM
 	p = keeper.GetParams(ctx)
 	assert.Equal(t, len(p.RelaysToTokensMultiplierMap), 1)
 	assert.Equal(t, p.RelaysToTokensMultiplierMap[Chain_HighProfit], RTTM_High)
@@ -507,4 +507,5 @@ func TestKeeper_RewardForRelaysPerChain(t *testing.T) {
 		validator.Address,
 	)
 	assert.True(t, rewardsHighProfit.Equal(ExpectedRewards(RTTM_High)))
+	assert.True(t, rewardsDefault.LT(rewardsHighProfit))
 }
