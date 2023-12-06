@@ -31,6 +31,7 @@ func (k Keeper) AllApplications(ctx sdk.Ctx) (apps []exported.ApplicationI) {
 	return apps
 }
 
+// IsMsgAppTransfer - Returns if the given message is to transfer the ownership
 func (k Keeper) IsMsgAppTransfer(
 	ctx sdk.Ctx,
 	msgSigner sdk.Address,

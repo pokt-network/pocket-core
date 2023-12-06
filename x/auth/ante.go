@@ -63,7 +63,13 @@ func ValidateTransaction(ctx sdk.Ctx, k Keeper, stdTx types.StdTx, params Params
 		return nil, types.ErrDuplicateTx(ModuleName, hex.EncodeToString(txHash))
 	}
 
+	// Please note that GetSigners() is simply redirected to Msg.GetSigners()
+	// and does not return the actual signer of this transaction in order to
+	// prevent transactions from being accepted unconditionally.
+	// If you want to allow a transaction signed by an address that is not
+	// included in this return value, add a specific condition case by case.
 	validSigners := stdTx.GetSigners()
+
 	if k.Cdc.IsAfterNonCustodialUpgrade(ctx.BlockHeight()) &&
 		k.Cdc.IsAfterOutputAddressEditorUpgrade(ctx.BlockHeight()) {
 		// MsgStake may be signed by the current output address.  We need to ask

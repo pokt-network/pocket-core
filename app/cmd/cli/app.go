@@ -121,7 +121,7 @@ var appTransferCmd = &cobra.Command{
 	Use:   "transfer <fromAddr> <newAppPubKey> <networkID> <fee> [memo]",
 	Short: "Transfer the ownership of a staked app from one to another",
 	Long: `Submits a transaction to transfer the ownership of a staked app from
-<fromAddr> to a neww account specified as <newAppPubKey> without unstaking
+<fromAddr> to a new account specified as <newAppPubKey> without unstaking
 any app.  In other words, this edits the address of a staked app.  To run this
 command, you must have the private key of the current staked app <fromAddr>
 `,

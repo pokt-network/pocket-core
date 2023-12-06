@@ -407,7 +407,8 @@ func transferApp(
 	if err != nil {
 		return err
 	}
-	return k.TransferApplication(ctx, curApp, transferTo)
+	k.TransferApplication(ctx, curApp, transferTo)
+	return nil
 }
 
 func TestAppStateChange_Transfer(t *testing.T) {
@@ -423,6 +424,7 @@ func TestAppStateChange_Transfer(t *testing.T) {
 
 	ctx, _, keeper := createTestInput(t, true)
 
+	// Create four wallets and app-stake three of them
 	apps := make([]types.Application, 3)
 	pubKeys := make([]crypto.PublicKey, 4)
 	addrs := make([]sdk.Address, 4)
@@ -440,6 +442,7 @@ func TestAppStateChange_Transfer(t *testing.T) {
 	// apps[0]: staked
 	// apps[1]: unstaking
 	// apps[2]: staked and jailed
+	// apps[3]: not an application (see pubKeys[3]) and will be used for the transfer
 	keeper.BeginUnstakingApplication(ctx, apps[1])
 	keeper.JailApplication(ctx, apps[2].Address)
 

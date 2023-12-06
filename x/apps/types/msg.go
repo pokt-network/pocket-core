@@ -45,6 +45,8 @@ func (msg MsgStake) GetSignBytes() []byte {
 
 // ValidateBasic quick validity check for staking an application
 func (msg MsgStake) ValidateBasic() sdk.Error {
+	// App's MsgStake has a special case for transferring the ownership.
+	// We first check if the given message is that special case or not.
 	if err := msg.IsValidTransfer(); err == nil {
 		return nil
 	}
@@ -77,7 +79,7 @@ func (msg MsgStake) IsValidTransfer() sdk.Error {
 	}
 
 	// The chains must be empty for transfer
-	if !msg.Value.IsZero() {
+	if len(msg.Chains) > 0 {
 		return ErrTooManyChains(DefaultCodespace)
 	}
 

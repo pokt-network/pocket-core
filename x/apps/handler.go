@@ -43,13 +43,16 @@ func handleStake(
 	// create application object using the message fields
 	application := types.NewApplication(sdk.Address(addr), pk, msg.Chains, sdk.ZeroInt())
 	ctx.Logger().Info("Validate App Can Stake " + sdk.Address(addr).String())
-	// check if the msg is to transfer an app first
+	// check if the msg is to transfer an application first
 	if curApp, err := k.ValidateApplicationTransfer(ctx, signer, msg); err == nil {
-		if err := k.TransferApplication(ctx, curApp, msg.PubKey); err != nil {
-			return err.Result()
-		}
+		ctx.Logger().Info(
+			"Transferring application",
+			"from", curApp.Address.String(),
+			"to", msg.PubKey.Address().String(),
+		)
+		k.TransferApplication(ctx, curApp, msg.PubKey)
 	} else {
-		// then check if they can stake
+		// otherwise check if the message is to stake an application
 		if err := k.ValidateApplicationStaking(ctx, application, msg.Value); err != nil {
 			ctx.Logger().Error(fmt.Sprintf("Validate App Can Stake Error, at height: %d with address: %s", ctx.BlockHeight(), sdk.Address(addr).String()))
 			return err.Result()
@@ -62,7 +65,7 @@ func handleStake(
 		}
 	}
 	// create the event
-	senderAddrStr := sdk.Address(signer.Address()).String()
+	signerAddrStr := sdk.Address(signer.Address()).String()
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeCreateApplication,
@@ -71,13 +74,13 @@ func handleStake(
 		sdk.NewEvent(
 			types.EventTypeStake,
 			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, senderAddrStr),
+			sdk.NewAttribute(sdk.AttributeKeySender, signerAddrStr),
 			sdk.NewAttribute(sdk.AttributeKeyAmount, msg.Value.String()),
 		),
 		sdk.NewEvent(
 			sdk.EventTypeMessage,
 			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, senderAddrStr),
+			sdk.NewAttribute(sdk.AttributeKeySender, signerAddrStr),
 		),
 	})
 	return sdk.Result{Events: ctx.EventManager().Events()}

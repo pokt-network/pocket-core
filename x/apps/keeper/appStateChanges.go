@@ -2,12 +2,12 @@ package keeper
 
 import (
 	"fmt"
-	"github.com/tendermint/tendermint/libs/strings"
 	"time"
 
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/apps/types"
+	"github.com/tendermint/tendermint/libs/strings"
 )
 
 func ensurePubKeyTypeSupported(
@@ -105,34 +105,29 @@ func (k Keeper) ValidateApplicationTransfer(
 	ctx sdk.Ctx,
 	signer crypto.PublicKey,
 	msg types.MsgStake,
-) (curApp types.Application, err sdk.Error) {
+) (types.Application, sdk.Error) {
 	if !ctx.IsAfterUpgradeHeight() ||
 		!k.Cdc.IsAfterAppTransferUpgrade(ctx.BlockHeight()) {
-		err = types.ErrApplicationStatus(k.codespace)
-		return
+		return types.Application{}, types.ErrApplicationStatus(k.codespace)
 	}
 
 	// The signer must be a staked app
-	var found bool
-	curApp, found = k.GetApplication(ctx, sdk.Address(signer.Address()))
+	curApp, found := k.GetApplication(ctx, sdk.Address(signer.Address()))
 	if !found || !curApp.IsStaked() {
-		err = types.ErrApplicationStatus(k.codespace)
-		return
+		return types.Application{}, types.ErrApplicationStatus(k.codespace)
 	}
 
-	err = ensurePubKeyTypeSupported(ctx, msg.PubKey, k.Codespace())
-	if err != nil {
-		return
+	if err := ensurePubKeyTypeSupported(ctx, msg.PubKey, k.Codespace()); err != nil {
+		return types.Application{}, err
 	}
 
-	// The pubkey in the message must not exist
+	// The pubKey of msgStake must not be a pre-existing application
 	newAppAddr := sdk.Address(msg.PubKey.Address())
 	if _, found = k.GetApplication(ctx, newAppAddr); found {
-		err = types.ErrApplicationStatus(k.codespace)
-		return
+		return types.Application{}, types.ErrApplicationStatus(k.codespace)
 	}
 
-	return
+	return curApp, nil
 }
 
 // StakeApplication - Store ops when a application stakes
@@ -360,7 +355,7 @@ func (k Keeper) TransferApplication(
 	ctx sdk.Ctx,
 	curApp types.Application,
 	newAppPubKey crypto.PublicKey,
-) sdk.Error {
+) {
 	// Add a new staked application
 	// Since we don't change the staked amount, we can inherit all fields
 	// and don't need to move tokens.
@@ -375,13 +370,6 @@ func (k Keeper) TransferApplication(
 	// (See unstakeAllMatureApplications calling DeleteApplication)
 	k.deleteApplicationFromStakingSet(ctx, curApp)
 	k.DeleteApplication(ctx, curApp.Address)
-
-	ctx.Logger().Info(
-		"Finished transferring application",
-		"from", curApp.Address.String(),
-		"to", newApp.Address.String(),
-	)
-	return nil
 }
 
 // JailApplication - Send a application to jail
