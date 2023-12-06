@@ -117,6 +117,8 @@ func NewSessionNodes(
 ) (sessionNodes SessionNodes, err sdk.Error) {
 	// retrieve the enforce max chains flag's value from the codec
 	isEnforceMaxChains := ModuleCdc.IsAfterEnforceMaxChainsUpgrade(ctx.BlockHeight())
+	// retrieve the max chains value from the sessionCtx
+	nodeMaxChains := keeper.MaxChains(sessionCtx)
 	// all nodesAddrs at session genesis
 	nodesAddrs, totalNodes := keeper.GetValidatorsByChain(sessionCtx, chain)
 	// validate nodesAddrs
@@ -151,7 +153,7 @@ func NewSessionNodes(
 		lenNodeChains := int64(len(node.GetChains()))
 		// if not found or jailed or is overstaked to chains
 		if node == nil ||
-			(isEnforceMaxChains && lenNodeChains > keeper.MaxChains(ctx)) ||
+			(isEnforceMaxChains && lenNodeChains > nodeMaxChains) ||
 			node.IsJailed() ||
 			!NodeHasChain(chain, node) ||
 			sessionNodes.Contains(node.GetAddress()) {
