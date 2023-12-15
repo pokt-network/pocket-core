@@ -64,15 +64,25 @@ func (k Keeper) SignedBlocksWindow(ctx sdk.Ctx) (res int64) {
 	return
 }
 
-// MinSignedPerWindow - Downtime slashing threshold
-func (k Keeper) MinSignedPerWindow(ctx sdk.Ctx) (res int64) {
+// Returns the product of two parameters: MinSignedPerWindow * SignedBlocksWindow
+// which indicates the minimum number of blocks in the SignedBlocksWindow range
+// that a node must sign to stay out of jail.
+func (k Keeper) MinBlocksSignedPerWindow(ctx sdk.Ctx) (res int64) {
 	var minSignedPerWindow sdk.BigDec
 	k.Paramstore.Get(ctx, types.KeyMinSignedPerWindow, &minSignedPerWindow)
 	signedBlocksWindow := k.SignedBlocksWindow(ctx)
 
 	// NOTE: RoundInt64 will never panic as minSignedPerWindow is
 	//       less than 1.
-	return minSignedPerWindow.MulInt64(signedBlocksWindow).RoundInt64() // todo may have to be int64 .RoundInt64()
+	return minSignedPerWindow.MulInt64(signedBlocksWindow).RoundInt64()
+}
+
+// MinSignedPerWindow -
+// The minimum proportion of the SignedBlocksWindow that a node must sign
+// to stay out of jail.
+func (k Keeper) MinSignedPerWindow(ctx sdk.Ctx) (res sdk.BigDec) {
+	k.Paramstore.Get(ctx, types.KeyMinSignedPerWindow, &res)
+	return
 }
 
 // DowntimeJailDuration - Downtime jail duration
@@ -98,6 +108,14 @@ func (k Keeper) RelaysToTokensMultiplier(ctx sdk.Ctx) sdk.BigInt {
 	var multiplier int64
 	k.Paramstore.Get(ctx, types.KeyRelaysToTokensMultiplier, &multiplier)
 	return sdk.NewInt(multiplier)
+}
+
+func (k Keeper) RelaysToTokensMultiplierMap(ctx sdk.Ctx) (res map[string]int64) {
+	k.Paramstore.Get(ctx, types.KeyRelaysToTokensMultiplierMap, &res)
+	if res == nil {
+		res = types.DefaultRelaysToTokensMultiplierMap
+	}
+	return
 }
 
 // ServicerStakeFloorMultiplier - Retrieve ServicerStakeFloorMultiplier
@@ -166,6 +184,7 @@ func (k Keeper) MaxJailedBlocks(ctx sdk.Ctx) (res int64) {
 func (k Keeper) GetParams(ctx sdk.Ctx) types.Params {
 	return types.Params{
 		RelaysToTokensMultiplier:             k.RelaysToTokensMultiplier(ctx).Int64(),
+		RelaysToTokensMultiplierMap:          k.RelaysToTokensMultiplierMap(ctx),
 		UnstakingTime:                        k.UnStakingTime(ctx),
 		MaxValidators:                        k.MaxValidators(ctx),
 		StakeDenom:                           k.StakeDenom(ctx),
@@ -177,7 +196,7 @@ func (k Keeper) GetParams(ctx sdk.Ctx) types.Params {
 		MaxJailedBlocks:                      k.MaxJailedBlocks(ctx),
 		MaxEvidenceAge:                       k.MaxEvidenceAge(ctx),
 		SignedBlocksWindow:                   k.SignedBlocksWindow(ctx),
-		MinSignedPerWindow:                   sdk.NewDec(k.MinSignedPerWindow(ctx)),
+		MinSignedPerWindow:                   k.MinSignedPerWindow(ctx),
 		DowntimeJailDuration:                 k.DowntimeJailDuration(ctx),
 		SlashFractionDoubleSign:              k.SlashFractionDoubleSign(ctx),
 		SlashFractionDowntime:                k.SlashFractionDowntime(ctx),

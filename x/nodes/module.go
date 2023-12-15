@@ -2,6 +2,7 @@ package nodes
 
 import (
 	"encoding/json"
+
 	"github.com/pokt-network/pocket-core/codec"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/types/module"
@@ -131,8 +132,11 @@ func ActivateAdditionalParameters(ctx sdk.Ctx, am AppModule) {
 		params.ServicerStakeWeightMultiplier = types.DefaultServicerStakeWeightMultiplier
 		params.ServicerStakeWeightCeiling = types.DefaultServicerStakeWeightCeiling
 		params.ServicerStakeFloorMultiplierExponent = types.DefaultServicerStakeFloorMultiplierExponent
-		// custom logic for minSignedPerWindow
-		params.MinSignedPerWindow = params.MinSignedPerWindow.QuoInt64(params.SignedBlocksWindow)
+		am.keeper.SetParams(ctx, params)
+	}
+	if am.keeper.Cdc.IsOnNamedFeatureActivationHeight(ctx.BlockHeight(), codec.PerChainRTTM) {
+		params := am.keeper.GetParams(ctx)
+		params.RelaysToTokensMultiplierMap = types.DefaultRelaysToTokensMultiplierMap
 		am.keeper.SetParams(ctx, params)
 	}
 }

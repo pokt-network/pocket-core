@@ -422,3 +422,90 @@ func TestKeeper_rewardFromRelaysPIP22EXP(t *testing.T) {
 		})
 	}
 }
+
+func TestKeeper_RewardForRelaysPerChain(t *testing.T) {
+	Height_PIP22 := int64(3)
+	Height_PerChainRTTM := int64(10)
+	Chain_Normal := "0001"
+	Chain_HighProfit := "0002"
+	RTTM_Default := int64(10000)
+	RTTM_High := int64(15000)
+	MinStake := int64(15000000000)
+	RewardWeight := int64(4)
+	ServicerAllocation := int64(85)
+	NumOfRelays := sdk.NewInt(10)
+
+	ExpectedRewards := func(multiplier int64) sdk.BigInt {
+		return NumOfRelays.
+			MulRaw(multiplier).
+			MulRaw(RewardWeight).
+			MulRaw(ServicerAllocation).
+			QuoRaw(100)
+	}
+
+	codec.UpgradeFeatureMap[codec.RSCALKey] = Height_PIP22
+	codec.UpgradeFeatureMap[codec.PerChainRTTM] = Height_PerChainRTTM
+
+	ctx, _, keeper := createTestInput(t, true)
+
+	// Add a validator
+	validator := getStakedValidator()
+	validator.Chains = []string{Chain_Normal, Chain_HighProfit}
+	validator.StakedTokens = sdk.NewInt(MinStake * RewardWeight * 2)
+	keeper.SetValidator(ctx, validator)
+
+	p := keeper.GetParams(ctx)
+	p.RelaysToTokensMultiplier = RTTM_Default
+	p.DAOAllocation = 10
+	p.ProposerAllocation = int64(100) - p.DAOAllocation - ServicerAllocation
+
+	// Activate PIP-22
+	ctx = ctx.WithBlockHeight(Height_PIP22)
+	p.ServicerStakeFloorMultiplier = MinStake
+	p.ServicerStakeWeightCeiling = MinStake * RewardWeight
+	p.ServicerStakeWeightMultiplier = sdk.NewDec(1)
+	p.ServicerStakeFloorMultiplierExponent = sdk.NewDec(1)
+	keeper.SetParams(ctx, p)
+
+	// Make sure PerChainRTTM is empty
+	assert.NotNil(t, p.RelaysToTokensMultiplierMap)
+	assert.Zero(t, len(p.RelaysToTokensMultiplierMap))
+
+	// Set PerChainRTTM
+	ctx = ctx.WithBlockHeight(Height_PerChainRTTM)
+	p.RelaysToTokensMultiplierMap[Chain_HighProfit] = RTTM_High
+	keeper.SetParams(ctx, p)
+
+	// Make sure the default RTTM and PerChainRTTM
+	p = keeper.GetParams(ctx)
+	assert.Equal(t, len(p.RelaysToTokensMultiplierMap), 1)
+	assert.Equal(t, p.RelaysToTokensMultiplierMap[Chain_HighProfit], RTTM_High)
+	assert.Equal(t, p.RelaysToTokensMultiplier, RTTM_Default)
+
+	// Verify the default multiplier
+	rewardsDefault := keeper.RewardForRelays(
+		ctx,
+		NumOfRelays,
+		validator.Address,
+	)
+	assert.True(t, rewardsDefault.Equal(ExpectedRewards(RTTM_Default)))
+
+	// Verify the default multiplier with the chain ID
+	rewardsNormalChain := keeper.RewardForRelaysPerChain(
+		ctx,
+		Chain_Normal,
+		NumOfRelays,
+		validator.Address,
+	)
+	assert.True(t, rewardsDefault.Equal(rewardsNormalChain))
+
+	// Verify rewards with a non-default multiplier
+	rewardsHighProfit := keeper.RewardForRelaysPerChain(
+		ctx,
+		Chain_HighProfit,
+		NumOfRelays,
+		validator.Address,
+	)
+	assert.True(t, rewardsHighProfit.Equal(ExpectedRewards(RTTM_High)))
+	assert.True(t, rewardsDefault.LT(rewardsHighProfit))
+}

@@ -177,7 +177,12 @@ func (k Keeper) ExecuteProof(ctx sdk.Ctx, proof pc.MsgProof, claim pc.MsgClaim) 
 	switch l.(type) {
 	case pc.RelayProof:
 		ctx.Logger().Info(fmt.Sprintf("reward coins to %s, for %d relays", claim.FromAddress.String(), claim.TotalProofs))
-		tokens = k.AwardCoinsForRelays(ctx, claim.TotalProofs, claim.FromAddress)
+		tokens = k.AwardCoinsForRelays(
+			ctx,
+			claim.SessionHeader.Chain,
+			claim.TotalProofs,
+			claim.FromAddress,
+		)
 		err := k.DeleteClaim(ctx, claim.FromAddress, claim.SessionHeader, pc.RelayEvidence)
 		if err != nil {
 			return tokens, sdk.ErrInternal(err.Error())
@@ -199,7 +204,12 @@ func (k Keeper) ExecuteProof(ctx sdk.Ctx, proof pc.MsgProof, claim pc.MsgClaim) 
 			return sdk.ZeroInt(), sdk.ErrInternal(err.Error())
 		}
 		// small reward for the challenge proof invalid data
-		tokens = k.AwardCoinsForRelays(ctx, claim.TotalProofs/100, claim.FromAddress)
+		tokens = k.AwardCoinsForRelays(
+			ctx,
+			claim.SessionHeader.Chain,
+			claim.TotalProofs/100,
+			claim.FromAddress,
+		)
 	}
 	return tokens, nil
 }

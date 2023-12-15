@@ -147,15 +147,6 @@ func TimeTrack(start time.Time) {
 	}
 }
 
-func ContainsString(s []string, e string) bool {
-	for _, a := range s {
-		if a == e {
-			return true
-		}
-	}
-	return false
-}
-
 // Compares two version strings, which are expected to be dot-delimited
 // integers like "1.2.3.4".  The result is similar to strcmp in C, negative
 // if the first version string is considered to be earlier, positive if the

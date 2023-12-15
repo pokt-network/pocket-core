@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+
 	sdk "github.com/pokt-network/pocket-core/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmtypes "github.com/tendermint/tendermint/types"
@@ -25,7 +26,7 @@ func BeginBlocker(ctx sdk.Ctx, req abci.RequestBeginBlock, k Keeper) {
 	// store whether or not they have actually signed it and slash/unstake any
 	// which have missed too many blocks in a row (downtime slashing)
 	signedBlocksWindow := k.SignedBlocksWindow(ctx)
-	minSignedPerWindow := k.MinSignedPerWindow(ctx)
+	minSignedPerWindow := k.MinBlocksSignedPerWindow(ctx)
 	downtimeJailDuration := k.DowntimeJailDuration(ctx)
 	slashFractionDowntime := k.SlashFractionDowntime(ctx)
 
