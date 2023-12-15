@@ -3,19 +3,26 @@ package keeper
 import (
 	"encoding/hex"
 	"fmt"
-	"github.com/pokt-network/pocket-core/codec"
 	"time"
 
+	"github.com/tendermint/tendermint/rpc/client"
+
+	"github.com/pokt-network/pocket-core/codec"
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/auth"
 	"github.com/pokt-network/pocket-core/x/auth/util"
 	pc "github.com/pokt-network/pocket-core/x/pocketcore/types"
-	"github.com/tendermint/tendermint/rpc/client"
 )
 
 // "SendClaimTx" - Automatically sends a claim of work/challenge based on relays or challenges stored.
-func (k Keeper) SendClaimTx(ctx sdk.Ctx, keeper Keeper, n client.Client, node *pc.PocketNode, claimTx func(pk crypto.PrivateKey, cliCtx util.CLIContext, txBuilder auth.TxBuilder, header pc.SessionHeader, totalProofs int64, root pc.HashRange, evidenceType pc.EvidenceType) (*sdk.TxResponse, error)) {
+func (k Keeper) SendClaimTx(
+	ctx sdk.Ctx,
+	keeper Keeper,
+	n client.Client,
+	node *pc.PocketNode,
+	claimTx func(pk crypto.PrivateKey, cliCtx util.CLIContext, txBuilder auth.TxBuilder, header pc.SessionHeader, totalProofs int64, root pc.HashRange, evidenceType pc.EvidenceType) (*sdk.TxResponse, error),
+) {
 	// get the private val key (main) account from the keybase
 	address := node.GetAddress()
 	// retrieve the iterator to go through each piece of evidence in storage
@@ -51,7 +58,8 @@ func (k Keeper) SendClaimTx(ctx sdk.Ctx, keeper Keeper, n client.Client, node *p
 		}
 		// if the blockchain in the evidence is not supported then delete it because nodes don't get paid/challenged for unsupported blockchains
 		if !k.IsPocketSupportedBlockchain(sessionCtx.WithBlockHeight(evidence.SessionHeader.SessionBlockHeight), evidence.SessionHeader.Chain) {
-			ctx.Logger().Info(fmt.Sprintf("claim for %s blockchain isn't pocket supported, so will not send. Deleting evidence\n", evidence.SessionHeader.Chain))
+			ctx.Logger().
+				Info(fmt.Sprintf("claim for %s blockchain isn't pocket supported, so will not send. Deleting evidence\n", evidence.SessionHeader.Chain))
 			if err := pc.DeleteEvidence(evidence.SessionHeader, evidenceType, node.EvidenceStore); err != nil {
 				ctx.Logger().Debug(err.Error())
 			}
@@ -70,10 +78,15 @@ func (k Keeper) SendClaimTx(ctx sdk.Ctx, keeper Keeper, n client.Client, node *p
 		}
 		app, found := k.GetAppFromPublicKey(sessionCtx, evidence.ApplicationPubKey)
 		if !found {
-			ctx.Logger().Error(fmt.Sprintf("an error occurred creating the claim transaction with app %s not found with evidence %v", evidence.ApplicationPubKey, evidence))
+			ctx.Logger().
+				Error(fmt.Sprintf("an error occurred creating the claim transaction with app %s not found with evidence %v", evidence.ApplicationPubKey, evidence))
 		}
 		// generate the merkle root for this evidence
-		root := evidence.GenerateMerkleRoot(evidence.SessionHeader.SessionBlockHeight, pc.MaxPossibleRelays(app, k.SessionNodeCount(sessionCtx)).Int64(), node.EvidenceStore)
+		root := evidence.GenerateMerkleRoot(
+			evidence.SessionHeader.SessionBlockHeight,
+			pc.MaxPossibleRelays(app, k.SessionNodeCount(sessionCtx)).Int64(),
+			node.EvidenceStore,
+		)
 		claimTxTotalTime := float64(time.Since(now).Milliseconds())
 		go func() {
 			pc.GlobalServiceMetric().AddClaimTiming(evidence.SessionHeader.Chain, claimTxTotalTime, &address)
@@ -131,6 +144,12 @@ func (k Keeper) ValidateClaim(ctx sdk.Ctx, claim pc.MsgClaim) (err sdk.Error) {
 			return pc.NewOverServiceError(pc.ModuleName)
 		}
 	}
+	// Ensure that the app is not staked to more than the permitted number of chains
+	lenAppChains := int64(len(app.GetChains()))
+	if pc.ModuleCdc.IsAfterEnforceMaxChainsUpgrade(ctx.BlockHeight()) &&
+		lenAppChains > k.appKeeper.MaxChains(sessionContext) {
+		return pc.NewChainsOverLimitError(pc.ModuleName, lenAppChains, k.appKeeper.MaxChains(sessionContext))
+	}
 	// get the session node count for the time of the session
 	sessionNodeCount := int(k.SessionNodeCount(sessionContext))
 	// check cache
@@ -148,7 +167,8 @@ func (k Keeper) ValidateClaim(ctx sdk.Ctx, claim pc.MsgClaim) (err sdk.Error) {
 		// create a new session to validate
 		session, err = pc.NewSession(sessionContext, sessionEndCtx, k.posKeeper, claim.SessionHeader, hex.EncodeToString(hash), sessionNodeCount)
 		if err != nil {
-			ctx.Logger().Error(fmt.Errorf("could not generate session with public key: %s, for chain: %s", app.GetPublicKey().RawString(), claim.SessionHeader.Chain).Error())
+			ctx.Logger().
+				Error(fmt.Errorf("could not generate session with public key: %s, for chain: %s", app.GetPublicKey().RawString(), claim.SessionHeader.Chain).Error())
 			return err
 		}
 	}
@@ -316,7 +336,7 @@ func (k Keeper) ClaimIsMature(ctx sdk.Ctx, sessionBlockHeight int64) bool {
 
 // "DeleteExpiredClaims" - Deletes the expired (claim expiration > # of session passed since claim genesis) claims
 func (k Keeper) DeleteExpiredClaims(ctx sdk.Ctx) {
-	var msg = pc.MsgClaim{}
+	msg := pc.MsgClaim{}
 	store := ctx.KVStore(k.storeKey)
 	iterator, _ := sdk.KVStorePrefixIterator(store, pc.ClaimKey)
 	defer iterator.Close()

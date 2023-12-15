@@ -46,8 +46,8 @@ jobs:
           key: pocket-core-build-{{ .Environment.CIRCLE_SHA1 }}
       # Run tests
       - run:
-          name: 'test'
-          command: go test -short -v -p 1 ./...
+          name: "test"
+          command: go test -short -v -p 1 ./... -timeout=15m
           no_output_timeout: 20m
   # Job to trigger the Pocket Core deployments CI with a specific branch
   trigger-pocket-core-deployments-branches:

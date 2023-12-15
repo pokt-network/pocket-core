@@ -5,14 +5,15 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/pokt-network/pocket-core/crypto"
-	sdk "github.com/pokt-network/pocket-core/types"
-	"github.com/pokt-network/pocket-core/x/nodes/exported"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/pokt-network/pocket-core/crypto"
+	sdk "github.com/pokt-network/pocket-core/types"
+	"github.com/pokt-network/pocket-core/x/nodes/exported"
 )
 
 const DEFAULTHTTPMETHOD = "POST"
@@ -25,7 +26,15 @@ type Relay struct {
 }
 
 // "Validate" - Checks the validity of a relay request using store data
-func (r *Relay) Validate(ctx sdk.Ctx, posKeeper PosKeeper, appsKeeper AppsKeeper, pocketKeeper PocketKeeper, hb *HostedBlockchains, sessionBlockHeight int64, node *PocketNode) (maxPossibleRelays sdk.BigInt, err sdk.Error) {
+func (r *Relay) Validate(
+	ctx sdk.Ctx,
+	posKeeper PosKeeper,
+	appsKeeper AppsKeeper,
+	pocketKeeper PocketKeeper,
+	hb *HostedBlockchains,
+	sessionBlockHeight int64,
+	node *PocketNode,
+) (maxPossibleRelays sdk.BigInt, err sdk.Error) {
 	// validate payload
 	if err := r.Payload.Validate(); err != nil {
 		return sdk.ZeroInt(), NewEmptyPayloadDataError(ModuleName)
@@ -55,6 +64,12 @@ func (r *Relay) Validate(ctx sdk.Ctx, posKeeper PosKeeper, appsKeeper AppsKeeper
 	app, found := GetAppFromPublicKey(sessionCtx, appsKeeper, r.Proof.Token.ApplicationPublicKey)
 	if !found {
 		return sdk.ZeroInt(), NewAppNotFoundError(ModuleName)
+	}
+	// Ensure that the app is not staked to more than the permitted number of chains
+	numAppChains := int64(len(app.GetChains()))
+	if ModuleCdc.IsAfterEnforceMaxChainsUpgrade(ctx.BlockHeight()) &&
+		numAppChains > appsKeeper.MaxChains(sessionCtx) {
+		return sdk.ZeroInt(), NewChainsOverLimitError(ModuleName, numAppChains, appsKeeper.MaxChains(ctx))
 	}
 	// get session node count from that session height
 	sessionNodeCount := pocketKeeper.SessionNodeCount(sessionCtx)
@@ -96,8 +111,7 @@ func (r *Relay) Validate(ctx sdk.Ctx, posKeeper PosKeeper, appsKeeper AppsKeeper
 		// With session rollover, the height of `ctx` may already be in the next
 		// session of the relay's session.  In such a case, we need to pass the
 		// correct context of the session end instead of `ctx`.
-		sessionEndHeight :=
-			sessionBlockHeight + posKeeper.BlocksPerSession(sessionCtx) - 1
+		sessionEndHeight := sessionBlockHeight + posKeeper.BlocksPerSession(sessionCtx) - 1
 		var sesssionEndCtx sdk.Ctx
 		if ctx.BlockHeight() > sessionEndHeight {
 			if sesssionEndCtx, err = ctx.PrevCtx(sessionEndHeight); err != nil {
@@ -160,7 +174,7 @@ func (r Relay) Execute(hostedBlockchains *HostedBlockchains, address *sdk.Addres
 
 // "Bytes" - Returns the bytes representation of the Relay
 func (r Relay) Bytes() []byte {
-	//Anonymous Struct used because of #742 empty proof object being marshalled
+	// Anonymous Struct used because of #742 empty proof object being marshalled
 	relay := struct {
 		Payload Payload   `json:"payload"` // the data payload of the request
 		Meta    RelayMeta `json:"meta"`    // metadata for the relay request
@@ -244,7 +258,8 @@ type RelayMeta struct {
 // "Validate" - Validates the relay meta object
 func (m RelayMeta) Validate(ctx sdk.Ctx) sdk.Error {
 	// ensures the block height is within the acceptable range
-	if ctx.BlockHeight()+int64(GlobalPocketConfig.ClientBlockSyncAllowance) < m.BlockHeight || ctx.BlockHeight()-int64(GlobalPocketConfig.ClientBlockSyncAllowance) > m.BlockHeight {
+	if ctx.BlockHeight()+int64(GlobalPocketConfig.ClientBlockSyncAllowance) < m.BlockHeight ||
+		ctx.BlockHeight()-int64(GlobalPocketConfig.ClientBlockSyncAllowance) > m.BlockHeight {
 		return NewOutOfSyncRequestError(ModuleName)
 	}
 	return nil

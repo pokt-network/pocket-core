@@ -49,6 +49,7 @@ const (
 	UpgradeCodecUpdateKey        = "CODEC"
 	ValidatorSplitUpdateKey      = "SPLIT"
 	NonCustodialUpdateKey        = "NCUST"
+	EnforceMaxChainsUpdateKey    = "MAXCH"
 	TxCacheEnhancementKey        = "REDUP"
 	MaxRelayProtKey              = "MREL"
 	ReplayBurnKey                = "REPBR"
@@ -291,6 +292,13 @@ func (cdc *Codec) IsOnNonCustodialUpgrade(height int64) bool {
 	return (UpgradeFeatureMap[NonCustodialUpdateKey] != 0 && height == UpgradeFeatureMap[NonCustodialUpdateKey]) || TestMode <= -3
 }
 
+// IsAfterEnforceMaxChainsUpgrade Note: includes the actual upgrade height
+func (cdc *Codec) IsAfterEnforceMaxChainsUpgrade(height int64) bool {
+	return (UpgradeFeatureMap[EnforceMaxChainsUpdateKey] != 0 &&
+		height >= UpgradeFeatureMap[EnforceMaxChainsUpdateKey]) ||
+		TestMode <= -3
+}
+
 // IsAfterNamedFeatureActivationHeight Note: includes the actual upgrade height
 func (cdc *Codec) IsAfterNamedFeatureActivationHeight(height int64, key string) bool {
 	return UpgradeFeatureMap[key] != 0 && height >= UpgradeFeatureMap[key]
@@ -323,7 +331,7 @@ func (cdc *Codec) IsOnNamedFeatureActivationHeightWithTolerance(
 
 // SliceToExistingMap merge slice to existing map
 func SliceToExistingMap(arr []string, m map[string]int64) map[string]int64 {
-	var fmap = make(map[string]int64)
+	fmap := make(map[string]int64)
 	for k, v := range m {
 		fmap[k] = v
 	}
@@ -337,7 +345,7 @@ func SliceToExistingMap(arr []string, m map[string]int64) map[string]int64 {
 
 // SliceToMap converts slice to map
 func SliceToMap(arr []string) map[string]int64 {
-	var fmap = make(map[string]int64)
+	fmap := make(map[string]int64)
 	for _, v := range arr {
 		kv := strings.Split(v, ":")
 		i, _ := strconv.ParseInt(kv[1], 10, 64)
@@ -348,7 +356,7 @@ func SliceToMap(arr []string) map[string]int64 {
 
 // MapToSlice converts map to slice
 func MapToSlice(m map[string]int64) []string {
-	var fslice = make([]string, 0)
+	fslice := make([]string, 0)
 	for k, v := range m {
 		kv := fmt.Sprintf("%s:%d", k, v)
 		fslice = append(fslice, kv)

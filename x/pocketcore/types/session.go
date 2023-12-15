@@ -4,10 +4,11 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"log"
+
 	sdk "github.com/pokt-network/pocket-core/types"
 	appexported "github.com/pokt-network/pocket-core/x/apps/exported"
 	"github.com/pokt-network/pocket-core/x/nodes/exported"
-	"log"
 )
 
 // "Session" - The relationship between an application and the pocket network
@@ -17,11 +18,17 @@ func (s Session) IsSealable() bool {
 }
 
 func (s Session) HashString() string {
-	return s.HashString()
+	return s.SessionHeader.HashString()
 }
 
 // "NewSession" - create a new session from seed data
-func NewSession(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, sessionHeader SessionHeader, blockHash string, sessionNodesCount int) (Session, sdk.Error) {
+func NewSession(
+	sessionCtx, ctx sdk.Ctx,
+	keeper PosKeeper,
+	sessionHeader SessionHeader,
+	blockHash string,
+	sessionNodesCount int,
+) (Session, sdk.Error) {
 	// first generate session key
 	sessionKey, err := NewSessionKey(sessionHeader.ApplicationPubKey, sessionHeader.Chain, blockHash)
 	if err != nil {
@@ -101,7 +108,17 @@ func (s Session) Key() ([]byte, error) {
 type SessionNodes []sdk.Address
 
 // "NewSessionNodes" - Generates nodes for the session
-func NewSessionNodes(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, chain string, sessionKey SessionKey, sessionNodesCount int) (sessionNodes SessionNodes, err sdk.Error) {
+func NewSessionNodes(
+	sessionCtx, ctx sdk.Ctx,
+	keeper PosKeeper,
+	chain string,
+	sessionKey SessionKey,
+	sessionNodesCount int,
+) (sessionNodes SessionNodes, err sdk.Error) {
+	// retrieve the enforce max chains flag's value from the codec
+	isEnforceMaxChains := ModuleCdc.IsAfterEnforceMaxChainsUpgrade(ctx.BlockHeight())
+	// retrieve the max chains value from the sessionCtx
+	nodeMaxChains := keeper.MaxChains(sessionCtx)
 	// all nodesAddrs at session genesis
 	nodesAddrs, totalNodes := keeper.GetValidatorsByChain(sessionCtx, chain)
 	// validate nodesAddrs
@@ -110,11 +127,11 @@ func NewSessionNodes(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, chain string, se
 	}
 	sessionNodes = make(SessionNodes, sessionNodesCount)
 	var node exported.ValidatorI
-	//unique address map to avoid re-checking a pseudorandomly selected servicer
+	// unique address map to avoid re-checking a pseudorandomly selected servicer
 	m := make(map[string]struct{})
 	// only select the nodesAddrs if not jailed
 	for i, numOfNodes := 0, 0; ; i++ {
-		//if this is true we already checked all nodes we got on getValidatorsBychain
+		// if this is true we already checked all nodes we got on getValidatorsBychain
 		if len(m) >= totalNodes {
 			return nil, NewInsufficientNodesError(ModuleName)
 		}
@@ -124,17 +141,22 @@ func NewSessionNodes(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, chain string, se
 		sessionKey = Hash(sessionKey)
 		// get the node from the array
 		n := nodesAddrs[index.Int64()]
-		//if we already have seen this address we continue as it's either on the list or discarded
+		// if we already have seen this address we continue as it's either on the list or discarded
 		if _, ok := m[n.String()]; ok {
 			continue
 		}
-		//add the node address to the map
+		// add the node address to the map
 		m[n.String()] = struct{}{}
 
 		// cross check the node from the `new` or `end` world state
 		node = keeper.Validator(ctx, n)
-		// if not found or jailed, don't add to session and continue
-		if node == nil || node.IsJailed() || !NodeHasChain(chain, node) || sessionNodes.Contains(node.GetAddress()) {
+		lenNodeChains := int64(len(node.GetChains()))
+		// if not found or jailed or is overstaked to chains
+		if node == nil ||
+			(isEnforceMaxChains && lenNodeChains > nodeMaxChains) ||
+			node.IsJailed() ||
+			!NodeHasChain(chain, node) ||
+			sessionNodes.Contains(node.GetAddress()) {
 			continue
 		}
 		// else add the node to the session
@@ -267,8 +289,8 @@ func BlockHash(ctx sdk.Context) string {
 
 // "MaxPossibleRelays" - Returns the maximum possible amount of relays for an App on a sessions
 func MaxPossibleRelays(app appexported.ApplicationI, sessionNodeCount int64) sdk.BigInt {
-	//GetMaxRelays Max value is bound to math.MaxUint64,
-	//current worse case is 1 chain and 5 nodes per session with a result of 3689348814741910323 which can be used safely as int64
+	// GetMaxRelays Max value is bound to math.MaxUint64,
+	// current worse case is 1 chain and 5 nodes per session with a result of 3689348814741910323 which can be used safely as int64
 	return app.GetMaxRelays().ToDec().Quo(sdk.NewDec(int64(len(app.GetChains())))).Quo(sdk.NewDec(sessionNodeCount)).RoundInt()
 }
 

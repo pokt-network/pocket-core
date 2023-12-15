@@ -26,6 +26,7 @@ type PosKeeper interface {
 	BlocksPerSession(ctx sdk.Ctx) (res int64)
 	StakeDenom(ctx sdk.Ctx) (res string)
 	GetValidatorsByChain(ctx sdk.Ctx, networkID string) (validators []sdk.Address, total int)
+	MaxChains(ctx sdk.Ctx) (maxChains int64)
 }
 
 type AppsKeeper interface {
@@ -34,6 +35,7 @@ type AppsKeeper interface {
 	AllApplications(ctx sdk.Ctx) (applications []appexported.ApplicationI)
 	TotalTokens(ctx sdk.Ctx) sdk.BigInt
 	JailApplication(ctx sdk.Ctx, addr sdk.Address)
+	MaxChains(ctx sdk.Ctx) (maxChains int64)
 }
 
 type PocketKeeper interface {
