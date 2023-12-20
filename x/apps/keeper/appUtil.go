@@ -30,3 +30,34 @@ func (k Keeper) AllApplications(ctx sdk.Ctx) (apps []exported.ApplicationI) {
 	}
 	return apps
 }
+
+// IsMsgAppTransfer - Returns if the given message is to transfer the ownership
+func (k Keeper) IsMsgAppTransfer(
+	ctx sdk.Ctx,
+	msgSigner sdk.Address,
+	msg sdk.Msg,
+) bool {
+	if !ctx.IsAfterUpgradeHeight() ||
+		!k.Cdc.IsAfterAppTransferUpgrade(ctx.BlockHeight()) {
+		return false
+	}
+
+	msgStake, ok := msg.(*types.MsgStake)
+	if !ok {
+		return false
+	}
+
+	if msgStake.IsValidTransfer() != nil {
+		return false
+	}
+
+	if msgSigner.Equals(sdk.Address(msgStake.PubKey.Address())) {
+		return false
+	}
+
+	if _, found := k.GetApplication(ctx, msgSigner); !found {
+		return false
+	}
+
+	return true
+}

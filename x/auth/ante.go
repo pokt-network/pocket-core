@@ -63,13 +63,30 @@ func ValidateTransaction(ctx sdk.Ctx, k Keeper, stdTx types.StdTx, params Params
 		return nil, types.ErrDuplicateTx(ModuleName, hex.EncodeToString(txHash))
 	}
 
+	// Please note that GetSigners() is simply redirected to Msg.GetSigners()
+	// and does not return the actual signer of this transaction in order to
+	// prevent transactions from being accepted unconditionally.
+	// If you want to allow a transaction signed by an address that is not
+	// included in this return value, add a specific condition case by case.
 	validSigners := stdTx.GetSigners()
+
 	if k.Cdc.IsAfterNonCustodialUpgrade(ctx.BlockHeight()) &&
 		k.Cdc.IsAfterOutputAddressEditorUpgrade(ctx.BlockHeight()) {
 		// MsgStake may be signed by the current output address.  We need to ask
 		// the node keeper to retrieve the current output address.
 		validSigners = append(validSigners,
 			k.POSKeeper.GetMsgStakeOutputSigner(ctx, stdTx.Msg))
+	}
+
+	if ctx.IsAfterUpgradeHeight() &&
+		k.Cdc.IsAfterAppTransferUpgrade(ctx.BlockHeight()) {
+		msgSigner := sdk.Address(stdTx.Signature.Address())
+		// AppMsgStake has a special case of AppTransfer.  In that case, we accept
+		// a message where the pubkey is different from the signer, delegating
+		// most of validation work to the app's message handler after fee deduction.
+		if k.AppKeeper.IsMsgAppTransfer(ctx, msgSigner, stdTx.Msg) {
+			validSigners = append(validSigners, msgSigner)
+		}
 	}
 
 	var pk posCrypto.PublicKey

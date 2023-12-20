@@ -2,8 +2,8 @@ package types
 
 import (
 	"fmt"
-	"github.com/pokt-network/pocket-core/codec"
 
+	"github.com/pokt-network/pocket-core/codec"
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
 )
@@ -45,6 +45,12 @@ func (msg MsgStake) GetSignBytes() []byte {
 
 // ValidateBasic quick validity check for staking an application
 func (msg MsgStake) ValidateBasic() sdk.Error {
+	// App's MsgStake has a special case for transferring the ownership.
+	// We first check if the given message is that special case or not.
+	if err := msg.IsValidTransfer(); err == nil {
+		return nil
+	}
+
 	if msg.PubKey == nil || msg.PubKey.RawString() == "" {
 		return ErrNilApplicationAddr(DefaultCodespace)
 	}
@@ -59,6 +65,24 @@ func (msg MsgStake) ValidateBasic() sdk.Error {
 			return err
 		}
 	}
+	return nil
+}
+
+func (msg MsgStake) IsValidTransfer() sdk.Error {
+	if msg.PubKey == nil {
+		return ErrNilApplicationAddr(DefaultCodespace)
+	}
+
+	// The stake amount must be zero for transfer
+	if !msg.Value.IsZero() {
+		return ErrBadStakeAmount(DefaultCodespace)
+	}
+
+	// The chains must be empty for transfer
+	if len(msg.Chains) > 0 {
+		return ErrTooManyChains(DefaultCodespace)
+	}
+
 	return nil
 }
 
@@ -177,7 +201,7 @@ func (msg MsgBeginUnstake) GetFee() sdk.BigInt {
 	return sdk.NewInt(AppFeeMap[msg.Type()])
 }
 
-//----------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
 // Route provides router key for msg
 func (msg MsgUnjail) Route() string { return RouterKey }
 

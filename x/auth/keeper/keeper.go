@@ -13,6 +13,7 @@ import (
 type Keeper struct {
 	Cdc       *codec.Codec
 	POSKeeper types.PosKeeper
+	AppKeeper types.AppKeeper
 	storeKey  sdk.StoreKey
 	subspace  sdk.Subspace
 	permAddrs map[string]types.PermissionsForAddress

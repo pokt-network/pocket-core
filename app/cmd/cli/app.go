@@ -19,6 +19,7 @@ func init() {
 	rootCmd.AddCommand(appCmd)
 	appCmd.AddCommand(appStakeCmd)
 	appCmd.AddCommand(appUnstakeCmd)
+	appCmd.AddCommand(appTransferCmd)
 	appCmd.AddCommand(createAATCmd)
 }
 
@@ -112,6 +113,65 @@ Prompts the user for the <fromAddr> account passphrase.`,
 			fmt.Println(err)
 			return
 		}
+		fmt.Println(resp)
+	},
+}
+
+var appTransferCmd = &cobra.Command{
+	Use:   "transfer <fromAddr> <newAppPubKey> <networkID> <fee> [memo]",
+	Short: "Transfer the ownership of a staked app from one to another",
+	Long: `Submits a transaction to transfer the ownership of a staked app from
+<fromAddr> to a new account specified as <newAppPubKey> without unstaking
+any app.  In other words, this edits the address of a staked app.  To run this
+command, you must have the private key of the current staked app <fromAddr>
+`,
+	Args: cobra.MinimumNArgs(4),
+	Run: func(cmd *cobra.Command, args []string) {
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
+
+		currentAppAddr := args[0]
+		newAppPubKey := args[1]
+		networkId := args[2]
+		feeStr := args[3]
+		memo := ""
+		if len(args) >= 5 {
+			memo = args[4]
+		}
+
+		fee, err := strconv.ParseInt(feeStr, 10, 64)
+		if err != nil {
+			fmt.Println("Invalid fee:", err)
+			return
+		}
+
+		fmt.Printf("Enter passphrase to unlock %s: ", currentAppAddr)
+		passphrase := app.Credentials(pwd)
+
+		rawTx, err := TransferApp(
+			currentAppAddr,
+			newAppPubKey,
+			passphrase,
+			networkId,
+			fee,
+			memo,
+		)
+		if err != nil {
+			fmt.Println("Failed to build a transaction:", err)
+			return
+		}
+
+		rawTxBytes, err := json.Marshal(rawTx)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		resp, err := QueryRPC(SendRawTxPath, rawTxBytes)
+		if err != nil {
+			fmt.Println("Failed to submit a transaction:", err)
+			return
+		}
+
 		fmt.Println(resp)
 	},
 }

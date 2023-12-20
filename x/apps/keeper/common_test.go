@@ -1,13 +1,19 @@
 package keeper
 
 import (
-	types2 "github.com/pokt-network/pocket-core/codec/types"
 	"math/rand"
 	"testing"
 
+	"github.com/pokt-network/pocket-core/codec"
+	types2 "github.com/pokt-network/pocket-core/codec/types"
 	"github.com/pokt-network/pocket-core/crypto"
+	"github.com/pokt-network/pocket-core/store"
+	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/types/module"
 	"github.com/pokt-network/pocket-core/x/apps/exported"
+	"github.com/pokt-network/pocket-core/x/apps/types"
+	"github.com/pokt-network/pocket-core/x/auth"
+	"github.com/pokt-network/pocket-core/x/gov"
 	govTypes "github.com/pokt-network/pocket-core/x/gov/types"
 	"github.com/pokt-network/pocket-core/x/nodes"
 	nodeskeeper "github.com/pokt-network/pocket-core/x/nodes/keeper"
@@ -17,13 +23,6 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
-
-	"github.com/pokt-network/pocket-core/codec"
-	"github.com/pokt-network/pocket-core/store"
-	sdk "github.com/pokt-network/pocket-core/types"
-	"github.com/pokt-network/pocket-core/x/apps/types"
-	"github.com/pokt-network/pocket-core/x/auth"
-	"github.com/pokt-network/pocket-core/x/gov"
 )
 
 // : deadcode unused
@@ -183,6 +182,13 @@ func getStakedApplication() types.Application {
 func getUnstakedApplication() types.Application {
 	v := getApplication()
 	return v.UpdateStatus(sdk.Unstaked)
+}
+
+func createNewApplication() types.Application {
+	v := getApplication()
+	v.StakedTokens = sdk.ZeroInt()
+	v.Status = sdk.Unstaked
+	return v
 }
 
 func getUnstakingApplication() types.Application {
