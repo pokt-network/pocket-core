@@ -118,8 +118,10 @@ Will prompt the user for the <fromAddr> account passphrase.`,
 	},
 }
 
+// stakeNewCmd is an upgraded version of `nodesCmd` that captures newer
+// on-chain functionality in a cleaner way
 var stakeNewCmd = &cobra.Command{
-	Use:   `stakeNew <OperatorPublicKey> <OutputAddress> <SignerAddress> <Stake> <ChainIDs> <ServiceURL> <Delegators> <NetworkID> <Fee> [Memo]`,
+	Use:   "stakeNew <OperatorPublicKey> <OutputAddress> <SignerAddress> <Stake> <ChainIDs> <ServiceURL> <RewardDelegators> <NetworkID> <Fee> [Memo]",
 	Short: "Stake a node in the network",
 	Long: `Stake a node in the network, promoting it to a servicer or a validator.
 
@@ -131,10 +133,23 @@ The command takes the following parameters.
   Stake             Amount to stake in uPOKT
   ChainIDs          Comma-separated chain IDs to host on the node
   ServiceURL        Relay endpoint of the node.  Must include the port number.
-  Delegators        Delegator addresses to share rewards
+  RewardDelegators  Addresses to share rewards
   NetworkID         Network ID to submit a transaction to e.g. mainnet or testnet
   Fee               Transaction fee in uPOKT
-  Memo              Text to include in the transaction.  No functional effect.
+  Memo              Optional. Text to include in the transaction.  No functional effect.
+
+Example:
+$ pocket nodes stakeNew \
+    e237efc54a93ed61689959e9afa0d4bd49fa11c0b946c35e6bebaccb052ce3fc \
+    fe818527cd743866c1db6bdeb18731d04891df78 \
+    1164b9c95638fc201f35eca2af4c35fe0a81b6cf \
+    8000000000000 \
+    DEAD,BEEF \
+    https://x.com:443 \
+    '{"1000000000000000000000000000000000000000":1,"2000000000000000000000000000000000000000":2}' \
+    mainnet \
+    10000 \
+    "new stake with delegators!"
 `,
 	Args: cobra.MinimumNArgs(9),
 	Run: func(cmd *cobra.Command, args []string) {

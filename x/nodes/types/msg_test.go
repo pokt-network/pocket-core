@@ -670,38 +670,45 @@ func TestMsgStake_Delegators(t *testing.T) {
 	delegator1 := crypto.Ed25519PrivateKey{}.GenPrivateKey()
 	delegator2 := crypto.Ed25519PrivateKey{}.GenPrivateKey()
 	msg := MsgStake{
-		PublicKey:  operator.PublicKey(),
-		Chains:     []string{"0001", "0040", "03DF"},
-		Value:      sdk.NewInt(1000000000000),
-		ServiceUrl: "https://pokt.network:1",
-		Output:     sdk.Address(output.PublicKey().Address()),
-		Delegators: map[string]uint32{},
+		PublicKey:        operator.PublicKey(),
+		Chains:           []string{"0001", "0040", "03DF"},
+		Value:            sdk.NewInt(1000000000000),
+		ServiceUrl:       "https://pokt.network:1",
+		Output:           sdk.Address(output.PublicKey().Address()),
+		RewardDelegators: nil,
 	}
 	assert.Nil(t, msg.ValidateBasic())
 
+	msg.RewardDelegators = map[string]uint32{}
+
 	invalidAddr := "1234"
-	msg.Delegators[invalidAddr] = 10
+	msg.RewardDelegators[invalidAddr] = 10
 	err := msg.ValidateBasic()
 	assert.NotNil(t, err)
-	assert.Equal(t, CodeInvalidaDelegators, err.Code())
+	assert.Equal(t, CodeInvalidRewardDelegators, err.Code())
 
-	// [0]
-	delete(msg.Delegators, invalidAddr)
-	msg.Delegators[delegator1.PublicKey().Address().String()] = 0
+	// RewardDelegators: {delegator1: 0}
+	delete(msg.RewardDelegators, invalidAddr)
+	msg.RewardDelegators[delegator1.PublicKey().Address().String()] = 0
+	assert.NotNil(t, err)
+	assert.Equal(t, CodeInvalidRewardDelegators, err.Code())
+
+	// RewardDelegators: {delegator1: 100}
+	msg.RewardDelegators[delegator1.PublicKey().Address().String()] = 100
 	assert.Nil(t, msg.ValidateBasic())
 
-	// [100]
-	msg.Delegators[delegator1.PublicKey().Address().String()] = 100
-	assert.Nil(t, msg.ValidateBasic())
-
-	// [100, 1]
-	msg.Delegators[delegator2.PubKey().Address().String()] = 1
+	// Delegators: {delegator1: 100, delegator2: 1}
+	msg.RewardDelegators[delegator2.PubKey().Address().String()] = 1
 	err = msg.ValidateBasic()
 	assert.NotNil(t, err)
-	assert.Equal(t, CodeInvalidaDelegators, err.Code())
+	assert.Equal(t, CodeInvalidRewardDelegators, err.Code())
 
-	// [99, 1]
-	msg.Delegators[delegator1.PublicKey().Address().String()] = 99
+	// Delegators: {delegator1: 99, delegator2: 1}
+	msg.RewardDelegators[delegator1.PublicKey().Address().String()] = 99
+	assert.Nil(t, msg.ValidateBasic())
+
+	// Delegators: {delegator1: 98, delegator2: 1}
+	msg.RewardDelegators[delegator1.PublicKey().Address().String()] = 98
 	assert.Nil(t, msg.ValidateBasic())
 }
 

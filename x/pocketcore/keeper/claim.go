@@ -25,9 +25,8 @@ func (k Keeper) SendClaimTx(
 	// get the private val key (main) account from the keybase
 	address := node.GetAddress()
 	validator := k.posKeeper.Validator(ctx, address)
-	// The cost to earn relay rewards from an evidence
-	rewardCost := k.authKeeper.GetFee(ctx, pc.MsgClaim{}).
-		Add(k.authKeeper.GetFee(ctx, pc.MsgProof{}))
+	// get the cost to earn relay rewards
+	rewardCost := k.posKeeper.GetRewardCost(ctx)
 	// retrieve the iterator to go through each piece of evidence in storage
 	iter := pc.EvidenceIterator(node.EvidenceStore)
 	defer iter.Close()
@@ -55,7 +54,7 @@ func (k Keeper) SendClaimTx(
 			}
 			continue
 		}
-		if validator != nil && pc.GlobalPocketConfig.NotClaimPossiblyNegativeRewards {
+		if validator != nil && pc.GlobalPocketConfig.PreventNegativeRewardClaim {
 			rewardExpected, _ := k.posKeeper.CalculateRelayReward(
 				ctx,
 				evidence.Chain,
@@ -64,8 +63,8 @@ func (k Keeper) SendClaimTx(
 			)
 			if rewardExpected.LTE(rewardCost) {
 				// If the expected amount of relay rewards from this evidence is less
-				// than the cost of claiming/proofing the evicence, claining the
-				// evidece is a potential loss.
+				// than the cost of claiming/proofing the evidence, claiming the
+				// evidence is a potential loss.
 				//
 				// It's still "potential" because the amount of relay rewards is
 				// calculated when the network processes a proof transaction. It's
@@ -77,7 +76,8 @@ func (k Keeper) SendClaimTx(
 					"chain", evidence.Chain,
 					"proofs", evidence.NumOfProofs,
 					"rewardExpected", rewardExpected,
-					"cost", rewardCost)
+					"rewardCost", rewardCost,
+				)
 				if err := pc.DeleteEvidence(
 					evidence.SessionHeader,
 					evidenceType,

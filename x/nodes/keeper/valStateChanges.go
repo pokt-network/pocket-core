@@ -262,12 +262,18 @@ func (k Keeper) ValidateEditStake(ctx sdk.Ctx, currentValidator, newValidtor typ
 			}
 		}
 
-		// Delegators can be set/edited only if 1) the feature has been activated
-		// AND 2) the message is signed by the operator address.
-		if k.Cdc.IsAfterDelegatorUpgrade(ctx.BlockHeight()) &&
-			!types.CompareStringMaps(currentValidator.Delegators, newValidtor.Delegators) &&
+		// Following PIP-32, RewardDelegators can be set/edited only if:
+		//   1) The feature has been activated AND
+		//   2) the message is signed by the operator address.
+		// For more details, see
+		// https://forum.pokt.network/t/pip32-unleashing-the-potential-of-non-custodial-node-running/4796
+		if k.Cdc.IsAfterRewardDelegatorUpgrade(ctx.BlockHeight()) &&
+			!types.CompareStringMaps(
+				currentValidator.RewardDelegators,
+				newValidtor.RewardDelegators,
+			) &&
 			!signer.Equals(currentValidator.Address) {
-			return types.ErrDisallowedOutputAddressEdit(k.Codespace())
+			return types.ErrDisallowedRewardDelegatorEdit(k.Codespace())
 		}
 
 		// prevent waiting vals from modifying anything
@@ -339,8 +345,8 @@ func (k Keeper) EditStakeValidator(ctx sdk.Ctx, currentValidator, updatedValidat
 		}
 
 		// After the upgrade, we allow delegators change
-		if k.Cdc.IsAfterDelegatorUpgrade(ctx.BlockHeight()) {
-			currentValidator.Delegators = updatedValidator.Delegators
+		if k.Cdc.IsAfterRewardDelegatorUpgrade(ctx.BlockHeight()) {
+			currentValidator.RewardDelegators = updatedValidator.RewardDelegators
 		}
 	}
 	// update chains

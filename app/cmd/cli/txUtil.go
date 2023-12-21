@@ -305,7 +305,7 @@ func BuildStakeTx(
 	}
 
 	if len(delegatorsStr) > 0 {
-		if json.Unmarshal([]byte(delegatorsStr), &msg.Delegators); err != nil {
+		if json.Unmarshal([]byte(delegatorsStr), &msg.RewardDelegators); err != nil {
 			return nil, err
 		}
 	}

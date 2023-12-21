@@ -150,63 +150,18 @@ func Test_sortNoLongerStakedValidators(t *testing.T) {
 	}
 }
 
-// There are three versions of structs to represent a validator.
-//   - LegacyValidator - the original version
-//   - LegacyValidator8 - LegacyValidator + OutputAddress (introduced in 0.8)
-//   - Validator - LegacyValidator8 + Delegators (introduced in 0.11)
+// There are two versions of structs to represent a validator.
+// - LegacyValidator - the original version
+// - Validator - LegacyValidator + OutputAddress + Delegators (since 0.11)
 //
-// The following two tests verify marshaling/unmarshaling has backward/forward
+// The following test verifies marshaling/unmarshaling has backward/forward
 // compatibility, meaning marshaled bytes can be unmarshaled as a newer version
 // or an older version.
-func TestValidator_Amino_MarshalingCompatibility(t *testing.T) {
-	_, _, k := createTestInput(t, false)
-	Marshal := k.Cdc.AminoCodec().MarshalBinaryLengthPrefixed
-	Unmarshal := k.Cdc.AminoCodec().UnmarshalBinaryLengthPrefixed
-
-	// Amino cannot handle type.Validator because map is not supported.
-	// We don't have to test type.Validator because it didn't exist while
-	// we were using Amino (before UpgradeCodecHeight).
-	var (
-		val_1, val_2   types.LegacyValidator8
-		valL_1, valL_2 types.LegacyValidator
-		marshaled      []byte
-		err            error
-	)
-
-	val_1 = getStakedValidator().ToLegacy8()
-	val_1.OutputAddress = getRandomValidatorAddress()
-	valL_1 = val_1.ToLegacy()
-
-	// Validator --> []byte --> Validator
-	marshaled, err = Marshal(&val_1)
-	assert.Nil(t, err)
-	assert.NotNil(t, marshaled)
-	val_2.Reset()
-	err = Unmarshal(marshaled, &val_2)
-	assert.Nil(t, err)
-	assert.True(t, val_2.ToLegacy().ExactEqualsTo(val_1.ToLegacy()))
-	assert.True(t, val_2.OutputAddress.Equals(val_1.OutputAddress))
-
-	// Validator --> []byte --> LegacyValidator
-	marshaled, err = Marshal(&val_1)
-	assert.Nil(t, err)
-	assert.NotNil(t, marshaled)
-	valL_2.Reset()
-	err = Unmarshal(marshaled, &valL_2)
-	assert.Nil(t, err)
-	assert.True(t, valL_2.ExactEqualsTo(val_1.ToLegacy()))
-
-	// LegacyValidator --> []byte --> Validator
-	marshaled, err = Marshal(&valL_1)
-	assert.Nil(t, err)
-	assert.NotNil(t, marshaled)
-	val_2.Reset()
-	err = Unmarshal(marshaled, &val_2)
-	assert.Nil(t, err)
-	assert.True(t, val_2.ToLegacy().ExactEqualsTo(valL_1))
-	assert.Nil(t, val_2.OutputAddress)
-}
-
+//
+// We cover the Proto marshaler only because Amino marshaler does not support
+// a map type used in handle type.Validator.
+// We used Amino before UpgradeCodecHeight and we no longer use it, so it's
+// ok not to cover Amino.
 func TestValidator_Proto_MarshalingCompatibility(t *testing.T) {
 	_, _, k := createTestInput(t, false)
 	Marshal := k.Cdc.ProtoCodec().MarshalBinaryLengthPrefixed
@@ -214,7 +169,6 @@ func TestValidator_Proto_MarshalingCompatibility(t *testing.T) {
 
 	var (
 		val_1, val_2   types.Validator
-		val8_1, val8_2 types.LegacyValidator8
 		valL_1, valL_2 types.LegacyValidator
 		marshaled      []byte
 		err            error
@@ -222,10 +176,9 @@ func TestValidator_Proto_MarshalingCompatibility(t *testing.T) {
 
 	val_1 = getStakedValidator()
 	val_1.OutputAddress = getRandomValidatorAddress()
-	val_1.Delegators = map[string]uint32{}
-	val_1.Delegators[getRandomValidatorAddress().String()] = 10
-	val_1.Delegators[getRandomValidatorAddress().String()] = 20
-	val8_1 = val_1.ToLegacy8()
+	val_1.RewardDelegators = map[string]uint32{}
+	val_1.RewardDelegators[getRandomValidatorAddress().String()] = 10
+	val_1.RewardDelegators[getRandomValidatorAddress().String()] = 20
 	valL_1 = val_1.ToLegacy()
 
 	// Validator --> []byte --> Validator
@@ -235,19 +188,13 @@ func TestValidator_Proto_MarshalingCompatibility(t *testing.T) {
 	val_2.Reset()
 	err = Unmarshal(marshaled, &val_2)
 	assert.Nil(t, err)
-	assert.True(t, val_2.ToLegacy().ExactEqualsTo(val_1.ToLegacy()))
+	assert.True(t, val_2.ToLegacy().Equals(val_1.ToLegacy()))
 	assert.True(t, val_2.OutputAddress.Equals(val_1.OutputAddress))
-	assert.True(t, types.CompareStringMaps(val_2.Delegators, val_1.Delegators))
-
-	// Validator --> []byte --> LegacyValidator8
-	marshaled, err = Marshal(&val_1)
-	assert.Nil(t, err)
-	assert.NotNil(t, marshaled)
-	val8_2.Reset()
-	err = Unmarshal(marshaled, &val8_2)
-	assert.Nil(t, err)
-	assert.True(t, val8_2.ToLegacy().ExactEqualsTo(val_1.ToLegacy()))
-	assert.True(t, val8_2.OutputAddress.Equals(val_1.OutputAddress))
+	assert.NotNil(t, val_2.RewardDelegators)
+	assert.True(
+		t,
+		types.CompareStringMaps(val_2.RewardDelegators, val_1.RewardDelegators),
+	)
 
 	// Validator --> []byte --> LegacyValidator
 	marshaled, err = Marshal(&val_1)
@@ -256,18 +203,7 @@ func TestValidator_Proto_MarshalingCompatibility(t *testing.T) {
 	valL_2.Reset()
 	err = Unmarshal(marshaled, &valL_2)
 	assert.Nil(t, err)
-	assert.True(t, valL_2.ExactEqualsTo(val_1.ToLegacy()))
-
-	// LegacyValidator8 --> []byte --> Validator
-	marshaled, err = Marshal(&val8_1)
-	assert.Nil(t, err)
-	assert.NotNil(t, marshaled)
-	val_2.Reset()
-	err = Unmarshal(marshaled, &val_2)
-	assert.Nil(t, err)
-	assert.True(t, val_2.ToLegacy().ExactEqualsTo(val8_1.ToLegacy()))
-	assert.True(t, val_2.OutputAddress.Equals(val8_1.OutputAddress))
-	assert.Nil(t, val_2.Delegators)
+	assert.True(t, valL_2.Equals(val_1.ToLegacy()))
 
 	// LegacyValidator --> []byte --> Validator
 	marshaled, err = Marshal(&valL_1)
@@ -276,7 +212,7 @@ func TestValidator_Proto_MarshalingCompatibility(t *testing.T) {
 	val_2.Reset()
 	err = Unmarshal(marshaled, &val_2)
 	assert.Nil(t, err)
-	assert.True(t, val_2.ToLegacy().ExactEqualsTo(valL_1))
+	assert.True(t, val_2.ToLegacy().Equals(valL_1))
 	assert.Nil(t, val_2.OutputAddress)
-	assert.Nil(t, val_2.Delegators)
+	assert.Nil(t, val_2.RewardDelegators)
 }

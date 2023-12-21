@@ -144,7 +144,7 @@ func (k Keeper) ServicerStakeFloorMultiplierExponent(ctx sdk.Ctx) (res sdk.BigDe
 	return
 }
 
-// Split rewards into node's cut and feeCollector's cut (= DAO + Proposer)
+// Split block rewards into the node's cut and the feeCollector's (DAO + Proposer) cut
 func (k Keeper) splitRewards(
 	ctx sdk.Ctx,
 	reward sdk.BigInt,
@@ -164,7 +164,7 @@ func (k Keeper) splitRewards(
 	return
 }
 
-// Split feeCollector's cut into DAO and Propower
+// Split feeCollector's cut into the DAO's cut and the Proposer's cut
 func (k Keeper) splitFeesCollected(
 	ctx sdk.Ctx,
 	feesCollected sdk.BigInt,
@@ -178,7 +178,7 @@ func (k Keeper) splitFeesCollected(
 	// dao cut calculation truncates int ex: 1.99uPOKT = 1uPOKT
 	daoCut = feesCollected.ToDec().Mul(daoAllocation).TruncateInt()
 
-	// proposer is whatever is left
+	// proposer gets whatever is left after the DAO's truncated rewards are taken out
 	proposerCut = feesCollected.Sub(daoCut)
 	return
 }

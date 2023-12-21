@@ -32,6 +32,7 @@ type PosKeeper interface {
 	StakeDenom(ctx sdk.Ctx) (res string)
 	GetValidatorsByChain(ctx sdk.Ctx, networkID string) (validators []sdk.Address, total int)
 	MaxChains(ctx sdk.Ctx) (maxChains int64)
+	GetRewardCost(ctx sdk.Ctx) sdk.BigInt
 }
 
 type AppsKeeper interface {

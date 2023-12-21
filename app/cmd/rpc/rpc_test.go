@@ -2,11 +2,11 @@ package rpc
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"math/rand"
 	"net/http"
 	"net/http/httptest"
@@ -1471,7 +1471,7 @@ func newQueryRequest(query string, body io.Reader) *http.Request {
 func getResponse(rec *httptest.ResponseRecorder) string {
 	res := rec.Result()
 	defer res.Body.Close()
-	b, err := ioutil.ReadAll(res.Body)
+	b, err := io.ReadAll(res.Body)
 	if err != nil {
 		fmt.Println("could not read response: " + err.Error())
 		return ""
@@ -1491,7 +1491,7 @@ func getResponse(rec *httptest.ResponseRecorder) string {
 func getJSONResponse(rec *httptest.ResponseRecorder) []byte {
 	res := rec.Result()
 	defer res.Body.Close()
-	b, err := ioutil.ReadAll(res.Body)
+	b, err := io.ReadAll(res.Body)
 	if err != nil {
 		panic("could not read response: " + err.Error())
 	}
@@ -1635,8 +1635,52 @@ func NewValidChallengeProof(t *testing.T, privateKeys []crypto.PrivateKey) (chal
 	return proof
 }
 
+func generateTestTx() (string, error) {
+	app.Codec()
+	privKey, err := crypto.NewPrivateKey("5d86a93dee1ef5f950ccfaafd09d9c812f790c3b2c07945501f68b339118aca0e237efc54a93ed61689959e9afa0d4bd49fa11c0b946c35e6bebaccb052ce3fc")
+	if err != nil {
+		return "", err
+	}
+	outputAddr, err := types.AddressFromHex("fe818527cd743866c1db6bdeb18731d04891df78")
+	if err != nil {
+		return "", err
+	}
+	msg := &types2.MsgStake{
+		PublicKey:  privKey.PublicKey(),
+		Chains:     []string{"DEAD", "BEEF"},
+		Value:      types.NewInt(8000000000000),
+		ServiceUrl: "https://x.com:443",
+		Output:     outputAddr,
+		RewardDelegators: map[string]uint32{
+			"1000000000000000000000000000000000000000": 1,
+			"2000000000000000000000000000000000000000": 2,
+		},
+	}
+	builder := authTypes.NewTxBuilder(
+		auth.DefaultTxEncoder(app.Codec()),
+		auth.DefaultTxDecoder(app.Codec()),
+		"mainnet",
+		"memo",
+		types.NewCoins(types.NewCoin(types.DefaultStakeDenom, types.NewInt(10000))),
+	)
+	entropy := int64(42)
+	txBytes, err := builder.BuildAndSignWithEntropyForTesting(privKey, msg, entropy)
+	if err != nil {
+		return "", err
+	}
+	return base64.StdEncoding.EncodeToString(txBytes), nil
+}
+
+// TestMsgStake_Marshaling_BackwardCompatibility verifies MsgStake
+// has backward compatibility before/after the Delegators upgrade,
+// meaning this test passes without the Delegators patch.
 func TestMsgStake_Marshaling_BackwardCompatibility(t *testing.T) {
-	// Tx 3640B15041998FE800C2F61FC033CBF295D9282B5E7045A16F754ED9D8A54AFF in Mainnet
+	// StakeTxBeforeDelegatorsUpgrade is a transaction in Pocket Mainnet.
+	// You can get this with the following command.
+	//
+	// $ curl -s -X POST -H "Content-Type: application/json" \
+	//     -d '{"hash":"3640B15041998FE800C2F61FC033CBF295D9282B5E7045A16F754ED9D8A54AFF"}' \
+	//     <Pocket Mainnet Endpoint>/v1/query/tx  | jq '.tx'
 	StakeTxBeforeDelegatorsUpgrade :=
 		"/wIK4QEKFy94Lm5vZGVzLk1zZ1Byb3RvU3Rha2U4EsUBCiBzfNC5BqUX6Aow9768" +
 			"QTKyYiRdhqrGqeqTIMVSckAe8RIEMDAwMxIEMDAwNBIEMDAwNRIEMDAwORIEMDAy" +
@@ -1647,16 +1691,19 @@ func TestMsgStake_Marshaling_BackwardCompatibility(t *testing.T) {
 			"w68+vl2z9nC+zYz3u4J7Oe3ntBOVP+cYHO5+lLuc8nH0OaG6pujXEPo19F5qW4Zh" +
 			"NBEgtChJp+QhYVgIIiBDdXN0b2RpYWwgdG8gTm9uLUN1c3RvZGlhbCBhZ2FpbijS" +
 			"CQ=="
-
+	// StakeTxBeforeDelegatorsUpgrade is a transaction with the Delegators field.
+	// You can generate this transaction by uncommenting the following two lines.
+	// StakeTxAfterDelegatorsUpgrade, err := generateTestTx()
+	// assert.Nil(t, err)
 	StakeTxAfterDelegatorsUpgrade :=
-		"5wIK3gEKFy94Lm5vZGVzLk1zZ1Byb3RvU3Rha2U4EsIBCiDiN+/FSpPtYWiZWemv" +
-			"oNS9SfoRwLlGw15r66zLBSzj/BIEMDAwMRIEQkVFRhoNODAwMDAwMDAwMDAwMCIR" +
+		"3wIK3gEKFy94Lm5vZGVzLk1zZ1Byb3RvU3Rha2U4EsIBCiDiN+/FSpPtYWiZWemv" +
+			"oNS9SfoRwLlGw15r66zLBSzj/BIEREVBRBIEQkVFRhoNODAwMDAwMDAwMDAwMCIR" +
 			"aHR0cHM6Ly94LmNvbTo0NDMqFP6BhSfNdDhmwdtr3rGHMdBIkd94MiwKKDIwMDAw" +
 			"MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAQAjIsCigxMDAwMDAw" +
 			"MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwEAESDgoFdXBva3QSBTEw" +
-			"MDAwGmQKICMRMWDdwHGZU6kMUecdxLF6UgHw0L1Vcc8lzz8Ynz0ZEkA+A9PANYsP" +
-			"+z7TduPuM7iM6jRILBJsdz0OMiGFrpGgJAsw7YrzXloJE4hyI921HoQ/bRFdw3/N" +
-			"Nea33C6VZqUGIgRtZW1vKKCQ7dyJ3LatFw=="
+			"MDAwGmQKIOI378VKk+1haJlZ6a+g1L1J+hHAuUbDXmvrrMsFLOP8EkDKz4AcELVB" +
+			"8Lyzi0+MVD/KXDIlTqjNLlBvFzOen7kZpR1it6gD79SLJXfWhB0qeu7Bux2VWQyf" +
+			"2wBBckGpIesBIgRtZW1vKCo="
 
 	originalNCUST := codec.UpgradeFeatureMap[codec.NonCustodialUpdateKey]
 	t.Cleanup(func() {
@@ -1670,17 +1717,19 @@ func TestMsgStake_Marshaling_BackwardCompatibility(t *testing.T) {
 	// Initialize app.cdc
 	app.Codec()
 
+	// Validate that an old stake messages DOES NOT have delegators
 	stdTx, err := app.UnmarshalTxStr(StakeTxBeforeDelegatorsUpgrade, heightForProto)
 	assert.Nil(t, err)
 	msgStake, ok := stdTx.Msg.(*types2.MsgStake)
 	assert.True(t, ok)
-	assert.Nil(t, msgStake.Delegators)
+	assert.Nil(t, msgStake.RewardDelegators)
 	assert.Nil(t, msgStake.ValidateBasic())
 
+	// Validate that an old stake messages DOES have delegators
 	stdTx, err = app.UnmarshalTxStr(StakeTxAfterDelegatorsUpgrade, heightForProto)
 	assert.Nil(t, err)
 	msgStake, ok = stdTx.Msg.(*types2.MsgStake)
 	assert.True(t, ok)
-	assert.NotNil(t, msgStake.Delegators)
+	assert.NotNil(t, msgStake.RewardDelegators)
 	assert.Nil(t, msgStake.ValidateBasic())
 }

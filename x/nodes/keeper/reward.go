@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/pokt-network/pocket-core/codec"
@@ -8,46 +10,67 @@ import (
 	govTypes "github.com/pokt-network/pocket-core/x/gov/types"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	pcTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
+	"github.com/tendermint/tendermint/libs/log"
 )
+
+// GetRewardCost - The cost a servicer needs to pay to earn relay rewards
+func (k Keeper) GetRewardCost(ctx sdk.Ctx) sdk.BigInt {
+	return k.AccountKeeper.GetFee(ctx, pcTypes.MsgClaim{}).
+		Add(k.AccountKeeper.GetFee(ctx, pcTypes.MsgProof{}))
+}
 
 // RewardForRelays - Award coins to an address using the default multiplier
 func (k Keeper) RewardForRelays(ctx sdk.Ctx, relays sdk.BigInt, address sdk.Address) sdk.BigInt {
 	return k.RewardForRelaysPerChain(ctx, "", relays, address)
 }
 
-// CalculateRelayReward - Calculate the amount of rewards based on the given
-// number of relays and the staked tokens.  The returned reward amount includes
-// DAO & Proposer portions.
+func (k Keeper) calculateRewardRewardPip22(
+	ctx sdk.Ctx,
+	relays, stake, multiplier sdk.BigInt,
+) sdk.BigInt {
+	// floorstake to the lowest bin multiple or take ceiling, whichever is smaller
+	flooredStake := sdk.MinInt(
+		stake.Sub(stake.Mod(k.ServicerStakeFloorMultiplier(ctx))),
+		k.ServicerStakeWeightCeiling(ctx).
+			Sub(k.ServicerStakeWeightCeiling(ctx).
+				Mod(k.ServicerStakeFloorMultiplier(ctx))),
+	)
+	// Convert from tokens to a BIN number
+	bin := flooredStake.Quo(k.ServicerStakeFloorMultiplier(ctx))
+	// calculate the weight value, weight will be a floatng point number so cast
+	// to DEC here and then truncate back to big int
+	weight := bin.ToDec().
+		FracPow(
+			k.ServicerStakeFloorMultiplierExponent(ctx),
+			Pip22ExponentDenominator,
+		).
+		Quo(k.ServicerStakeWeightMultiplier(ctx))
+	coinsDecimal := multiplier.ToDec().Mul(relays.ToDec()).Mul(weight)
+	// truncate back to int
+	return coinsDecimal.TruncateInt()
+}
+
+// CalculateRelayReward - Calculates the amount of rewards based on the given
+// number of relays and the staked tokens, and splits it to the servicer's cut
+// and the DAO & Proposer cut.
 func (k Keeper) CalculateRelayReward(
 	ctx sdk.Ctx,
 	chain string,
 	relays sdk.BigInt,
 	stake sdk.BigInt,
-) (sdk.BigInt, sdk.BigInt) {
-	// feature flags
-	isAfterRSCAL := k.Cdc.IsAfterNamedFeatureActivationHeight(ctx.BlockHeight(), codec.RSCALKey)
+) (nodeReward, feesCollected sdk.BigInt) {
+	isAfterRSCAL := k.Cdc.IsAfterNamedFeatureActivationHeight(
+		ctx.BlockHeight(),
+		codec.RSCALKey,
+	)
 	multiplier := k.GetChainSpecificMultiplier(ctx, chain)
 
 	var coins sdk.BigInt
-	//check if PIP22 is enabled, if so scale the rewards
 	if isAfterRSCAL {
-		//floorstake to the lowest bin multiple or take ceiling, whicherver is smaller
-		flooredStake := sdk.MinInt(
-			stake.Sub(stake.Mod(k.ServicerStakeFloorMultiplier(ctx))),
-			k.ServicerStakeWeightCeiling(ctx).
-				Sub(k.ServicerStakeWeightCeiling(ctx).Mod(k.ServicerStakeFloorMultiplier(ctx))),
-		)
-		//Convert from tokens to a BIN number
-		bin := flooredStake.Quo(k.ServicerStakeFloorMultiplier(ctx))
-		//calculate the weight value, weight will be a floatng point number so cast
-		// to DEC here and then truncate back to big int
-		weight := bin.ToDec().
-			FracPow(k.ServicerStakeFloorMultiplierExponent(ctx), Pip22ExponentDenominator).
-			Quo(k.ServicerStakeWeightMultiplier(ctx))
-		coinsDecimal := multiplier.ToDec().Mul(relays.ToDec()).Mul(weight)
-		//truncate back to int
-		coins = coinsDecimal.TruncateInt()
+		// scale the rewards if PIP22 is enabled
+		coins = k.calculateRewardRewardPip22(ctx, relays, stake, multiplier)
 	} else {
+		// otherwise just apply rttm
 		coins = multiplier.Mul(relays)
 	}
 
@@ -101,24 +124,41 @@ func (k Keeper) RewardForRelaysPerChain(ctx sdk.Ctx, chain string, relays sdk.Bi
 	toNode, toFeeCollector :=
 		k.CalculateRelayReward(ctx, chain, relays, validator.GetTokens())
 
-	if k.Cdc.IsAfterDelegatorUpgrade(ctx.BlockHeight()) {
-		rewardCost := k.AccountKeeper.GetFee(ctx, pcTypes.MsgClaim{}).
-			Add(k.AccountKeeper.GetFee(ctx, pcTypes.MsgProof{}))
+	// After the delegator upgrade, we compensate a servicer's operator wallet
+	// for the transaction fee of claim and proof.
+	if k.Cdc.IsAfterRewardDelegatorUpgrade(ctx.BlockHeight()) {
+		rewardCost := k.GetRewardCost(ctx)
 		if toNode.LT(rewardCost) {
+			// If the servicer's portion is less than the reward cost, we send
+			// all of the servicer's portion to the servicer and no reward is sent
+			// to the output address or delegators.  This case causes a net loss to
+			// the servicer.   If prevent_negative_reward_claim is set to true,
+			// a servicer will not claim for tiny evidences that cause a net loss.
 			rewardCost = toNode
 		}
-		k.mint(ctx, rewardCost, validator.Address)
-		toNode = toNode.Sub(rewardCost)
+		if rewardCost.IsPositive() {
+			k.mint(ctx, rewardCost, validator.Address)
+			toNode = toNode.Sub(rewardCost)
+		}
 	}
 
-	SplitNodeRewards(
+	err := SplitNodeRewards(
+		ctx.Logger(),
 		toNode,
 		address,
-		validator.Delegators,
+		validator.RewardDelegators,
 		func(recipient sdk.Address, share sdk.BigInt) {
 			k.mint(ctx, share, recipient)
 		},
 	)
+	if err != nil {
+		ctx.Logger().Error("unable to split relay rewards",
+			"height", ctx.BlockHeight(),
+			"servicer", validator.Address,
+			"err", err.Error(),
+		)
+	}
+
 	if toFeeCollector.IsPositive() {
 		k.mint(ctx, toFeeCollector, k.getFeePool(ctx).GetAddress())
 	}
@@ -127,44 +167,47 @@ func (k Keeper) RewardForRelaysPerChain(ctx sdk.Ctx, chain string, relays sdk.Bi
 
 // Splits rewards into the primary recipient and delegator addresses and
 // invokes a callback per share.
+// delegators - a map from address to its share (< 100)
+// shareRewardsCallback - a callback to send `coins` of total rewards to `addr`
 func SplitNodeRewards(
+	logger log.Logger,
 	rewards sdk.BigInt,
 	primaryRecipient sdk.Address,
 	delegators map[string]uint32,
-	callback func(sdk.Address, sdk.BigInt),
-) {
+	shareRewardsCallback func(addr sdk.Address, coins sdk.BigInt),
+) error {
 	if !rewards.IsPositive() {
-		return
+		return errors.New("non-positive rewards")
 	}
 
-	totalShare := int64(0)
-	for _, share := range delegators {
-		totalShare = totalShare + int64(share)
-		if totalShare > 100 {
-			// If the total shares for delegators exceeds 100,
-			// all rewards go to the primary recipient.
-			delegators = nil
-			break
-		}
+	normalizedDelegators, err := types.NormalizeRewardDelegators(delegators)
+	if err != nil {
+		// If the delegators field is invalid, do nothing.
+		return errors.New("invalid delegators")
 	}
 
 	remains := rewards
-	for addrStr, share := range delegators {
-		addr, err := sdk.AddressFromHex(addrStr)
-		if err != nil {
-			continue
-		}
-		percentage := sdk.NewDecWithPrec(int64(share), 2)
+	for _, pair := range normalizedDelegators {
+		percentage := sdk.NewDecWithPrec(int64(pair.RewardShare), 2)
 		allocation := rewards.ToDec().Mul(percentage).TruncateInt()
 		if allocation.IsPositive() {
-			callback(addr, allocation)
+			shareRewardsCallback(pair.Address, allocation)
 		}
 		remains = remains.Sub(allocation)
 	}
 
 	if remains.IsPositive() {
-		callback(primaryRecipient, remains)
+		shareRewardsCallback(primaryRecipient, remains)
+	} else {
+		delegatorsBytes, _ := json.Marshal(delegators)
+		logger.Error(
+			"over-distributed rewards to delegators",
+			"rewards", rewards,
+			"remains", remains,
+			"delegators", string(delegatorsBytes),
+		)
 	}
+	return nil
 }
 
 // Calculates a chain-specific Relays-To-Token-Multiplier.
@@ -211,14 +254,15 @@ func (k Keeper) blockReward(ctx sdk.Ctx, previousProposer sdk.Address) {
 			return
 		}
 
-		if !k.Cdc.IsAfterDelegatorUpgrade(ctx.BlockHeight()) {
-			validator.Delegators = nil
+		if !k.Cdc.IsAfterRewardDelegatorUpgrade(ctx.BlockHeight()) {
+			validator.RewardDelegators = nil
 		}
 
-		SplitNodeRewards(
+		err := SplitNodeRewards(
+			ctx.Logger(),
 			proposerCut,
 			k.GetOutputAddressFromValidator(validator),
-			validator.Delegators,
+			validator.RewardDelegators,
 			func(recipient sdk.Address, share sdk.BigInt) {
 				err = k.AccountKeeper.SendCoins(
 					ctx,
@@ -236,6 +280,13 @@ func (k Keeper) blockReward(ctx sdk.Ctx, previousProposer sdk.Address) {
 				}
 			},
 		)
+		if err != nil {
+			ctx.Logger().Error("unable to split block rewards",
+				"height", ctx.BlockHeight(),
+				"validator", validator.Address,
+				"err", err.Error(),
+			)
+		}
 
 		return
 	}
