@@ -3,13 +3,12 @@ package types
 import (
 	"errors"
 	"fmt"
-	"github.com/tendermint/tendermint/libs/rand"
 	"strings"
 
 	"github.com/pokt-network/pocket-core/crypto"
-
 	crkeys "github.com/pokt-network/pocket-core/crypto/keys"
 	sdk "github.com/pokt-network/pocket-core/types"
+	"github.com/tendermint/tendermint/libs/rand"
 )
 
 // TxBuilder implements a transaction context created in SDK modules.
@@ -109,6 +108,32 @@ func (bldr TxBuilder) BuildAndSign(address sdk.Address, privateKey crypto.Privat
 	}
 	if legacyCodec {
 		return bldr.txEncoder(NewTx(msg, bldr.fees, sig, bldr.memo, entropy), 0)
+	}
+	return bldr.txEncoder(NewTx(msg, bldr.fees, sig, bldr.memo, entropy), -1)
+}
+
+// BuildAndSignWithEntropyForTesting signs a given message with a given
+// private key and entropy.
+// This is for testing use only.  Use BuildAndSign for production use.
+func (bldr TxBuilder) BuildAndSignWithEntropyForTesting(
+	privateKey crypto.PrivateKey,
+	msg sdk.ProtoMsg,
+	entropy int64,
+) ([]byte, error) {
+	if bldr.chainID == "" {
+		return nil, errors.New("cant build and sign transaciton: the chainID is empty")
+	}
+	bytesToSign, err := StdSignBytes(bldr.chainID, entropy, bldr.fees, msg, bldr.memo)
+	if err != nil {
+		return nil, err
+	}
+	sigBytes, err := privateKey.Sign(bytesToSign)
+	if err != nil {
+		return nil, err
+	}
+	sig := StdSignature{
+		Signature: sigBytes,
+		PublicKey: privateKey.PublicKey(),
 	}
 	return bldr.txEncoder(NewTx(msg, bldr.fees, sig, bldr.memo, entropy), -1)
 }

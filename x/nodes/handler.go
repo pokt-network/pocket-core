@@ -60,13 +60,20 @@ func handleStake(ctx sdk.Ctx, msg types.MsgStake, k keeper.Keeper, signer crypto
 		}
 	}
 
-	if !k.Cdc.IsAfterDelegatorUpgrade(ctx.BlockHeight()) &&
-		msg.Delegators != nil {
-		msg.Delegators = nil
+	if k.Cdc.IsAfterRewardDelegatorUpgrade(ctx.BlockHeight()) {
+		if err := msg.CheckRewardDelegators(); err != nil {
+			return err.Result()
+		}
+	} else if msg.RewardDelegators != nil {
+		// Ignore the delegators field before the upgrade
+		msg.RewardDelegators = nil
 	}
 
 	validator := types.NewValidatorFromMsg(msg)
-	// StakedTokens is set through StakeValidator.  Resetting to 0 for now.
+	// We used to use NewValidator to initialize the `validator` that does not
+	// set the field StakedTokens.  On the other hand, NewValidatorFromMsg sets
+	// the field StakedTokens.  To keep the same behavior, we reset StakedTokens
+	// to 0 and leave StakedTokens to be set through StakeValidator below.
 	validator.StakedTokens = sdk.ZeroInt()
 	// check if they can stake
 	if err := k.ValidateValidatorStaking(ctx, validator, msg.Value, sdk.Address(signer.Address())); err != nil {

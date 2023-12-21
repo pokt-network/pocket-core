@@ -362,6 +362,10 @@ func (m MockPosKeeper) CalculateRelayReward(
 	panic("implement me")
 }
 
+func (m MockPosKeeper) GetRewardCost(ctx sdk.Ctx) sdk.BigInt {
+	panic("implement me")
+}
+
 func (m MockPosKeeper) RewardForRelays(ctx sdk.Ctx, relays sdk.BigInt, address sdk.Address) sdk.BigInt {
 	panic("implement me")
 }

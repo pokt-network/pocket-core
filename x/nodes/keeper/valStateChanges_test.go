@@ -500,13 +500,13 @@ func TestValidatorStateChange_Delegators(t *testing.T) {
 	originalTestMode := codec.TestMode
 	originalNCUST := codec.UpgradeFeatureMap[codec.NonCustodialUpdateKey]
 	originalOEDIT := codec.UpgradeFeatureMap[codec.OutputAddressEditKey]
-	originalDELE := codec.UpgradeFeatureMap[codec.DelegatorsKey]
+	originalReward := codec.UpgradeFeatureMap[codec.RewardDelegatorsKey]
 	t.Cleanup(func() {
 		codec.UpgradeHeight = originalUpgradeHeight
 		codec.TestMode = originalTestMode
 		codec.UpgradeFeatureMap[codec.NonCustodialUpdateKey] = originalNCUST
 		codec.UpgradeFeatureMap[codec.OutputAddressEditKey] = originalOEDIT
-		codec.UpgradeFeatureMap[codec.DelegatorsKey] = originalDELE
+		codec.UpgradeFeatureMap[codec.RewardDelegatorsKey] = originalReward
 	})
 
 	// Enable EditStake, NCUST, and OEDIT
@@ -534,12 +534,12 @@ func TestValidatorStateChange_Delegators(t *testing.T) {
 		signer crypto.PublicKey,
 	) sdk.Error {
 		msgStake := types.MsgStake{
-			Chains:     []string{"0021", "0040"},
-			ServiceUrl: "https://www.pokt.network:443",
-			Value:      stakeAmount.Amount,
-			PublicKey:  operatorPubkey,
-			Output:     outputAddress,
-			Delegators: delegators,
+			Chains:           []string{"0021", "0040"},
+			ServiceUrl:       "https://www.pokt.network:443",
+			Value:            stakeAmount.Amount,
+			PublicKey:        operatorPubkey,
+			Output:           outputAddress,
+			RewardDelegators: delegators,
 		}
 		return handleStakeForTesting(ctx, k, msgStake, signer)
 	}
@@ -547,41 +547,47 @@ func TestValidatorStateChange_Delegators(t *testing.T) {
 	singleDelegator := map[string]uint32{}
 	singleDelegator[getRandomValidatorAddress().String()] = 1
 
-	// Attempt to set a delegators before DELE upgrade --> The field is ignored
+	// Attempt to set a delegators before the upgrade --> The field is ignored
 	assert.Nil(t, runStake(operatorPubKey1, singleDelegator, outputPubKey))
 	validatorCur, found := k.GetValidator(ctx, operatorAddr1)
 	assert.True(t, found)
-	assert.Nil(t, validatorCur.Delegators)
+	assert.Nil(t, validatorCur.RewardDelegators)
 
-	// Enable DELE
-	codec.UpgradeFeatureMap[codec.DelegatorsKey] = -1
+	// Enable RewardDelegators
+	codec.UpgradeFeatureMap[codec.RewardDelegatorsKey] = -1
 
 	// Attempt to change the delegators with output's signature --> Fail
 	err := runStake(operatorPubKey1, singleDelegator, outputPubKey)
 	assert.NotNil(t, err)
 	assert.Equal(t, k.codespace, err.Codespace())
-	assert.Equal(t, types.CodeDisallowedOutputAddressEdit, err.Code())
+	assert.Equal(t, types.CodeDisallowedRewardDelegatorEdit, err.Code())
 
 	// Attempt to set the delegators with operator's signature --> Success
 	err = runStake(operatorPubKey1, singleDelegator, operatorPubKey1)
 	assert.Nil(t, err)
 	validatorCur, found = k.GetValidator(ctx, operatorAddr1)
 	assert.True(t, found)
-	assert.True(t, types.CompareStringMaps(validatorCur.Delegators, singleDelegator))
+	assert.True(
+		t,
+		types.CompareStringMaps(validatorCur.RewardDelegators, singleDelegator),
+	)
 
 	// Attempt to reset the delegators with operator's signature --> Success
 	err = runStake(operatorPubKey1, nil, operatorPubKey1)
 	assert.Nil(t, err)
 	validatorCur, found = k.GetValidator(ctx, operatorAddr1)
 	assert.True(t, found)
-	assert.Nil(t, validatorCur.Delegators)
+	assert.Nil(t, validatorCur.RewardDelegators)
 
 	// New stake with delegators can be signed by the output --> Success
 	err = runStake(operatorPubKey2, singleDelegator, outputPubKey)
 	assert.Nil(t, err)
 	validatorCur, found = k.GetValidator(ctx, operatorAddr2)
 	assert.True(t, found)
-	assert.True(t, types.CompareStringMaps(validatorCur.Delegators, singleDelegator))
+	assert.True(
+		t,
+		types.CompareStringMaps(validatorCur.RewardDelegators, singleDelegator),
+	)
 }
 
 func TestKeeper_JailValidator(t *testing.T) {

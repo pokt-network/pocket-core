@@ -10,34 +10,35 @@ import (
 type CodeType = sdk.CodeType
 
 const (
-	DefaultCodespace                sdk.CodespaceType = ModuleName
-	CodeInvalidValidator            CodeType          = 101
-	CodeInvalidDelegation           CodeType          = 102
-	CodeInvalidInput                CodeType          = 103
-	CodeValidatorJailed             CodeType          = 104
-	CodeValidatorNotJailed          CodeType          = 105
-	CodeMissingSelfDelegation       CodeType          = 106
-	CodeMissingSigningInfo          CodeType          = 108
-	CodeBadSend                     CodeType          = 109
-	CodeInvalidStatus               CodeType          = 110
-	CodeMinimumStake                CodeType          = 111
-	CodeNotEnoughCoins              CodeType          = 112
-	CodeValidatorTombstoned         CodeType          = 113
-	CodeCantHandleEvidence          CodeType          = 114
-	CodeNoChains                    CodeType          = 115
-	CodeNoServiceURL                CodeType          = 116
-	CodeWaitingValidator            CodeType          = 117
-	CodeInvalidServiceURL           CodeType          = 118
-	CodeInvalidNetworkIdentifier    CodeType          = 119
-	CodeTooManyChains               CodeType          = 120
-	CodeStateConvertError           CodeType          = 121
-	CodeMinimumEditStake            CodeType          = 122
-	CodeNilOutputAddr               CodeType          = 123
-	CodeUnequalOutputAddr           CodeType          = 124
-	CodeUnauthorizedSigner          CodeType          = 125
-	CodeNilSigner                   CodeType          = 126
-	CodeDisallowedOutputAddressEdit CodeType          = 127
-	CodeInvalidaDelegators          CodeType          = 128
+	DefaultCodespace                  sdk.CodespaceType = ModuleName
+	CodeInvalidValidator              CodeType          = 101
+	CodeInvalidDelegation             CodeType          = 102
+	CodeInvalidInput                  CodeType          = 103
+	CodeValidatorJailed               CodeType          = 104
+	CodeValidatorNotJailed            CodeType          = 105
+	CodeMissingSelfDelegation         CodeType          = 106
+	CodeMissingSigningInfo            CodeType          = 108
+	CodeBadSend                       CodeType          = 109
+	CodeInvalidStatus                 CodeType          = 110
+	CodeMinimumStake                  CodeType          = 111
+	CodeNotEnoughCoins                CodeType          = 112
+	CodeValidatorTombstoned           CodeType          = 113
+	CodeCantHandleEvidence            CodeType          = 114
+	CodeNoChains                      CodeType          = 115
+	CodeNoServiceURL                  CodeType          = 116
+	CodeWaitingValidator              CodeType          = 117
+	CodeInvalidServiceURL             CodeType          = 118
+	CodeInvalidNetworkIdentifier      CodeType          = 119
+	CodeTooManyChains                 CodeType          = 120
+	CodeStateConvertError             CodeType          = 121
+	CodeMinimumEditStake              CodeType          = 122
+	CodeNilOutputAddr                 CodeType          = 123
+	CodeUnequalOutputAddr             CodeType          = 124
+	CodeUnauthorizedSigner            CodeType          = 125
+	CodeNilSigner                     CodeType          = 126
+	CodeDisallowedOutputAddressEdit   CodeType          = 127
+	CodeInvalidRewardDelegators       CodeType          = 128
+	CodeDisallowedRewardDelegatorEdit CodeType          = 129
 )
 
 func ErrTooManyChains(codespace sdk.CodespaceType) sdk.Error {
@@ -162,7 +163,12 @@ func ErrDisallowedOutputAddressEdit(codespace sdk.CodespaceType) sdk.Error {
 		"Only the owner of the current output address can edit the output address")
 }
 
-func ErrInvalidDelegators(codespace sdk.CodespaceType, reason string) sdk.Error {
-	return sdk.NewError(codespace, CodeInvalidaDelegators,
-		"Invalid delegators: %s", reason)
+func ErrInvalidRewardDelegators(codespace sdk.CodespaceType, reason string) sdk.Error {
+	return sdk.NewError(codespace, CodeInvalidRewardDelegators,
+		"Invalid reward delegators: %s", reason)
+}
+
+func ErrDisallowedRewardDelegatorEdit(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, CodeDisallowedRewardDelegatorEdit,
+		"Only the node operator address can edit reward delegators")
 }

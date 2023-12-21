@@ -23,9 +23,10 @@ message MsgProtoStake {
 		(gogoproto.jsontag) = "output_address,omitempty",
 		(gogoproto.moretags) = "yaml:\"output_address\""
 	];
-	map<string, uint32> Delegators = 6 [
-		(gogoproto.jsontag) = "delegators,omitempty",
-		(gogoproto.moretags) = "yaml:\"delegators\""
+	// Mapping from delegated-to addresses to a percentage of rewards.
+	map<string, uint32> RewardDelegators = 6 [
+		(gogoproto.jsontag) = "reward_delegators,omitempty",
+		(gogoproto.moretags) = "yaml:\"reward_delegators\""
 	];
 }
 
