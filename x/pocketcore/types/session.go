@@ -150,10 +150,9 @@ func NewSessionNodes(
 
 		// cross check the node from the `new` or `end` world state
 		node = keeper.Validator(ctx, n)
-		lenNodeChains := int64(len(node.GetChains()))
 		// if not found or jailed or is overstaked to chains
 		if node == nil ||
-			(isEnforceMaxChains && lenNodeChains > nodeMaxChains) ||
+			(isEnforceMaxChains && int64(len(node.GetChains())) > nodeMaxChains) ||
 			node.IsJailed() ||
 			!NodeHasChain(chain, node) ||
 			sessionNodes.Contains(node.GetAddress()) {
