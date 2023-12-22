@@ -2,8 +2,6 @@ package types
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
-	"github.com/tendermint/go-amino"
 	"math/rand"
 	"reflect"
 	"testing"
@@ -11,6 +9,8 @@ import (
 
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
+	"github.com/stretchr/testify/assert"
+	"github.com/tendermint/go-amino"
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmtypes "github.com/tendermint/tendermint/types"
 )
@@ -1156,6 +1156,7 @@ func TestValidators_String(t *testing.T) {
 	}{
 		{"String Test", v, fmt.Sprintf("Address:\t\t%s\nPublic Key:\t\t%s\nJailed:\t\t\t%v\nStatus:\t\t\t%s\nTokens:\t\t\t%s\n"+
 			"ServiceUrl:\t\t%s\nChains:\t\t\t%v\nUnstaking Completion Time:\t\t%v\nOutput Address:\t\t%s"+
+			"\nReward Delegators:\t\t"+
 			"\n----",
 			sdk.Address(pub.Address()), pub.RawString(), false, sdk.Staked, sdk.ZeroInt(), "https://www.google.com:443", []string{"0001"}, time.Unix(0, 0).UTC(), "",
 		)},

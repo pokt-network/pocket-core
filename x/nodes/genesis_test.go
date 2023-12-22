@@ -1,13 +1,14 @@
 package nodes
 
 import (
+	"reflect"
+	"testing"
+	"time"
+
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/nodes/keeper"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"reflect"
-	"testing"
-	"time"
 )
 
 func TestExportGenesis(t *testing.T) {
@@ -99,7 +100,7 @@ func TestValidateGenesis(t *testing.T) {
 		{"Test ValidateGenesis 5", args{data: datafortest5}, true},
 		{"Test ValidateGenesis 6", args{data: datafortest6}, true},
 		{"Test ValidateGenesis 7", args{data: datafortest7}, true},
-		{"Test ValidateGenesis 8", args{data: datafortest8}, true},
+		{"Test ValidateGenesis 8", args{data: datafortest8}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
