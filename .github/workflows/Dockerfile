@@ -1,7 +1,7 @@
 # Based on a previous implementation to make sure we don't break existing deployments.
 # https://github.com/pokt-network/pocket-core-deployments/blob/staging/docker/Dockerfile
 
-FROM golang:1.17-alpine as build
+FROM golang:1.21-alpine as build
 RUN apk add --no-cache ca-certificates
 WORKDIR /build
 ADD . .

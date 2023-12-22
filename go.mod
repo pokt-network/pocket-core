@@ -1,6 +1,6 @@
 module github.com/pokt-network/pocket-core
 
-go 1.18
+go 1.21
 
 replace github.com/tendermint/tendermint => github.com/pokt-network/tendermint v0.32.11-0.20230426215212-59310158d3e9
 
