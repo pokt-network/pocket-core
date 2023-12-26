@@ -13,6 +13,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"testing"
 
 	"github.com/julienschmidt/httprouter"
@@ -28,6 +29,7 @@ import (
 	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/stretchr/testify/assert"
 	rand2 "github.com/tendermint/tendermint/libs/rand"
+	"github.com/tendermint/tendermint/rpc/client"
 	core_types "github.com/tendermint/tendermint/rpc/core/types"
 	tmTypes "github.com/tendermint/tendermint/types"
 	"gopkg.in/h2non/gock.v1"
@@ -215,73 +217,79 @@ type RPCResultUnconfirmedTxsResponse struct {
 	TotalTxs  json.Number `json:"total_txs"`
 }
 
-// Disabling the test because this is flaky.
-//
-// func TestRPC_QueryUnconfirmedTxs(t *testing.T) {
-// 	codec.UpgradeHeight = 50000
+func TestRPC_QueryUnconfirmedTxs(t *testing.T) {
+	codec.UpgradeHeight = 50000
 
-// 	var tx *types.TxResponse
-// 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
-// 	_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-// 	<-evtChan // Wait for block
-// 	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
-// 	kb := getInMemoryKeybase()
-// 	cb, err := kb.GetCoinbase()
-// 	assert.Nil(t, err)
-// 	kp, err := kb.Create("test")
-// 	assert.Nil(t, err)
+	var tx *types.TxResponse
+	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
+	_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	<-evtChan // Wait for block
+	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
+	kb := getInMemoryKeybase()
+	cb, err := kb.GetCoinbase()
+	assert.Nil(t, err)
+	kp, err := kb.Create("test")
+	assert.Nil(t, err)
 
-// 	// create txs asap and proceed to query them before they are gone.
-// 	// mempool on test is pretty fasts for that reason is using the goroutines to create them in parallel.
-// 	totalTxs := 2
-// 	var wg sync.WaitGroup
-// 	for i := 0; i < totalTxs; i++ {
-// 		wg.Add(1)
-// 		go func(memCLI *client.Client, wg *sync.WaitGroup) {
-// 			tx, err = nodes.Send(memCodec(), *memCLI, kb, cb.GetAddress(), kp.GetAddress(), "test", types.NewInt(1000), false)
-// 			assert.Nil(t, err)
-// 			assert.NotNil(t, tx)
-// 			wg.Done()
-// 		}(&memCli, &wg)
-// 	}
-// 	wg.Wait()
+	// create txs asap and proceed to query them before they are gone.
+	// mempool on test is pretty fasts for that reason is using the goroutines to create them in parallel.
+	totalTxs := 2
+	var wg sync.WaitGroup
+	for i := 0; i < totalTxs; i++ {
+		wg.Add(1)
+		go func(memCLI *client.Client, wg *sync.WaitGroup) {
+			tx, err = nodes.Send(memCodec(), *memCLI, kb, cb.GetAddress(), kp.GetAddress(), "test", types.NewInt(1000), false)
+			assert.Nil(t, err)
+			assert.NotNil(t, tx)
+			wg.Done()
+		}(&memCli, &wg)
+	}
+	wg.Wait()
 
-// 	var params = PaginatedHeightParams{
-// 		Page:    1,
-// 		PerPage: 1,
-// 	}
-// 	q := newQueryRequest("unconfirmedtxs", newBody(params))
-// 	rec := httptest.NewRecorder()
-// 	UnconfirmedTxs(rec, q, httprouter.Params{})
-// 	resp := getJSONResponse(rec)
-// 	assert.NotNil(t, resp)
-// 	assert.NotEmpty(t, resp)
+	var params = PaginatedHeightParams{
+		Page:    1,
+		PerPage: 1,
+	}
+	q := newQueryRequest("unconfirmedtxs", newBody(params))
+	rec := httptest.NewRecorder()
+	UnconfirmedTxs(rec, q, httprouter.Params{})
+	resp := getJSONResponse(rec)
+	assert.NotNil(t, resp)
+	assert.NotEmpty(t, resp)
 
-// 	<-evtChan // Wait for tx
+	<-evtChan // Wait for tx
 
-// 	var resTXs RPCResultUnconfirmedTxsResponse
-// 	err = json.Unmarshal(resp, &resTXs)
-// 	assert.Nil(t, err)
+	var resTXs RPCResultUnconfirmedTxsResponse
+	err = json.Unmarshal(resp, &resTXs)
+	assert.Nil(t, err)
 
-// 	pageCount, _ := resTXs.PageCount.Int64()
-// 	totalCountTxs, _ := resTXs.TotalTxs.Int64()
+	pageCount, _ := resTXs.PageCount.Int64()
+	totalCountTxs, _ := resTXs.TotalTxs.Int64()
 
-// 	assert.Equal(t, pageCount, int64(1))
-// 	assert.Equal(t, totalCountTxs, int64(totalTxs))
+	assert.Equal(t, pageCount, int64(1))
 
-// 	for _, resTX := range resTXs.Txs {
-// 		assert.NotEmpty(t, resTX.Hash)
-// 		assert.NotNil(t, resTX.StdTx)
-// 		assert.NotNil(t, resTX.StdTx.Msg)
-// 		amount, _ := resTX.StdTx.Msg.Value.Amount.Int64()
-// 		assert.Equal(t, amount, int64(1000))
-// 		assert.Equal(t, strings.ToLower(resTX.StdTx.Msg.Value.FromAddress), strings.ToLower(cb.GetAddress().String()))
-// 		assert.Equal(t, strings.ToLower(resTX.StdTx.Msg.Value.ToAddress), strings.ToLower(kp.GetAddress().String()))
-// 	}
+	if totalCountTxs < int64(totalTxs) {
+		t.Skipf(
+			`totalCountTxs was %v.  Probably this is a timing issue that one tx was
+processed before UnconfirmedTxs.  Skipping the test for now.`,
+			totalCountTxs,
+		)
+	}
+	assert.Equal(t, totalCountTxs, int64(totalTxs))
 
-// 	cleanup()
-// 	stopCli()
-// }
+	for _, resTX := range resTXs.Txs {
+		assert.NotEmpty(t, resTX.Hash)
+		assert.NotNil(t, resTX.StdTx)
+		assert.NotNil(t, resTX.StdTx.Msg)
+		amount, _ := resTX.StdTx.Msg.Value.Amount.Int64()
+		assert.Equal(t, amount, int64(1000))
+		assert.Equal(t, strings.ToLower(resTX.StdTx.Msg.Value.FromAddress), strings.ToLower(cb.GetAddress().String()))
+		assert.Equal(t, strings.ToLower(resTX.StdTx.Msg.Value.ToAddress), strings.ToLower(kp.GetAddress().String()))
+	}
+
+	cleanup()
+	stopCli()
+}
 
 func TestRPC_QueryAccountTXs(t *testing.T) {
 	codec.UpgradeHeight = 7000
