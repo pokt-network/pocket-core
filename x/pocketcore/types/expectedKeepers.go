@@ -9,6 +9,11 @@ import (
 )
 
 type PosKeeper interface {
+	CalculateRelayReward(
+		ctx sdk.Ctx, chain string,
+		relays sdk.BigInt,
+		stake sdk.BigInt,
+	) (nodeReward, feesCollected sdk.BigInt)
 	RewardForRelays(ctx sdk.Ctx, relays sdk.BigInt, address sdk.Address) sdk.BigInt
 	RewardForRelaysPerChain(
 		ctx sdk.Ctx,
@@ -27,6 +32,7 @@ type PosKeeper interface {
 	StakeDenom(ctx sdk.Ctx) (res string)
 	GetValidatorsByChain(ctx sdk.Ctx, networkID string) (validators []sdk.Address, total int)
 	MaxChains(ctx sdk.Ctx) (maxChains int64)
+	GetRewardCost(ctx sdk.Ctx) sdk.BigInt
 }
 
 type AppsKeeper interface {

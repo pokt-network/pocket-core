@@ -11,6 +11,9 @@ import (
 
 func (k Keeper) MarshalValidator(ctx sdk.Ctx, validator types.Validator) ([]byte, error) {
 	if k.Cdc.IsAfterNonCustodialUpgrade(ctx.BlockHeight()) {
+		if !k.Cdc.IsAfterRewardDelegatorUpgrade(ctx.BlockHeight()) {
+			validator.RewardDelegators = nil
+		}
 		bz, err := k.Cdc.MarshalBinaryLengthPrefixed(&validator, ctx.BlockHeight())
 		if err != nil {
 			ctx.Logger().Error("could not marshal validator: " + err.Error())
@@ -28,7 +31,11 @@ func (k Keeper) MarshalValidator(ctx sdk.Ctx, validator types.Validator) ([]byte
 func (k Keeper) UnmarshalValidator(ctx sdk.Ctx, valBytes []byte) (val types.Validator, err error) {
 	if k.Cdc.IsAfterNonCustodialUpgrade(ctx.BlockHeight()) {
 		err = k.Cdc.UnmarshalBinaryLengthPrefixed(valBytes, &val, ctx.BlockHeight())
-		if err != nil {
+		if err == nil {
+			if !k.Cdc.IsAfterRewardDelegatorUpgrade(ctx.BlockHeight()) {
+				val.RewardDelegators = nil
+			}
+		} else {
 			ctx.Logger().Error("could not unmarshal validator: " + err.Error())
 		}
 		return val, err

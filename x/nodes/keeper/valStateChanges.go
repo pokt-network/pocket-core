@@ -261,6 +261,21 @@ func (k Keeper) ValidateEditStake(ctx sdk.Ctx, currentValidator, newValidtor typ
 				return types.ErrUnequalOutputAddr(k.Codespace())
 			}
 		}
+
+		// Following PIP-32, RewardDelegators can be set/edited only if:
+		//   1) The feature has been activated AND
+		//   2) the message is signed by the operator address.
+		// For more details, see
+		// https://forum.pokt.network/t/pip32-unleashing-the-potential-of-non-custodial-node-running/4796
+		if k.Cdc.IsAfterRewardDelegatorUpgrade(ctx.BlockHeight()) &&
+			!types.CompareStringMaps(
+				currentValidator.RewardDelegators,
+				newValidtor.RewardDelegators,
+			) &&
+			!signer.Equals(currentValidator.Address) {
+			return types.ErrDisallowedRewardDelegatorEdit(k.Codespace())
+		}
+
 		// prevent waiting vals from modifying anything
 		if k.IsWaitingValidator(ctx, currentValidator.Address) {
 			return types.ErrValidatorWaitingToUnstake(types.ModuleName)
@@ -327,6 +342,11 @@ func (k Keeper) EditStakeValidator(ctx sdk.Ctx, currentValidator, updatedValidat
 		if k.Cdc.IsAfterOutputAddressEditorUpgrade(ctx.BlockHeight()) ||
 			currentValidator.OutputAddress == nil {
 			currentValidator.OutputAddress = updatedValidator.OutputAddress
+		}
+
+		// After the upgrade, we allow delegators change
+		if k.Cdc.IsAfterRewardDelegatorUpgrade(ctx.BlockHeight()) {
+			currentValidator.RewardDelegators = updatedValidator.RewardDelegators
 		}
 	}
 	// update chains

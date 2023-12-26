@@ -1,7 +1,9 @@
 package types
 
 import (
+	"encoding/json"
 	"fmt"
+
 	"github.com/pokt-network/pocket-core/codec"
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
@@ -22,7 +24,7 @@ const (
 	MsgSendName    = "send"
 )
 
-//----------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
 // GetSigners return address(es) that must sign over msg.GetSignBytes()
 func (msg MsgBeginUnstake) GetSigners() []sdk.Address {
 	return []sdk.Address{msg.Signer, msg.Address}
@@ -141,16 +143,17 @@ func (msg MsgSend) GetFee() sdk.BigInt {
 	return sdk.NewInt(NodeFeeMap[msg.Type()])
 }
 
-//----------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
 var _ codec.ProtoMarshaler = &MsgStake{}
 
 // MsgStake - struct for staking transactions
 type MsgStake struct {
-	PublicKey  crypto.PublicKey `json:"public_key" yaml:"public_key"`
-	Chains     []string         `json:"chains" yaml:"chains"`
-	Value      sdk.BigInt       `json:"value" yaml:"value"`
-	ServiceUrl string           `json:"service_url" yaml:"service_url"`
-	Output     sdk.Address      `json:"output_address,omitempty" yaml:"output_address"`
+	PublicKey        crypto.PublicKey  `json:"public_key" yaml:"public_key"`
+	Chains           []string          `json:"chains" yaml:"chains"`
+	Value            sdk.BigInt        `json:"value" yaml:"value"`
+	ServiceUrl       string            `json:"service_url" yaml:"service_url"`
+	Output           sdk.Address       `json:"output_address,omitempty" yaml:"output_address"`
+	RewardDelegators map[string]uint32 `json:"reward_delegators,omitempty" yaml:"reward_delegators"`
 }
 
 func (msg *MsgStake) Marshal() ([]byte, error) {
@@ -184,11 +187,12 @@ func (msg *MsgStake) Unmarshal(data []byte) error {
 		return err
 	}
 	newMsg := MsgStake{
-		PublicKey:  publicKey,
-		Chains:     m.Chains,
-		Value:      m.Value,
-		ServiceUrl: m.ServiceUrl,
-		Output:     m.OutputAddress,
+		PublicKey:        publicKey,
+		Chains:           m.Chains,
+		Value:            m.Value,
+		ServiceUrl:       m.ServiceUrl,
+		Output:           m.OutputAddress,
+		RewardDelegators: m.RewardDelegators,
 	}
 	*msg = newMsg
 	return nil
@@ -229,6 +233,11 @@ func (msg MsgStake) ValidateBasic() sdk.Error {
 	if err := ValidateServiceURL(msg.ServiceUrl); err != nil {
 		return err
 	}
+	if msg.RewardDelegators != nil {
+		if err := msg.CheckRewardDelegators(); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -252,7 +261,26 @@ func (msg *MsgStake) XXX_MessageName() string {
 }
 
 func (msg MsgStake) String() string {
-	return fmt.Sprintf("Public Key: %s\nChains: %s\nValue: %s\nOutputAddress: %s\n", msg.PublicKey.RawString(), msg.Chains, msg.Value.String(), msg.Output)
+	delegatorsStr := ""
+	if msg.RewardDelegators != nil {
+		if jsonBytes, err := json.Marshal(msg.RewardDelegators); err == nil {
+			delegatorsStr = string(jsonBytes)
+		} else {
+			delegatorsStr = err.Error()
+		}
+	}
+	return fmt.Sprintf(`Public Key: %s
+Chains: %s
+Value: %s
+OutputAddress: %s
+RewardDelegators: %s
+`,
+		msg.PublicKey.RawString(),
+		msg.Chains,
+		msg.Value.String(),
+		msg.Output,
+		delegatorsStr,
+	)
 }
 
 func (msg *MsgStake) ProtoMessage() {
@@ -268,11 +296,12 @@ func (msg MsgStake) ToProto() MsgProtoStake {
 		pubKeyBz = msg.PublicKey.RawBytes()
 	}
 	return MsgProtoStake{
-		Publickey:     pubKeyBz,
-		Chains:        msg.Chains,
-		Value:         msg.Value,
-		ServiceUrl:    msg.ServiceUrl,
-		OutputAddress: msg.Output,
+		Publickey:        pubKeyBz,
+		Chains:           msg.Chains,
+		Value:            msg.Value,
+		ServiceUrl:       msg.ServiceUrl,
+		OutputAddress:    msg.Output,
+		RewardDelegators: msg.RewardDelegators,
 	}
 }
 
@@ -281,6 +310,52 @@ func (msg MsgStake) CheckServiceUrlLength(url string) sdk.Error {
 		return ErrInvalidServiceURL(DefaultCodespace, fmt.Errorf("url too long"))
 	}
 	return nil
+}
+
+func (msg MsgStake) CheckRewardDelegators() sdk.Error {
+	_, err := NormalizeRewardDelegators(msg.RewardDelegators)
+	return err
+}
+
+type AddressAndShare struct {
+	Address     sdk.Address
+	RewardShare uint32 // always positive
+}
+
+// NormalizeRewardDelegators returns an slice of delegator addresses and
+// their shares if the map is valid.
+func NormalizeRewardDelegators(
+	delegators map[string]uint32,
+) ([]AddressAndShare, sdk.Error) {
+	normalized := make([]AddressAndShare, 0, len(delegators))
+	totalShares := uint64(0)
+	for addrStr, rewardShare := range delegators {
+		if rewardShare == 0 {
+			return nil, ErrInvalidRewardDelegators(
+				DefaultCodespace,
+				"Reward share must be positive",
+			)
+		}
+
+		addr, err := sdk.AddressFromHex(addrStr)
+		if err != nil {
+			return nil, ErrInvalidRewardDelegators(DefaultCodespace, err.Error())
+		}
+
+		totalShares += uint64(rewardShare)
+		if totalShares > 100 {
+			return nil, ErrInvalidRewardDelegators(
+				DefaultCodespace,
+				fmt.Sprintf("Total share %d exceeds 100", totalShares),
+			)
+		}
+
+		normalized = append(normalized, AddressAndShare{
+			Address:     addr,
+			RewardShare: rewardShare,
+		})
+	}
+	return normalized, nil
 }
 
 func (*MsgProtoStake) XXX_MessageName() string {

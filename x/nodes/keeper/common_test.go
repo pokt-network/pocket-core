@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	"math/rand"
+	"crypto/rand"
 	"testing"
 
 	"github.com/pokt-network/pocket-core/codec"
@@ -28,7 +28,6 @@ var (
 	)
 )
 
-// : deadcode unused
 // create a codec used only for testing
 func makeTestCodec() *codec.Codec {
 	var cdc = codec.NewCodec(types2.NewInterfaceRegistry())

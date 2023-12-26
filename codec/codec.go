@@ -60,6 +60,7 @@ const (
 	ClearUnjailedValSessionKey   = "CRVAL"
 	PerChainRTTM                 = "PerChainRTTM"
 	AppTransferKey               = "AppTransfer"
+	RewardDelegatorsKey          = "RewardDelegators"
 )
 
 func GetCodecUpgradeHeight() int64 {
@@ -291,6 +292,12 @@ func (cdc *Codec) IsAfterPerChainRTTMUpgrade(height int64) bool {
 func (cdc *Codec) IsAfterAppTransferUpgrade(height int64) bool {
 	return (UpgradeFeatureMap[AppTransferKey] != 0 &&
 		height >= UpgradeFeatureMap[AppTransferKey]) ||
+		TestMode <= -3
+}
+
+func (cdc *Codec) IsAfterRewardDelegatorUpgrade(height int64) bool {
+	return (UpgradeFeatureMap[RewardDelegatorsKey] != 0 &&
+		height >= UpgradeFeatureMap[RewardDelegatorsKey]) ||
 		TestMode <= -3
 }
 

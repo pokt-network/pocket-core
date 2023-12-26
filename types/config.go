@@ -50,6 +50,7 @@ type PocketConfig struct {
 	GenerateTokenOnStart       bool   `json:"generate_token_on_start"`
 	LeanPocket                 bool   `json:"lean_pocket"`
 	LeanPocketUserKeyFileName  string `json:"lean_pocket_user_key_file"`
+	PreventNegativeRewardClaim bool   `json:"prevent_negative_reward_claim"`
 }
 
 func (c PocketConfig) GetLeanPocketUserKeyFilePath() string {

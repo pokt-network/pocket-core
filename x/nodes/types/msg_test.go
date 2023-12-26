@@ -1,13 +1,14 @@
 package types
 
 import (
+	"crypto/rand"
 	"fmt"
-	"math/rand"
 	"reflect"
 	"testing"
 
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMsgBeginUnstake_GetSignBytes(t *testing.T) {
@@ -661,6 +662,54 @@ func TestMsgStake_ValidateBasic(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestMsgStake_Delegators(t *testing.T) {
+	operator := crypto.Ed25519PrivateKey{}.GenPrivateKey()
+	output := crypto.Ed25519PrivateKey{}.GenPrivateKey()
+	delegator1 := crypto.Ed25519PrivateKey{}.GenPrivateKey()
+	delegator2 := crypto.Ed25519PrivateKey{}.GenPrivateKey()
+	msg := MsgStake{
+		PublicKey:        operator.PublicKey(),
+		Chains:           []string{"0001", "0040", "03DF"},
+		Value:            sdk.NewInt(1000000000000),
+		ServiceUrl:       "https://pokt.network:1",
+		Output:           sdk.Address(output.PublicKey().Address()),
+		RewardDelegators: nil,
+	}
+	assert.Nil(t, msg.ValidateBasic())
+
+	msg.RewardDelegators = map[string]uint32{}
+
+	invalidAddr := "1234"
+	msg.RewardDelegators[invalidAddr] = 10
+	err := msg.ValidateBasic()
+	assert.NotNil(t, err)
+	assert.Equal(t, CodeInvalidRewardDelegators, err.Code())
+
+	// RewardDelegators: {delegator1: 0}
+	delete(msg.RewardDelegators, invalidAddr)
+	msg.RewardDelegators[delegator1.PublicKey().Address().String()] = 0
+	assert.NotNil(t, err)
+	assert.Equal(t, CodeInvalidRewardDelegators, err.Code())
+
+	// RewardDelegators: {delegator1: 100}
+	msg.RewardDelegators[delegator1.PublicKey().Address().String()] = 100
+	assert.Nil(t, msg.ValidateBasic())
+
+	// Delegators: {delegator1: 100, delegator2: 1}
+	msg.RewardDelegators[delegator2.PubKey().Address().String()] = 1
+	err = msg.ValidateBasic()
+	assert.NotNil(t, err)
+	assert.Equal(t, CodeInvalidRewardDelegators, err.Code())
+
+	// Delegators: {delegator1: 99, delegator2: 1}
+	msg.RewardDelegators[delegator1.PublicKey().Address().String()] = 99
+	assert.Nil(t, msg.ValidateBasic())
+
+	// Delegators: {delegator1: 98, delegator2: 1}
+	msg.RewardDelegators[delegator1.PublicKey().Address().String()] = 98
+	assert.Nil(t, msg.ValidateBasic())
 }
 
 func TestMsgUnjail_GetSignBytes(t *testing.T) {

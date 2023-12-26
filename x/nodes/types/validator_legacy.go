@@ -2,12 +2,14 @@ package types
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/pokt-network/pocket-core/codec"
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
-	"time"
 )
 
+// Compilation level enforcement to validate that structs implement ProtoMarshaler
 var _ codec.ProtoMarshaler = &LegacyValidator{}
 
 type LegacyValidator struct {
@@ -19,6 +21,17 @@ type LegacyValidator struct {
 	ServiceURL              string           `json:"service_url" yaml:"service_url"`       // url where the pocket service api is hosted
 	StakedTokens            sdk.BigInt       `json:"tokens" yaml:"tokens"`                 // tokens staked in the network
 	UnstakingCompletionTime time.Time        `json:"unstaking_time" yaml:"unstaking_time"` // if unstaking, min time for the validator to complete unstaking
+}
+
+func (v LegacyValidator) Equals(v2 LegacyValidator) bool {
+	return v.Address.Equals(v2.Address) &&
+		v.PublicKey.Equals(v2.PublicKey) &&
+		v.Jailed == v2.Jailed &&
+		v.Status == v2.Status &&
+		CompareSlices(v.Chains, v2.Chains) &&
+		v.ServiceURL == v2.ServiceURL &&
+		v.StakedTokens.Equal(v2.StakedTokens) &&
+		v.UnstakingCompletionTime.Equal(v2.UnstakingCompletionTime)
 }
 
 func (v *LegacyValidator) Marshal() ([]byte, error) {
@@ -106,10 +119,24 @@ func (v *LegacyValidator) Reset() {
 }
 
 func (v LegacyValidator) String() string {
-	return fmt.Sprintf("Address:\t\t%s\nPublic Key:\t\t%s\nJailed:\t\t\t%v\nStatus:\t\t\t%s\nTokens:\t\t\t%s\n"+
-		"ServiceUrl:\t\t%s\nChains:\t\t\t%v\nUnstaking Completion Time:\t\t%v\n"+
-		"\n----\n",
-		v.Address, v.PublicKey.RawString(), v.Jailed, v.Status, v.StakedTokens, v.ServiceURL, v.Chains, v.UnstakingCompletionTime,
+	return fmt.Sprintf(`Address:		%s
+Public Key:		%s
+Jailed:			%v
+Status:			%s
+Tokens:			%s
+ServiceUrl:		%s
+Chains:			%v
+Unstaking Completion Time:		%v
+----
+`,
+		v.Address,
+		v.PublicKey.RawString(),
+		v.Jailed,
+		v.Status,
+		v.StakedTokens,
+		v.ServiceURL,
+		v.Chains,
+		v.UnstakingCompletionTime,
 	)
 }
 
@@ -129,6 +156,7 @@ func (v LegacyValidator) ToValidator() Validator {
 		StakedTokens:            v.StakedTokens,
 		UnstakingCompletionTime: v.UnstakingCompletionTime,
 		OutputAddress:           nil,
+		RewardDelegators:        nil,
 	}
 }
 

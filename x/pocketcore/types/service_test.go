@@ -353,6 +353,19 @@ func (m MockPosKeeper) GetValidatorsByChain(ctx sdk.Ctx, networkID string) (vali
 	return
 }
 
+func (m MockPosKeeper) CalculateRelayReward(
+	ctx sdk.Ctx,
+	chain string,
+	relays sdk.BigInt,
+	stake sdk.BigInt,
+) (sdk.BigInt, sdk.BigInt) {
+	panic("implement me")
+}
+
+func (m MockPosKeeper) GetRewardCost(ctx sdk.Ctx) sdk.BigInt {
+	panic("implement me")
+}
+
 func (m MockPosKeeper) RewardForRelays(ctx sdk.Ctx, relays sdk.BigInt, address sdk.Address) sdk.BigInt {
 	panic("implement me")
 }

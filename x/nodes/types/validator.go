@@ -4,12 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/pokt-network/pocket-core/codec"
 	"strings"
 	"time"
 
+	"github.com/pokt-network/pocket-core/codec"
 	"github.com/pokt-network/pocket-core/crypto"
-
 	sdk "github.com/pokt-network/pocket-core/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmtypes "github.com/tendermint/tendermint/types"
@@ -25,6 +24,8 @@ type Validator struct {
 	StakedTokens            sdk.BigInt       `json:"tokens" yaml:"tokens"`                           // tokens staked in the network
 	UnstakingCompletionTime time.Time        `json:"unstaking_time" yaml:"unstaking_time"`           // if unstaking, min time for the validator to complete unstaking
 	OutputAddress           sdk.Address      `json:"output_address,omitempty" yaml:"output_address"` // the custodial output address of the validator
+	// Mapping from delegated-to addresses to a percentage of rewards
+	RewardDelegators map[string]uint32 `json:"reward_delegators,omitempty" yaml:"reward_delegators"`
 }
 
 // NewValidator - initialize a new validator
@@ -39,6 +40,21 @@ func NewValidator(addr sdk.Address, consPubKey crypto.PublicKey, chains []string
 		StakedTokens:            tokensToStake,
 		UnstakingCompletionTime: time.Time{},
 		OutputAddress:           outputAddress,
+	}
+}
+
+func NewValidatorFromMsg(msg MsgStake) Validator {
+	return Validator{
+		Address:                 sdk.Address(msg.PublicKey.Address()),
+		PublicKey:               msg.PublicKey,
+		Jailed:                  false,
+		Status:                  sdk.Staked,
+		Chains:                  msg.Chains,
+		ServiceURL:              msg.ServiceUrl,
+		StakedTokens:            msg.Value,
+		UnstakingCompletionTime: time.Time{},
+		OutputAddress:           msg.Output,
+		RewardDelegators:        msg.RewardDelegators,
 	}
 }
 
@@ -114,7 +130,6 @@ func (v Validator) HasChain(netID string) bool {
 	return false
 }
 
-// return the TM validator address
 func (v Validator) GetChains() []string            { return v.Chains }
 func (v Validator) GetServiceURL() string          { return v.ServiceURL }
 func (v Validator) IsStaked() bool                 { return v.GetStatus().Equal(sdk.Staked) }
@@ -169,10 +184,37 @@ func (v Validator) String() string {
 	if v.OutputAddress != nil {
 		outputPubKeyString = v.OutputAddress.String()
 	}
-	return fmt.Sprintf("Address:\t\t%s\nPublic Key:\t\t%s\nJailed:\t\t\t%v\nStatus:\t\t\t%s\nTokens:\t\t\t%s\n"+
-		"ServiceUrl:\t\t%s\nChains:\t\t\t%v\nUnstaking Completion Time:\t\t%v\nOutput Address:\t\t%s"+
-		"\n----\n",
-		v.Address, v.PublicKey.RawString(), v.Jailed, v.Status, v.StakedTokens, v.ServiceURL, v.Chains, v.UnstakingCompletionTime, outputPubKeyString,
+	delegatorsStr := ""
+	if v.RewardDelegators != nil {
+		if jsonBytes, err := json.Marshal(v.RewardDelegators); err == nil {
+			delegatorsStr = string(jsonBytes)
+		} else {
+			delegatorsStr = err.Error()
+		}
+	}
+	return fmt.Sprintf(
+		`Address:		%s
+Public Key:		%s
+Jailed:			%v
+Status:			%s
+Tokens:			%s
+ServiceUrl:		%s
+Chains:			%v
+Unstaking Completion Time:		%v
+Output Address:		%s
+Reward Delegators:		%s
+----
+`,
+		v.Address,
+		v.PublicKey.RawString(),
+		v.Jailed,
+		v.Status,
+		v.StakedTokens,
+		v.ServiceURL,
+		v.Chains,
+		v.UnstakingCompletionTime,
+		outputPubKeyString,
+		delegatorsStr,
 	)
 }
 
@@ -190,6 +232,7 @@ func (v Validator) MarshalJSON() ([]byte, error) {
 		StakedTokens:            v.StakedTokens,
 		UnstakingCompletionTime: v.UnstakingCompletionTime,
 		OutputAddress:           v.OutputAddress,
+		RewardDelegators:        v.RewardDelegators,
 	})
 }
 
@@ -213,6 +256,7 @@ func (v *Validator) UnmarshalJSON(data []byte) error {
 		Status:                  bv.Status,
 		UnstakingCompletionTime: bv.UnstakingCompletionTime,
 		OutputAddress:           bv.OutputAddress,
+		RewardDelegators:        bv.RewardDelegators,
 	}
 	return nil
 }
@@ -233,6 +277,7 @@ func (v ProtoValidator) FromProto() (Validator, error) {
 		StakedTokens:            v.StakedTokens,
 		UnstakingCompletionTime: v.UnstakingCompletionTime,
 		OutputAddress:           v.OutputAddress,
+		RewardDelegators:        v.RewardDelegators,
 	}, nil
 }
 
@@ -248,6 +293,7 @@ func (v Validator) ToProto() ProtoValidator {
 		StakedTokens:            v.StakedTokens,
 		UnstakingCompletionTime: v.UnstakingCompletionTime,
 		OutputAddress:           v.OutputAddress,
+		RewardDelegators:        v.RewardDelegators,
 	}
 }
 
@@ -261,6 +307,8 @@ type JSONValidator struct {
 	StakedTokens            sdk.BigInt      `json:"tokens" yaml:"tokens"`                 // tokens staked in the network
 	UnstakingCompletionTime time.Time       `json:"unstaking_time" yaml:"unstaking_time"` // if unstaking, min time for the validator to complete unstaking
 	OutputAddress           sdk.Address     `json:"output_address" yaml:"output_address"` // custodial output address of tokens
+	// Mapping from delegated-to addresses to a percentage of rewards
+	RewardDelegators map[string]uint32 `json:"reward_delegators" yaml:"reward_delegators"`
 }
 
 // Validators is a collection of Validator

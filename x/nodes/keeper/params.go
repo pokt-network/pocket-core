@@ -144,7 +144,11 @@ func (k Keeper) ServicerStakeFloorMultiplierExponent(ctx sdk.Ctx) (res sdk.BigDe
 	return
 }
 
-func (k Keeper) NodeReward(ctx sdk.Ctx, reward sdk.BigInt) (nodeReward sdk.BigInt, feesCollected sdk.BigInt) {
+// Split block rewards into the node's cut and the feeCollector's (DAO + Proposer) cut
+func (k Keeper) splitRewards(
+	ctx sdk.Ctx,
+	reward sdk.BigInt,
+) (nodeReward, feesCollected sdk.BigInt) {
 	// convert reward to dec
 	r := reward.ToDec()
 	// get the dao and proposer % ex DAO .1 or 10% Proposer .01 or 1%
@@ -157,6 +161,25 @@ func (k Keeper) NodeReward(ctx sdk.Ctx, reward sdk.BigInt) (nodeReward sdk.BigIn
 	feesCollected = daoAllocation.Add(proposerAllocation).TruncateInt()
 	// the rest goes to the node
 	nodeReward = reward.Sub(feesCollected)
+	return
+}
+
+// Split feeCollector's cut into the DAO's cut and the Proposer's cut
+func (k Keeper) splitFeesCollected(
+	ctx sdk.Ctx,
+	feesCollected sdk.BigInt,
+) (daoCut, proposerCut sdk.BigInt) {
+	daoAllocation := sdk.NewDec(k.DAOAllocation(ctx))
+	proposerAllocation := sdk.NewDec(k.ProposerAllocation(ctx))
+
+	// get the new percentages of `dao / (dao + proposer)`
+	daoAllocation = daoAllocation.Quo(daoAllocation.Add(proposerAllocation))
+
+	// dao cut calculation truncates int ex: 1.99uPOKT = 1uPOKT
+	daoCut = feesCollected.ToDec().Mul(daoAllocation).TruncateInt()
+
+	// proposer gets whatever is left after the DAO's truncated rewards are taken out
+	proposerCut = feesCollected.Sub(daoCut)
 	return
 }
 

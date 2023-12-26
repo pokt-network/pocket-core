@@ -1,11 +1,12 @@
 package keeper
 
 import (
+	"testing"
+
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/stretchr/testify/assert"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"testing"
 )
 
 func TestBeginBlocker(t *testing.T) {
@@ -61,9 +62,6 @@ func TestKeeper_ConvertValidatorsState(t *testing.T) {
 			ctx.Logger().Error("could not marshal validator: " + err.Error())
 		}
 		err = store.Set(types.KeyForValByAllVals(lv.Address), bz)
-		// convert the state, can be commented out as not needed,
-		//intentionally left here as a reminder that state convert for this was planned but not needed and can be removed next version
-		//k.ConvertValidatorsState(ctx)
 		// manually get validators using new structure
 		value, err := store.Get(types.KeyForValByAllVals(lv.Address))
 		assert.Nil(t, err)
