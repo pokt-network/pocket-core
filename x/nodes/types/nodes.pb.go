@@ -14,6 +14,7 @@ import (
 	io "io"
 	math "math"
 	math_bits "math/bits"
+	sort "sort"
 	time "time"
 )
 
@@ -445,7 +446,14 @@ func (m *ProtoValidator) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	var l int
 	_ = l
 	if len(m.RewardDelegators) > 0 {
+		keys := make([]string, len(m.RewardDelegators))
+		j := 0
 		for k := range m.RewardDelegators {
+			keys[j] = k
+			j++
+		}
+		sort.Strings(keys)
+		for _, k := range keys {
 			v := m.RewardDelegators[k]
 			baseI := i
 			i = encodeVarintNodes(dAtA, i, uint64(v))

@@ -1,10 +1,15 @@
 package keeper
 
 import (
+	"encoding/hex"
 	"fmt"
+	"math/rand"
 	"reflect"
+	"strconv"
 	"testing"
+	"time"
 
+	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/stretchr/testify/assert"
@@ -147,6 +152,60 @@ func Test_sortNoLongerStakedValidators(t *testing.T) {
 				t.Errorf("sortNoLongerStakedValidators() = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+// Verifies the marshaled product of a validator is the same regardless of
+// the order of RewardDelegators.  If it is not, a key of the merkle tree in
+// application.db is not deterministic, that will cause consensus failure.
+func Test_Marshal_RewardDelegators(t *testing.T) {
+	numOfIterations := 100
+	numOfDelegators := 100
+
+	chains := []string{"0001", "0002", "005A", "005B", "005C", "005D"}
+	url := "https://test.pokt.network:443"
+	stake := int64(18000000000)
+	pubKey, _ := crypto.NewPublicKey("0b787e54e66b3db3a3396c2322d8314287e08990f7696c490153b078bada7e94")
+	nodeAddr := sdk.Address(pubKey.PubKey().Address())
+	outputAddr, _ := sdk.AddressFromHex("42846261e1798fc08e1dfd97325af7b280f815b0")
+
+	randNums := make([]int, numOfDelegators)
+	for j := 0; j < numOfDelegators; j++ {
+		randNums[j] = rand.Int()
+	}
+
+	var valHash string
+
+	for i := 0; i < numOfIterations; i++ {
+		rand.Shuffle(len(randNums), func(i, j int) {
+			randNums[i], randNums[j] = randNums[j], randNums[i]
+		})
+		delegatorMap := map[string]uint32{}
+		for randNum := range randNums {
+			delegatorMap[strconv.Itoa(randNum)] = uint32(randNum % 10)
+		}
+
+		val := types.Validator{
+			Address:                 nodeAddr,
+			PublicKey:               pubKey,
+			Jailed:                  false,
+			Status:                  sdk.Staked,
+			Chains:                  chains,
+			UnstakingCompletionTime: time.Time{},
+			ServiceURL:              url,
+			StakedTokens:            sdk.NewInt(stake),
+			OutputAddress:           outputAddr,
+			RewardDelegators:        delegatorMap,
+		}
+		valBytes, err := val.Marshal()
+		assert.Nil(t, err)
+
+		// Make sure the hash is always the same regardless of the order of randNums
+		if len(valHash) == 0 {
+			valHash = hex.EncodeToString(valBytes)
+		} else {
+			assert.Equal(t, hex.EncodeToString(valBytes), valHash)
+		}
 	}
 }
 
