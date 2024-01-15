@@ -169,6 +169,7 @@ func Test_Marshal_RewardDelegators(t *testing.T) {
 	nodeAddr := sdk.Address(pubKey.PubKey().Address())
 	outputAddr, _ := sdk.AddressFromHex("42846261e1798fc08e1dfd97325af7b280f815b0")
 
+	// Generate a bunch of random numbers to use as reward delegator addressees
 	randNums := make([]int, numOfDelegators)
 	for j := 0; j < numOfDelegators; j++ {
 		randNums[j] = rand.Int()
@@ -177,6 +178,14 @@ func Test_Marshal_RewardDelegators(t *testing.T) {
 	var valHash string
 
 	for i := 0; i < numOfIterations; i++ {
+		// Initialize `delegatorMap` with a different order of the pre-created
+		// random numbers.  In every iteration, the value of `delegatorMap` is the
+		// same, but the order of its range loop (`for k, v := range delegatorMap`)
+		// is usually impacted by the order of values inserted.
+		// This behavior is not guaranteed as https://go.dev/ref/spec#For_statements
+		// says "The iteration order over maps is not specified and is not
+		// guaranteed to be the same from one iteration to the next", but it's
+		// ok for testing purpose.
 		rand.Shuffle(len(randNums), func(i, j int) {
 			randNums[i], randNums[j] = randNums[j], randNums[i]
 		})
@@ -200,12 +209,13 @@ func Test_Marshal_RewardDelegators(t *testing.T) {
 		valBytes, err := val.Marshal()
 		assert.Nil(t, err)
 
-		// Make sure the hash is always the same regardless of the order of randNums
+		// First test iteration when valhash hasn't been set yet
 		if len(valHash) == 0 {
 			valHash = hex.EncodeToString(valBytes)
-		} else {
-			assert.Equal(t, hex.EncodeToString(valBytes), valHash)
 		}
+
+		// Make sure the hash is always the same regardless of the order of randNums
+		assert.Equal(t, hex.EncodeToString(valBytes), valHash)
 	}
 }
 
