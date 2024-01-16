@@ -11,6 +11,9 @@ message ProtoValidator {
 	option (gogoproto.goproto_stringer) = true;
 	option (gogoproto.goproto_getters) = false;
 
+	// This option is to make the order of RewardDelegators deterministic
+	option (gogoproto.stable_marshaler) = true;
+
 	bytes Address = 1 [(gogoproto.casttype) = "github.com/pokt-network/pocket-core/types.Address", (gogoproto.moretags) = "yaml:\"address\"", (gogoproto.jsontag) = "address"];
 	bytes PublicKey = 2 [(gogoproto.moretags) = "yaml:\"public_key\"", (gogoproto.jsontag) = "public_key"];
 	bool jailed = 3 [(gogoproto.jsontag) = "jailed"];
