@@ -45,6 +45,7 @@ The Pocket Core application will allow anyone to spin up a Pocket Network full n
 - [Running the tests](#running-the-tests)
 - [Contributing](#contributing)
 - [MainNet Seeds](#mainnet-seeds)
+- [Docker Image](#docker-image)
 - [Support \& Contact](#support--contact)
   - [GPokT](#gpokt)
 - [License](#license)
@@ -134,6 +135,19 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on contributions and 
 
 MainNet seeds are being maintained by [NodeFleet](https://nodefleet.org/) and more details can be found at [docs.pokt.network/node/seeds/](https://docs.pokt.network/node/seeds/).
 
+## Docker Image
+
+[GitHub Packages](https://github.com/features/packages) is used to maintain
+docker images via [this workflow](https://github.com/pokt-network/pocket-core/blob/staging/.github/workflows/build-images.yaml).
+
+The latest images can be found [here](https://github.com/pokt-network/pocket-core/pkgs/container/pocket-v0).
+
+The latest image can be pulled like so:
+
+```bash
+docker pull ghcr.io/pokt-network/pocket-v0:latest
+```
+
 ## Support & Contact
 
 <div>
@@ -149,3 +163,7 @@ You can also use our chatbot, [GPokT](https://gpoktn.streamlit.app), to ask ques
 ## License
 
 This project is licensed under the MIT License; see the [LICENSE.md](LICENSE.md) file for details
+
+```
+
+```
