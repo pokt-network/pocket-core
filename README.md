@@ -133,7 +133,7 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on contributions and 
 
 ## MainNet Seeds
 
-MainNet seeds are being maintained by [NodeFleet](https://nodefleet.org/) and more details can be found at [mainnet.md](./docs/guides/mainnet.md).
+MainNet seeds are being maintained by [NodeFleet](https://nodefleet.org/) and more details can be found at [mainnet.md](./doc/guides/mainnet.md).
 
 ## Docker Image
 
