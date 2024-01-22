@@ -1,20 +1,20 @@
 #!/usr/bin/expect
 
+# Command to run
+set command $argv
+set timeout -1
+
 # Send `pocket stop` when interrupted to prevent corruption
 proc graceful_exit {} {
     send_user "Gracefully exiting Pocket...\n"
     spawn sh -c "pocket stop"
 }
 
-trap graceful_exit {SIGINT SIGTERM}
+proc graceful_mesh_exit {pid} {
+    send_user "Gracefully exiting Pocket...\n"
+    exec kill -SIGTERM $pid
+}
 
-# Command to run
-set command $argv
-set timeout -1
-
-# Create work dir
-spawn sh -c "mkdir -p /home/app/.pocket/config"
-expect eof
 
 # Pull variables from env if set
 set genesis ""
@@ -25,6 +25,12 @@ catch {set chains $env(POCKET_CORE_CHAINS)}
 
 set config ""
 catch {set config $env(POCKET_CORE_CONFIG)}
+
+set core_key ""
+catch {set core_key $env(POCKET_CORE_KEY)}
+
+set core_passphrase ""
+catch {set core_passphrase $env(POCKET_CORE_PASSPHRASE)}
 
 # Create dynamic config files
 if {$genesis != ""} {
@@ -46,26 +52,36 @@ if {$config != ""} {
     send_user "CONFIG loaded from env\n"
 }
 
-# If key isn't passed in, start the node
-if { $env(POCKET_CORE_KEY) eq "" }  {
+# if not --keybase=false
+# e.g. "pocket start --keybase=false --mainnet --datadir=/home/app/.pocket/"
+if {[regexp -nocase "keybase=false" $command]} {
+	spawn sh -c "$command"
+} elseif { $core_key eq "" }  {
+	  # If key isn't passed in, start the node
     log_user 0
     spawn sh -c "$command"
-    send -- "$env(POCKET_CORE_PASSPHRASE)\n"
+    send -- "$core_passphrase\n"
     log_user 1
 } else {
-# If key is passed in, load it into the local accounts
+    # If key is passed in, load it into the local accounts
     log_user 0
-    spawn pocket accounts import-raw $env(POCKET_CORE_KEY)
+    spawn pocket accounts import-raw $core_key
     sleep 1
-    send -- "$env(POCKET_CORE_PASSPHRASE)\n"
+    send -- "$core_passphrase\n"
     expect eof
     spawn sh -c "pocket accounts set-validator `pocket accounts list | cut -d' ' -f2- `"
     sleep 1
-    send -- "$env(POCKET_CORE_PASSPHRASE)\n"
+    send -- "$core_passphrase\n"
     expect eof
     log_user 1
     spawn sh -c "$command"
 }
 
+set pid [exp_pid]
+if {![regexp -nocase "start-mesh" $command]} {
+  trap graceful_exit {SIGINT SIGTERM}
+} else {
+  trap "graceful_mesh_exit $pid" {SIGINT SIGTERM}
+}
 expect eof
 exit

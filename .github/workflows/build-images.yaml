@@ -6,10 +6,10 @@ name: Build and push images
 on:
   workflow_dispatch:
   push:
-    branches: [staging]
+    branches: [geo-mesh]
     tags: ['*']
   pull_request:
-    branches: [staging]
+    branches: [geo-mesh]
 
 jobs:
   build-images:
@@ -27,7 +27,7 @@ jobs:
           DOCKER_METADATA_PR_HEAD_SHA: "true"
         with:
           images: |
-            ghcr.io/pokt-network/pocket-v0
+            poktscan/pocket-core
           tags: |
             type=schedule
             type=ref,event=tag
@@ -35,12 +35,11 @@ jobs:
             type=ref,event=pr
             type=sha
             type=sha,format=long
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
+      - name: Login to Dockerhub
+        uses: docker/login-action@v3
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build and push Docker image
         uses: docker/build-push-action@v3
         with:
