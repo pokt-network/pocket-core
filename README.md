@@ -44,7 +44,7 @@ The Pocket Core application will allow anyone to spin up a Pocket Network full n
 - [Charts \& Analytics](#charts--analytics)
 - [Running the tests](#running-the-tests)
 - [Contributing](#contributing)
-- [MainNet Seeds](#mainnet-seeds)
+- [Seeds (MainNet \& TestNet)](#seeds-mainnet--testnet)
 - [Docker Image](#docker-image)
 - [Support \& Contact](#support--contact)
   - [GPokT](#gpokt)
@@ -131,9 +131,11 @@ To run the Pocket Core unit tests, `go test -short -v -p 1 ./...`
 
 Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on contributions and the process of submitting pull requests.
 
-## MainNet Seeds
+## Seeds (MainNet & TestNet)
 
-MainNet seeds are being maintained by [NodeFleet](https://nodefleet.org/) and more details can be found at [mainnet.md](./doc/guides/mainnet.md).
+Seeds are maintained by [NodeFleet](https://nodefleet.org/).
+
+You can find all the details at [pokt-network/pocket-seeds](https://github.com/pokt-network/pocket-seeds).
 
 ## Docker Image
 
