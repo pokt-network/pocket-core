@@ -4,10 +4,11 @@ import (
 	"reflect"
 	"testing"
 
+	amino "github.com/tendermint/go-amino"
+	abci "github.com/tendermint/tendermint/abci/types"
+
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/apps/types"
-	"github.com/tendermint/go-amino"
-	abci "github.com/tendermint/tendermint/abci/types"
 )
 
 func Test_queryApplications(t *testing.T) {
@@ -30,7 +31,7 @@ func Test_queryApplications(t *testing.T) {
 		want  []byte
 		want1 sdk.Error
 	}{
-		{"Test query applicaitons", args{
+		{"Test query applications", args{
 			ctx: context,
 			req: abci.RequestQuery{Data: jsondata, Path: "unstaking_validators"},
 			k:   keeper,
@@ -67,7 +68,7 @@ func Test_queryApplication(t *testing.T) {
 		want  []byte
 		want1 sdk.Error
 	}{
-		{"Test query applicaiton", args{
+		{"Test query application", args{
 			ctx: context,
 			req: abci.RequestQuery{Data: jsondata, Path: "unstaking_validators"},
 			k:   keeper,

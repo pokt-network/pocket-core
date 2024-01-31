@@ -3,16 +3,18 @@ package types
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/pokt-network/pocket-core/codec"
-	"github.com/pokt-network/pocket-core/codec/types"
-	"github.com/pokt-network/pocket-core/crypto"
-	sdk "github.com/pokt-network/pocket-core/types"
-	types2 "github.com/tendermint/tendermint/abci/types"
 	"math/rand"
 	"reflect"
 	"strings"
 	"testing"
 	"time"
+
+	types2 "github.com/tendermint/tendermint/abci/types"
+
+	"github.com/pokt-network/pocket-core/codec"
+	"github.com/pokt-network/pocket-core/codec/types"
+	"github.com/pokt-network/pocket-core/crypto"
+	sdk "github.com/pokt-network/pocket-core/types"
 )
 
 func TestNewApplication(t *testing.T) {
@@ -1116,6 +1118,7 @@ func TestApplication_GetMaxRelays(t *testing.T) {
 }
 
 var application Application
+
 var cdc *codec.Codec
 
 func init() {
@@ -1183,7 +1186,7 @@ func TestApplicationUtil_String(t *testing.T) {
 		want string
 	}{
 		{
-			name: "serializes applicaitons into string",
+			name: "serializes applications into string",
 			args: Applications{application},
 			want: fmt.Sprintf("Address:\t\t%s\nPublic Key:\t\t%s\nJailed:\t\t\t%v\nChains:\t\t\t%v\nMaxRelays:\t\t%s\nStatus:\t\t\t%s\nTokens:\t\t\t%s\nUnstaking Time:\t%v\n----\n",
 				application.Address,
@@ -1216,7 +1219,7 @@ func TestApplicationUtil_JSON(t *testing.T) {
 		want []byte
 	}{
 		{
-			name: "serializes applicaitons into JSON",
+			name: "serializes applications into JSON",
 			args: applications,
 			want: j,
 		},
@@ -1230,6 +1233,7 @@ func TestApplicationUtil_JSON(t *testing.T) {
 		})
 	}
 }
+
 func TestApplicationUtil_UnmarshalJSON(t *testing.T) {
 	type args struct {
 		application Application

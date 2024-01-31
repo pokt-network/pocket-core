@@ -8,23 +8,29 @@ import (
 	pc "github.com/pokt-network/pocket-core/x/pocketcore/types"
 )
 
-// "AATGeneration" - Generates an application authentication token with an application public key hex string
-// a client public key hex string, a passphrase and a keybase. The contract is that the keybase contains the app pub key
-// and the passphrase corresponds to the app public key keypair.
-func AATGeneration(appPubKey string, clientPubKey string, key crypto.PrivateKey) (pc.AAT, sdk.Error) {
-	// create the aat object
+// GenerateAAT generates an AAT to be used for relay servicing.
+// - appPubKey is the public key of the application that's paying for on-chain service.
+// - clientPubKey (a.k.a gatewayPubKey) is the public key of the Gateway that's facilitating relays on behalf of the app.
+// - appPubKey and clientPubKey may or may not be the same.
+func AATGeneration(appPubKey, clientPubKey string, appPrivKey crypto.PrivateKey) (pc.AAT, sdk.Error) {
 	aat := pc.AAT{
 		Version:              pc.SupportedTokenVersions[0],
 		ApplicationPublicKey: appPubKey,
 		ClientPublicKey:      clientPubKey,
 		ApplicationSignature: "",
 	}
-	// marshal aat using json
-	sig, err := key.Sign(aat.Hash())
+
+	// marshal the AAT structure
+	aatBytes := aat.Hash()
+
+	// sign the AAT
+	sig, err := appPrivKey.Sign(aatBytes)
 	if err != nil {
 		return pc.AAT{}, pc.NewSignatureError(pc.ModuleName, err)
 	}
-	// stringify the signature into hex
+
+	// This is where the `ApplicationPrivKey` signs (i.e. delegates trust) to
+	// the underlying`ClientPublicKey`.
 	aat.ApplicationSignature = hex.EncodeToString(sig)
 	return aat, nil
 }

@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	core_types "github.com/tendermint/tendermint/rpc/core/types"
 	tmtypes "github.com/tendermint/tendermint/types"
 
 	"github.com/pokt-network/pocket-core/codec"
@@ -19,7 +20,6 @@ import (
 	"github.com/pokt-network/pocket-core/x/gov/types"
 	nodesTypes "github.com/pokt-network/pocket-core/x/nodes/types"
 	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
-	core_types "github.com/tendermint/tendermint/rpc/core/types"
 )
 
 const (
@@ -66,6 +66,7 @@ func (app PocketCoreApp) QueryAccountTxs(addr string, page, perPage int, prove b
 	res, err = tmClient.TxSearch(query, prove, page, perPage, checkSort(sort))
 	return
 }
+
 func (app PocketCoreApp) QueryRecipientTxs(addr string, page, perPage int, prove bool, sort string, height int64) (res *core_types.ResultTxSearch, err error) {
 	tmClient := app.GetClient()
 	defer func() { _ = tmClient.Stop() }()
@@ -605,6 +606,7 @@ func (app PocketCoreApp) HandleRelay(r pocketTypes.Relay) (res *pocketTypes.Rela
 		return nil, nil, fmt.Errorf("pocket node is currently syncing to the blockchain, cannot service in this state")
 	}
 
+	// Calling HandleRelay here
 	res, err = app.pocketKeeper.HandleRelay(ctx, r)
 	var err1 error
 	if err != nil && pocketTypes.ErrorWarrantsDispatch(err) {
@@ -625,6 +627,7 @@ func checkPagination(page, limit int) (int, int) {
 	}
 	return page, limit
 }
+
 func checkSort(s string) string {
 	switch s {
 	case "asc":

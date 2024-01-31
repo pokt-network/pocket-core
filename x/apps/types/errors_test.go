@@ -2,9 +2,10 @@ package types
 
 import (
 	"fmt"
-	sdk "github.com/pokt-network/pocket-core/types"
 	"strings"
 	"testing"
+
+	sdk "github.com/pokt-network/pocket-core/types"
 )
 
 var codespace = sdk.CodespaceType("app")
@@ -33,6 +34,7 @@ func TestError_ErrNoChains(t *testing.T) {
 		})
 	}
 }
+
 func TestError_ErrNilApplicationAddr(t *testing.T) {
 	type args struct {
 		codespace sdk.CodespaceType
@@ -57,6 +59,7 @@ func TestError_ErrNilApplicationAddr(t *testing.T) {
 		})
 	}
 }
+
 func TestError_ErrApplicaitonStatus(t *testing.T) {
 	type args struct {
 		codespace sdk.CodespaceType
@@ -81,6 +84,7 @@ func TestError_ErrApplicaitonStatus(t *testing.T) {
 		})
 	}
 }
+
 func TestError_ErrNoApplicationFound(t *testing.T) {
 	type args struct {
 		codespace sdk.CodespaceType
@@ -105,6 +109,7 @@ func TestError_ErrNoApplicationFound(t *testing.T) {
 		})
 	}
 }
+
 func TestError_ErrBadStakeAmount(t *testing.T) {
 	type args struct {
 		codespace sdk.CodespaceType
@@ -129,6 +134,7 @@ func TestError_ErrBadStakeAmount(t *testing.T) {
 		})
 	}
 }
+
 func TestError_ErrNotEnoughCoins(t *testing.T) {
 	type args struct {
 		codespace sdk.CodespaceType
@@ -153,6 +159,7 @@ func TestError_ErrNotEnoughCoins(t *testing.T) {
 		})
 	}
 }
+
 func TestError_ErrApplicaitonPubKeyExists(t *testing.T) {
 	type args struct {
 		codespace sdk.CodespaceType
@@ -177,6 +184,7 @@ func TestError_ErrApplicaitonPubKeyExists(t *testing.T) {
 		})
 	}
 }
+
 func TestError_ErrMinimumStake(t *testing.T) {
 	type args struct {
 		codespace sdk.CodespaceType
@@ -201,6 +209,7 @@ func TestError_ErrMinimumStake(t *testing.T) {
 		})
 	}
 }
+
 func TestError_ErrNoApplicationFoundForAddress(t *testing.T) {
 	type args struct {
 		codespace sdk.CodespaceType
@@ -211,7 +220,7 @@ func TestError_ErrNoApplicationFoundForAddress(t *testing.T) {
 		want sdk.Error
 	}{
 		{
-			name: "returns error applicaiton not found",
+			name: "returns error application not found",
 			args: args{codespace},
 			want: sdk.NewError(codespace, sdk.CodeType(101), "that address is not associated with any known application"),
 		},
@@ -225,6 +234,7 @@ func TestError_ErrNoApplicationFoundForAddress(t *testing.T) {
 		})
 	}
 }
+
 func TestError_ErrBadApplicaitonAddr(t *testing.T) {
 	type args struct {
 		codespace sdk.CodespaceType
@@ -250,6 +260,7 @@ func TestError_ErrBadApplicaitonAddr(t *testing.T) {
 		})
 	}
 }
+
 func TestError_ErrApplicationNotJailed(t *testing.T) {
 	type args struct {
 		codespace sdk.CodespaceType
@@ -275,6 +286,7 @@ func TestError_ErrApplicationNotJailed(t *testing.T) {
 		})
 	}
 }
+
 func TestError_ErrMissingAppStake(t *testing.T) {
 	type args struct {
 		codespace sdk.CodespaceType
@@ -300,6 +312,7 @@ func TestError_ErrMissingAppStake(t *testing.T) {
 		})
 	}
 }
+
 func TestError_ErrStakeTooLow(t *testing.T) {
 	type args struct {
 		codespace sdk.CodespaceType
@@ -324,6 +337,7 @@ func TestError_ErrStakeTooLow(t *testing.T) {
 		})
 	}
 }
+
 func TestError_ErrApplicationPubKeyTypeNotSupported(t *testing.T) {
 	type args struct {
 		codespace sdk.CodespaceType

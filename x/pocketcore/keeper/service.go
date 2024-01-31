@@ -3,10 +3,11 @@ package keeper
 import (
 	"encoding/hex"
 	"fmt"
+	"time"
+
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
 	pc "github.com/pokt-network/pocket-core/x/pocketcore/types"
-	"time"
 )
 
 // HandleRelay handles an api (read/write) request to a non-native (external) blockchain
@@ -20,9 +21,9 @@ func (k Keeper) HandleRelay(ctx sdk.Ctx, relay pc.Relay) (*pc.RelayResponse, sdk
 		return nil, pc.NewInvalidBlockHeightError(pc.ModuleName)
 	}
 
-	var node *pc.PocketNode
+	var servicerNode *pc.PocketNode
 	// There is reference to node address so that way we don't have to recreate address twice for pre-leanpokt
-	var nodeAddress sdk.Address
+	var servicerNodeAddr sdk.Address
 
 	if pc.GlobalPocketConfig.LeanPocket {
 		// if lean pocket enabled, grab the targeted servicer through the relay proof
@@ -30,21 +31,22 @@ func (k Keeper) HandleRelay(ctx sdk.Ctx, relay pc.Relay) (*pc.RelayResponse, sdk
 		if err != nil {
 			return nil, sdk.ErrInternal("Could not convert servicer hex to public key")
 		}
-		nodeAddress = sdk.GetAddress(servicerRelayPublicKey)
-		node, err = pc.GetPocketNodeByAddress(&nodeAddress)
+		servicerNodeAddr = sdk.GetAddress(servicerRelayPublicKey)
+		servicerNode, err = pc.GetPocketNodeByAddress(&servicerNodeAddr)
 		if err != nil {
 			return nil, sdk.ErrInternal("Failed to find correct servicer PK")
 		}
 	} else {
 		// get self node (your validator) from the current state
-		node = pc.GetPocketNode()
-		nodeAddress = node.GetAddress()
+		servicerNode = pc.GetPocketNode()
+		servicerNodeAddr = servicerNode.GetAddress()
 	}
 
 	// retrieve the nonNative blockchains your node is hosting
 	hostedBlockchains := k.GetHostedBlockchains()
+
 	// ensure the validity of the relay
-	maxPossibleRelays, err := relay.Validate(ctx, k.posKeeper, k.appKeeper, k, hostedBlockchains, sessionBlockHeight, node)
+	maxPossibleRelays, err := relay.Validate(ctx, k.posKeeper, k.appKeeper, k, hostedBlockchains, sessionBlockHeight, servicerNode)
 	if err != nil {
 		if pc.GlobalPocketConfig.RelayErrors {
 			ctx.Logger().Error(
@@ -59,7 +61,7 @@ func (k Keeper) HandleRelay(ctx sdk.Ctx, relay pc.Relay) (*pc.RelayResponse, sdk
 					"could not validate relay for app: %s, for chainID %v on node %s, at session height: %v, with error: %s",
 					relay.Proof.ServicerPubKey,
 					relay.Proof.Blockchain,
-					nodeAddress.String(),
+					servicerNodeAddr.String(),
 					sessionBlockHeight,
 					err.Error(),
 				),
@@ -68,9 +70,9 @@ func (k Keeper) HandleRelay(ctx sdk.Ctx, relay pc.Relay) (*pc.RelayResponse, sdk
 		return nil, err
 	}
 	// store the proof before execution, because the proof corresponds to the previous relay
-	relay.Proof.Store(maxPossibleRelays, node.EvidenceStore)
+	relay.Proof.Store(maxPossibleRelays, servicerNode.EvidenceStore)
 	// attempt to execute
-	respPayload, err := relay.Execute(hostedBlockchains, &nodeAddress)
+	respPayload, err := relay.Execute(hostedBlockchains, &servicerNodeAddr)
 	if err != nil {
 		ctx.Logger().Error(fmt.Sprintf("could not send relay with error: %s", err.Error()))
 		return nil, err
@@ -81,11 +83,11 @@ func (k Keeper) HandleRelay(ctx sdk.Ctx, relay pc.Relay) (*pc.RelayResponse, sdk
 		Proof:    relay.Proof,
 	}
 	// sign the response
-	sig, er := node.PrivateKey.Sign(resp.Hash())
+	sig, er := servicerNode.PrivateKey.Sign(resp.Hash())
 	if er != nil {
 		ctx.Logger().Error(
 			fmt.Sprintf("could not sign response for address: %s with hash: %v, with error: %s",
-				nodeAddress.String(), resp.HashString(), er.Error()),
+				servicerNodeAddr.String(), resp.HashString(), er.Error()),
 		)
 		return nil, pc.NewKeybaseError(pc.ModuleName, er)
 	}
@@ -95,8 +97,8 @@ func (k Keeper) HandleRelay(ctx sdk.Ctx, relay pc.Relay) (*pc.RelayResponse, sdk
 	relayTime := time.Since(relayTimeStart)
 	// add to metrics
 	addRelayMetricsFunc := func() {
-		pc.GlobalServiceMetric().AddRelayTimingFor(relay.Proof.Blockchain, float64(relayTime.Milliseconds()), &nodeAddress)
-		pc.GlobalServiceMetric().AddRelayFor(relay.Proof.Blockchain, &nodeAddress)
+		pc.GlobalServiceMetric().AddRelayTimingFor(relay.Proof.Blockchain, float64(relayTime.Milliseconds()), &servicerNodeAddr)
+		pc.GlobalServiceMetric().AddRelayFor(relay.Proof.Blockchain, &servicerNodeAddr)
 	}
 	if pc.GlobalPocketConfig.LeanPocket {
 		go addRelayMetricsFunc()

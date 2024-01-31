@@ -2,10 +2,12 @@ package keeper
 
 import (
 	"fmt"
+
+	abci "github.com/tendermint/tendermint/abci/types"
+
 	"github.com/pokt-network/pocket-core/codec"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
-	abci "github.com/tendermint/tendermint/abci/types"
 )
 
 // "NewQuerier" - Creates an sdk.Querier for the pocket core module

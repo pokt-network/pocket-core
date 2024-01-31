@@ -18,14 +18,14 @@ import (
 
 const DEFAULTHTTPMETHOD = "POST"
 
-// "Relay" - A read / write API request from a hosted (non native) external blockchain
+// "Relay" - A read / write API request to a hosted (non-native) external blockchain
 type Relay struct {
 	Payload Payload    `json:"payload"` // the data payload of the request
 	Meta    RelayMeta  `json:"meta"`    // metadata for the relay request
 	Proof   RelayProof `json:"proof"`   // the authentication scheme needed for work
 }
 
-// "Validate" - Checks the validity of a relay request using store data
+// "Validate" - Checks the validity of a Relay Request using store data
 func (r *Relay) Validate(
 	ctx sdk.Ctx,
 	posKeeper PosKeeper,
@@ -33,7 +33,7 @@ func (r *Relay) Validate(
 	pocketKeeper PocketKeeper,
 	hb *HostedBlockchains,
 	sessionBlockHeight int64,
-	node *PocketNode,
+	servicerNode *PocketNode,
 ) (maxPossibleRelays sdk.BigInt, err sdk.Error) {
 	// validate payload
 	if err := r.Payload.Validate(); err != nil {
@@ -60,8 +60,10 @@ func (r *Relay) Validate(
 	if er != nil {
 		return sdk.ZeroInt(), sdk.ErrInternal(er.Error())
 	}
-	// get the application that staked on behalf of the client
-	app, found := GetAppFromPublicKey(sessionCtx, appsKeeper, r.Proof.Token.ApplicationPublicKey)
+	// Retrieve the application public key from the AAT associated with the Relay Request Proof
+	appPublicKey := r.Proof.Token.ApplicationPublicKey
+	// Retrieve the on-chain application object
+	app, found := GetAppFromPublicKey(sessionCtx, appsKeeper, appPublicKey)
 	if !found {
 		return sdk.ZeroInt(), NewAppNotFoundError(ModuleName)
 	}
@@ -77,13 +79,13 @@ func (r *Relay) Validate(
 	maxPossibleRelays = MaxPossibleRelays(app, sessionNodeCount)
 	// generate the session header
 	header := SessionHeader{
-		ApplicationPubKey:  r.Proof.Token.ApplicationPublicKey,
+		ApplicationPubKey:  appPublicKey,
 		Chain:              r.Proof.Blockchain,
 		SessionBlockHeight: r.Proof.SessionBlockHeight,
 	}
 	// validate unique relay
-	evidence, totalRelays := GetTotalProofs(header, RelayEvidence, maxPossibleRelays, node.EvidenceStore)
-	if node.EvidenceStore.IsSealed(evidence) {
+	evidence, totalRelays := GetTotalProofs(header, RelayEvidence, maxPossibleRelays, servicerNode.EvidenceStore)
+	if servicerNode.EvidenceStore.IsSealed(evidence) {
 		return sdk.ZeroInt(), NewSealedEvidenceError(ModuleName)
 	}
 	// get evidence key by proof
@@ -94,13 +96,14 @@ func (r *Relay) Validate(
 	if sdk.NewInt(totalRelays).GTE(maxPossibleRelays) {
 		return sdk.ZeroInt(), NewOverServiceError(ModuleName)
 	}
-	// validate the Proof
-	nodeAddr := node.GetAddress()
-	if err := r.Proof.ValidateLocal(app.GetChains(), int(sessionNodeCount), sessionBlockHeight, nodeAddr); err != nil {
+	// Retrieve the address of the local node (servicing the relay)
+	servicerAddr := servicerNode.GetAddress()
+	// Validate the relay proof against the local (servicing) node
+	if err := r.Proof.ValidateLocal(app.GetChains(), int(sessionNodeCount), sessionBlockHeight, servicerAddr); err != nil {
 		return sdk.ZeroInt(), err
 	}
 	// check cache
-	session, found := GetSession(header, node.SessionStore)
+	session, found := GetSession(header, servicerNode.SessionStore)
 	// if not found generate the session
 	if !found {
 		bh, err := sessionCtx.BlockHash(pocketKeeper.Codec(), sessionCtx.BlockHeight())
@@ -112,25 +115,25 @@ func (r *Relay) Validate(
 		// session of the relay's session.  In such a case, we need to pass the
 		// correct context of the session end instead of `ctx`.
 		sessionEndHeight := sessionBlockHeight + posKeeper.BlocksPerSession(sessionCtx) - 1
-		var sesssionEndCtx sdk.Ctx
+		var sessionEndCtx sdk.Ctx
 		if ctx.BlockHeight() > sessionEndHeight {
-			if sesssionEndCtx, err = ctx.PrevCtx(sessionEndHeight); err != nil {
+			if sessionEndCtx, err = ctx.PrevCtx(sessionEndHeight); err != nil {
 				return sdk.ZeroInt(), sdk.ErrInternal(er.Error())
 			}
 		} else {
-			sesssionEndCtx = ctx
+			sessionEndCtx = ctx
 		}
 
 		var er sdk.Error
-		session, er = NewSession(sessionCtx, sesssionEndCtx, posKeeper, header, hex.EncodeToString(bh), int(sessionNodeCount))
+		session, er = NewSession(sessionCtx, sessionEndCtx, posKeeper, header, hex.EncodeToString(bh), int(sessionNodeCount))
 		if er != nil {
 			return sdk.ZeroInt(), er
 		}
 		// add to cache
-		SetSession(session, node.SessionStore)
+		SetSession(session, servicerNode.SessionStore)
 	}
 	// validate the session
-	err = session.Validate(nodeAddr, app, int(sessionNodeCount))
+	err = session.Validate(servicerAddr, app, int(sessionNodeCount))
 	if err != nil {
 		return sdk.ZeroInt(), err
 	}

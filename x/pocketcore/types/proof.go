@@ -4,9 +4,10 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"log"
+
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
-	"log"
 )
 
 // "Proof" - An interface representation of an economic proof of work/burn (relay or challenge)
@@ -54,21 +55,30 @@ func (ps ProofIs) FromProofI() (res Proofs) {
 
 var _ Proof = RelayProof{} // ensure implements interface at compile time
 
-// "ValidateLocal" - Validates the proof object, where the owner of the proof is the local node
-func (rp RelayProof) ValidateLocal(appSupportedBlockchains []string, sessionNodeCount int, sessionBlockHeight int64, verifyAddr sdk.Address) sdk.Error {
-	//Basic Validations
+// ValidateLocal validates the Relay Proof object, where the owner of the proof is the local node
+
+func (rp RelayProof) ValidateLocal(
+	appSupportedBlockchains []string,
+	sessionNodeCount int,
+	sessionBlockHeight int64,
+	verifyAddr sdk.Address,
+) sdk.Error {
+	// Basic validation of the relay proof
 	err := rp.ValidateBasic()
 	if err != nil {
 		return err
 	}
+	// Retrieve the servicer public key
 	servicerPublicKey, er := crypto.NewPublicKey(rp.ServicerPubKey)
 	if er != nil {
 		return NewInvalidNodePubKeyError(ModuleName)
 	}
 	// validate the public key correctness
 	if !sdk.Address(servicerPublicKey.Address()).Equals(verifyAddr) {
-		return NewInvalidNodePubKeyError(ModuleName) // the public key is not this nodes, so they would not get paid
+		// the public key is not this nodes, so they would not get paid
+		return NewInvalidNodePubKeyError(ModuleName)
 	}
+	// ValidateLocal calling `rp.Validate` is important
 	err = rp.Validate(appSupportedBlockchains, sessionNodeCount, sessionBlockHeight)
 	if err != nil {
 		return err
@@ -96,7 +106,7 @@ func (rp RelayProof) Validate(appSupportedBlockchains []string, sessionNodeCount
 	return nil
 }
 
-// "ValidateBasic" - Provides a lighter weight, storeless validation of the relay proof object
+// ValidateBasic provides a light-weight, stateless validation of the relay proof object.
 func (rp RelayProof) ValidateBasic() sdk.Error {
 	// verify the session block height is positive
 	if rp.SessionBlockHeight < 1 {
@@ -118,15 +128,25 @@ func (rp RelayProof) ValidateBasic() sdk.Error {
 	if rp.Entropy < 0 { // todo this is inefficient
 		return NewInvalidEntropyError(ModuleName)
 	}
-	// verify a valid token
+
+	// verify the AAT token
 	if err := rp.Token.Validate(); err != nil {
 		return NewInvalidTokenError(ModuleName, err)
 	}
-	// verify the client signature on the Proof
-	if err := SignatureVerification(rp.Token.ClientPublicKey, rp.HashString(), rp.Signature); err != nil {
-		return err
-	}
-	return nil
+
+	// Retrieving the client public key (aka the gateway public key), which
+	// may or may not be the same as the application public key depending on
+	// the inputs to when the AAT was generated.
+	clientPubKey := rp.Token.ClientPublicKey
+
+	// The relay proof message that should have been signed by the client above
+	relayProofMsg := rp.HashString()
+
+	// The client signature on the relay proof
+	relayProofSig := rp.Signature
+
+	// Verify the signature on the relay proof message
+	return SignatureVerification(clientPubKey, relayProofMsg, relayProofSig)
 }
 
 // "SessionHeader" - Returns the session header corresponding with the proof

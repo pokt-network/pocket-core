@@ -100,9 +100,9 @@ const (
 var (
 	MissingTokenVersionError         = errors.New("the application authentication token version is missing")
 	UnsupportedTokenVersionError     = errors.New("the application authentication token version is not supported")
-	MissingApplicationPublicKeyError = errors.New("the applicaiton public key included in the AAT is not valid")
+	MissingApplicationPublicKeyError = errors.New("the application public key included in the AAT is not valid")
 	MissingClientPublicKeyError      = errors.New("the client public key included in the AAT is not valid")
-	InvalidTokenSignatureErorr       = errors.New("the application signature on the AAT is not valid")
+	InvalidTokenSignatureError       = errors.New("the application signature on the AAT is not valid")
 	NegativeICCounterError           = errors.New("the IC counter is less than 0")
 	MaximumEntropyError              = errors.New("the entropy exceeds the maximum allowed relays")
 	NodeNotInSessionError            = errors.New("the node is not within the session")

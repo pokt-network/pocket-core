@@ -29,17 +29,17 @@ func (a AAT) VersionIsSupported() bool {
 	return false
 }
 
-// "Validate" - Returns an error for an invalid AAT
+// Validate validates the AAT's metadata, message and signature.
 func (a AAT) Validate() error {
-	// check the version of the aat
+	// check the version of the AAT
 	if err := a.ValidateVersion(); err != nil {
 		return err
 	}
-	// check the message of the aat
+	// check the message of the AAT
 	if err := a.ValidateMessage(); err != nil {
 		return err
 	}
-	// check the app signature of the aat
+	// check the app signature of the AAT
 	if err := a.ValidateSignature(); err != nil {
 		return err
 	}
@@ -104,13 +104,12 @@ func (a AAT) ValidateMessage() error {
 	return nil
 }
 
-// "ValidateSignature" - Confirms the signature field of the AAT
+// ValidateSignature confirms that the ApplicationSignature of the AAT is correct
 func (a AAT) ValidateSignature() error {
-	// check for valid signature
-	messageHash := a.HashString()
-	// verifies the signature with the message of the AAT
-	if err := SignatureVerification(a.ApplicationPublicKey, messageHash, a.ApplicationSignature); err != nil {
-		return InvalidTokenSignatureErorr
+	aatBytesHex := a.HashString()
+	// verifies the signature in the AAT
+	if err := SignatureVerification(a.ApplicationPublicKey, aatBytesHex, a.ApplicationSignature); err != nil {
+		return InvalidTokenSignatureError // lol typo
 	}
 	return nil
 }
