@@ -59,7 +59,7 @@ The below snippet will download and extract the snapshot inline. This may be ben
 ```bash
 wget -O latest.txt https://pocket-snapshot.liquify.com/files/latest.txt
 latestFile=$(cat latest.txt)
-wget -c "https://pocket-snapshot.liquify.com/files/$latestFile" -O - | sudo tar -xz -C {POCKET_DATA_DIR}
+wget -c "https://pocket-snapshot.liquify.com/files/$latestFile" -O - | sudo tar -xv -C {POCKET_DATA_DIR}
 rm latest.txt
 ```
 
