@@ -23,14 +23,13 @@ func AATGeneration(appPubKey, clientPubKey string, appPrivKey crypto.PrivateKey)
 	// marshal the AAT structure
 	aatBytes := aat.Hash()
 
-	// sign the AAT
+	// This is where the `ApplicationPrivKey` signs (i.e. delegates trust) to
+	// the underlying`ClientPublicKey`.
 	sig, err := appPrivKey.Sign(aatBytes)
 	if err != nil {
 		return pc.AAT{}, pc.NewSignatureError(pc.ModuleName, err)
 	}
 
-	// This is where the `ApplicationPrivKey` signs (i.e. delegates trust) to
-	// the underlying`ClientPublicKey`.
 	aat.ApplicationSignature = hex.EncodeToString(sig)
 	return aat, nil
 }

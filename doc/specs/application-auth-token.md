@@ -15,11 +15,11 @@ description: >-
   - [applicationPublicKey](#applicationpublickey)
   - [clientPublicKey](#clientpublickey)
 - [ECDSA ed25519 Signature Scheme](#ecdsa-ed25519-signature-scheme)
-- [AAT Uses-Cases](#aat-uses-cases)
+- [AAT Generation](#aat-generation)
   - [1. Application === Client (Gateway)](#1-application--client-gateway)
   - [2. Application !== Gateway (Client)](#2-application--gateway-client)
-  - [AAT Generation](#aat-generation)
-  - [Relay Generation](#relay-generation)
+  - [AAT Signature Generation](#aat-signature-generation)
+  - [Relay Generation \& Signing using AAT](#relay-generation--signing-using-aat)
 
 ## Data Structure Schema
 
@@ -35,8 +35,9 @@ A semver string specifying the spec version under which this AAT needs to be int
 
 > type: `string`
 
-The application will sign a hash of the `message` property within this token with
-the specified `appPubKey` and corresponding private key.
+The `Application` will sign a hash of a marshalled AAT structure where all the fields
+are populated with the exception of the `Signature` itself. The resultant `Signature`
+is the one that's populated in the `AAT`.
 
 ### applicationPublicKey
 
@@ -59,7 +60,7 @@ The hexadecimal public key allowing granular control of who can use the `AAT`.
 The protocol wide ed25519 ECDSA will be used for any signatures and verifications
 that are used within this specification.
 
-## AAT Uses-Cases
+## AAT Generation
 
 When generating a new AAT, the owner of the `Application` private key has two options:
 
@@ -107,7 +108,7 @@ flowchart TB
     end
 ```
 
-### AAT Generation
+### AAT Signature Generation
 
 The proper way to sign the token is as follows:
 
@@ -128,7 +129,7 @@ The proper way to sign the token is as follows:
   AAT.ApplicationSignature = ED25519.Sign(Message)
 ```
 
-### Relay Generation
+### Relay Generation & Signing using AAT
 
 The `Client` is needed to sign the actual relays while the `Application` gets
 charged on-chain. However, the `Application` only gets charged if the `Client`
@@ -138,9 +139,9 @@ by the `Application` during `AAT` generation.
 ```mermaid
 flowchart TB
     RP([Relay Proof])
-    CG([ClientPrivateKey/ \n GatePrivateKey])
 
     subgraph RPU["Unsigned RelayProof"]
+        direction TB
         requestHash
         Entropy
         SessionHeight
@@ -148,9 +149,6 @@ flowchart TB
         ServicerPubKey
         BlockchainID
     end
-
-    AAT <-.-> CG
-    CG  <-.-> sig
 
     RPU -- hash --> RPUB["RelayProof Bytes"]
 
