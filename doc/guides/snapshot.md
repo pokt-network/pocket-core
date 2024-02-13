@@ -45,11 +45,9 @@ export POCKET_DATA_DIR=<absolute path to your data dir>
 #### Uncompressed
 
 ```bash
-wget -O latest.txt https://pocket-snapshot.liquify.com/files/latest.txt
-latestFile=$(cat latest.txt)
-aria2c -s6 -x6 "https://pocket-snapshot.liquify.com/files/$latestFile"
+[ -d ${POCKET_DATA_DIR} ] || mkdir -p ${POCKET_DATA_DIR}
+aria2c -s6 -x6 "https://pocket-snapshot.liquify.com/files/$(curl -s https://pocket-snapshot.liquify.com/files/latest.txt)"
 tar xvf "$latestFile" -C ${POCKET_DATA_DIR}
-rm latest.txt
 ```
 
 #### Uncompressed Inline (slower but smaller disk footprint)
@@ -57,29 +55,25 @@ rm latest.txt
 The below snippet will download and extract the snapshot inline. This may be beneficial if you have constrained disk space and cannot afford to store both the temp archive and extracted datadir.
 
 ```bash
-wget -O latest.txt https://pocket-snapshot.liquify.com/files/latest.txt
-latestFile=$(cat latest.txt)
-wget -c "https://pocket-snapshot.liquify.com/files/$latestFile" -O - | sudo tar -xv -C {POCKET_DATA_DIR}
-rm latest.txt
+[ -d ${POCKET_DATA_DIR} ] || mkdir -p ${POCKET_DATA_DIR}
+wget -c "https://pocket-snapshot.liquify.com/files/$(curl -s https://pocket-snapshot.liquify.com/files/latest.txt)" -O - \
+  | tar -xv -C ${POCKET_DATA_DIR}
 ```
 
 #### Compressed
 
 ```bash
-wget -O latest.txt https://pocket-snapshot.liquify.com/files/latest_compressed.txt
-latestFile=$(cat latest.txt)
-aria2c -s6 -x6 "https://pocket-snapshot.liquify.com/files/$latestFile"
+[ -d ${POCKET_DATA_DIR} ] || mkdir -p ${POCKET_DATA_DIR}
+aria2c -s6 -x6 "https://pocket-snapshot.liquify.com/files/$(curl -s https://pocket-snapshot.liquify.com/files/latest_compressed.txt)"
 lz4 -c -d "$latestFile" | tar -x -C ${POCKET_DATA_DIR}
-rm latest.txt
 ```
 
 #### Compressed Inline (slower but smaller disk footprint)
 
 ```bash
-wget -O latest.txt https://pocket-snapshot.liquify.com/files/latest_compressed.txt
-latestFile=$(cat latest.txt)
-wget -O - "https://pocket-snapshot.liquify.com/files/$latestFile" | lz4 -d - | tar -xv -C {POCKET_DATA_DIR}
-rm latest.txt
+[ -d ${POCKET_DATA_DIR} ] || mkdir -p ${POCKET_DATA_DIR}
+wget -c "https://pocket-snapshot.liquify.com/files/$(curl -s https://pocket-snapshot.liquify.com/files/latest_compressed.txt)" -O - \
+  | lz4 -d - | tar -xv -C ${POCKET_DATA_DIR}
 ```
 
 ### Issues
