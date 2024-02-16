@@ -58,6 +58,7 @@ var _ Proof = RelayProof{} // ensure implements interface at compile time
 // ValidateLocal validates the Relay Proof object is aligned with `sessionBlockHeight` and `verifyAddr`.
 func (rp RelayProof) ValidateLocal(
 	appSupportedBlockchains []string,
+	sessionNodeCount int, // TODO_TECHDEBT: This is not used an can be removed.
 	sessionBlockHeight int64,
 	expectedServicerAddr sdk.Address,
 ) sdk.Error {
@@ -73,7 +74,7 @@ func (rp RelayProof) ValidateLocal(
 	if !sdk.Address(servicerPublicKey.Address()).Equals(expectedServicerAddr) {
 		return NewInvalidNodePubKeyError(ModuleName)
 	}
-	err = rp.Validate(appSupportedBlockchains, sessionBlockHeight)
+	err = rp.Validate(appSupportedBlockchains, sessionNodeCount, sessionBlockHeight)
 	if err != nil {
 		return err
 	}
@@ -81,7 +82,7 @@ func (rp RelayProof) ValidateLocal(
 }
 
 // "Validate" - Validates the relay proof object
-func (rp RelayProof) Validate(appSupportedBlockchains []string, sessionBlockHeight int64) sdk.Error {
+func (rp RelayProof) Validate(appSupportedBlockchains []string, _ int, sessionBlockHeight int64) sdk.Error {
 	// validate the session block height
 	if rp.SessionBlockHeight != sessionBlockHeight {
 		return NewInvalidBlockHeightError(ModuleName)
