@@ -55,31 +55,26 @@ func (ps ProofIs) FromProofI() (res Proofs) {
 
 var _ Proof = RelayProof{} // ensure implements interface at compile time
 
-// ValidateLocal validates the Relay Proof object, where the owner of the proof is the local node
-
+// ValidateLocal validates the Relay Proof object is aligned with `sessionBlockHeight` and `verifyAddr`.
 func (rp RelayProof) ValidateLocal(
 	appSupportedBlockchains []string,
-	sessionNodeCount int,
 	sessionBlockHeight int64,
-	verifyAddr sdk.Address,
+	expectedServicerAddr sdk.Address,
 ) sdk.Error {
-	// Basic validation of the relay proof
 	err := rp.ValidateBasic()
 	if err != nil {
 		return err
 	}
-	// Retrieve the servicer public key
 	servicerPublicKey, er := crypto.NewPublicKey(rp.ServicerPubKey)
 	if er != nil {
 		return NewInvalidNodePubKeyError(ModuleName)
 	}
 	// validate the public key correctness
-	if !sdk.Address(servicerPublicKey.Address()).Equals(verifyAddr) {
+	if !sdk.Address(servicerPublicKey.Address()).Equals(expectedServicerAddr) {
 		// the public key is not this nodes, so they would not get paid
 		return NewInvalidNodePubKeyError(ModuleName)
 	}
-	// ValidateLocal calling `rp.Validate` is important
-	err = rp.Validate(appSupportedBlockchains, sessionNodeCount, sessionBlockHeight)
+	err = rp.Validate(appSupportedBlockchains, sessionBlockHeight)
 	if err != nil {
 		return err
 	}
@@ -87,7 +82,7 @@ func (rp RelayProof) ValidateLocal(
 }
 
 // "Validate" - Validates the relay proof object
-func (rp RelayProof) Validate(appSupportedBlockchains []string, sessionNodeCount int, sessionBlockHeight int64) sdk.Error {
+func (rp RelayProof) Validate(appSupportedBlockchains []string, sessionBlockHeight int64) sdk.Error {
 	// validate the session block height
 	if rp.SessionBlockHeight != sessionBlockHeight {
 		return NewInvalidBlockHeightError(ModuleName)
@@ -129,7 +124,7 @@ func (rp RelayProof) ValidateBasic() sdk.Error {
 		return NewInvalidEntropyError(ModuleName)
 	}
 
-	// verify the AAT token
+	// validates the AAT in the relay proof
 	if err := rp.Token.Validate(); err != nil {
 		return NewInvalidTokenError(ModuleName, err)
 	}

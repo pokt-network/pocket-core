@@ -7,10 +7,11 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/spf13/cobra"
+
 	"github.com/pokt-network/pocket-core/app"
 	"github.com/pokt-network/pocket-core/types"
 	govTypes "github.com/pokt-network/pocket-core/x/gov/types"
-	"github.com/spf13/cobra"
 )
 
 func init() {
@@ -120,6 +121,7 @@ Actions: [burn, transfer]`,
 		fmt.Println(resp)
 	},
 }
+
 var govChangeParam = &cobra.Command{
 	Use:   "change_param <fromAddr> <networkID> <paramKey module/param> <paramValue (jsonObj)> <fees>",
 	Short: "Edit a param in the network",
@@ -205,6 +207,7 @@ func dropTag(version string) string {
 }
 
 const FeatureUpgradeKey = "FEATURE"
+
 const FeatureUpgradeHeight = int64(1)
 
 var govFeatureEnable = &cobra.Command{

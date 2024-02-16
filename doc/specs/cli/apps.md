@@ -61,8 +61,6 @@ Transaction submitted with hash: <Transaction Hash>
 pocket apps create-aat <appAddr> <clientPubKey>
 ```
 
-**WARNING: USE THIS METHOD AT YOUR OWN RISK.**
-
 This CLI is hard-coded to generate an AAT with spec version 0.0.1.
 
 The output is intended to be embedded into the Gateway for Relay servicing.

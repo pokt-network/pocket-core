@@ -182,8 +182,6 @@ var createAATCmd = &cobra.Command{
 	Short: "Creates an application authentication token",
 	Long: `Creates a signed Application Authentication Token.
 
-WARNING: USE THIS METHOD AT YOUR OWN RISK.
-
 This CLI is hard-coded to generate an AAT with spec version 0.0.1.
 
 The output is intended to be embedded into the Gateway for Relay servicing.
@@ -223,14 +221,12 @@ Make sure to read doc/specs/application-auth-token.md to understand what's recom
 			return
 		}
 
-		// Generate the AAT
 		aat, err := app.GenerateAAT(pubKeyHexEncoded, args[1], privKey)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
 
-		// Print out the AAT
 		fmt.Println(string(aat))
 	},
 }
