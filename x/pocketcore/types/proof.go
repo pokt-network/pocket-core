@@ -71,7 +71,6 @@ func (rp RelayProof) ValidateLocal(
 	}
 	// validate the public key correctness
 	if !sdk.Address(servicerPublicKey.Address()).Equals(expectedServicerAddr) {
-		// the public key is not this nodes, so they would not get paid
 		return NewInvalidNodePubKeyError(ModuleName)
 	}
 	err = rp.Validate(appSupportedBlockchains, sessionBlockHeight)

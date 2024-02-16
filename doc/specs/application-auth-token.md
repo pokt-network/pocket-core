@@ -9,6 +9,16 @@ description: >-
 
 # Application Authentication Token <!-- omit in toc -->
 
+The AAT serves to provide functionality for two separate entities:
+
+1. An `Application` Owner to stake an `Application` on the blockchain
+2. A `Client` Owner to submit relays through any type of dApp (from a command-line tool to Portal-like website)
+
+It is important to note that one entity does not need to share their private key
+with the other entity. `Application` owners can delegate the right to use their
+staked `Application` to a `Client` by passing an AAT which includes their the
+`Client` public key signed by the `Application` private key.
+
 - [Data Structure Schema](#data-structure-schema)
   - [version](#version)
   - [signature](#signature)
@@ -62,10 +72,12 @@ that are used within this specification.
 
 ## AAT Generation
 
-When generating a new AAT, the owner of the `Application` private key has two options:
+When generating a new AAT, the owner of the `Application` private key can choose
+which `Client` public key is used to sign Relays. More explicitly, this can be
+decomposed into two options:
 
-1. Use the same public key for signing the AAT and the relay requests
-2. Use a different public key for signing the AAT and the relay requests
+1. **Sovereign Application** - Use the same public key for signing the AAT and the relay requests
+2. **Gateway** - Use a different public key for signing the AAT and the relay requests
 
 ### 1. Application === Client (Gateway)
 
@@ -131,10 +143,15 @@ The proper way to sign the token is as follows:
 
 ### Relay Generation & Signing using AAT
 
-The `Client` is needed to sign the actual relays while the `Application` gets
-charged on-chain. However, the `Application` only gets charged if the `Client`
-signed the relay. The `Client` public key is in the `AAT` and had to be signed
-by the `Application` during `AAT` generation.
+This section can be summarized by two key points:
+
+- AAT includes client public key, signed by application private key
+- Relay request includes an AAT, signed by client private key
+
+The `Client` is needed to sign the relays while the `Application` is the one that
+needs to stake on-chain to get access to Pocket Network's services. Recall that
+when an `Application` generates an `AAT`, it can either use its own public key or
+another public key (i.e. usually a Gateway's public key) to sign the `AAT`.
 
 ```mermaid
 flowchart TB

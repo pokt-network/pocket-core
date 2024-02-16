@@ -606,7 +606,6 @@ func (app PocketCoreApp) HandleRelay(r pocketTypes.Relay) (res *pocketTypes.Rela
 		return nil, nil, fmt.Errorf("pocket node is currently syncing to the blockchain, cannot service in this state")
 	}
 
-	// Calling HandleRelay here
 	res, err = app.pocketKeeper.HandleRelay(ctx, r)
 	var err1 error
 	if err != nil && pocketTypes.ErrorWarrantsDispatch(err) {
