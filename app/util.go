@@ -15,7 +15,7 @@ import (
 	pocketKeeper "github.com/pokt-network/pocket-core/x/pocketcore/keeper"
 )
 
-// GenerateAAT generates an AAT to be used for relay servicing.
+// GenerateAAT generates an AAT to be used for relay request authentication.
 // - appPubKey is the public key of the application that's paying for on-chain service.
 // - clientPubKey (a.k.a gatewayPubKey) is the public key of the Gateway that's facilitating relays on behalf of the app.
 // - appPubKey and clientPubKey may or may not be the same.

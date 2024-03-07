@@ -129,8 +129,8 @@ func (rp RelayProof) ValidateBasic() sdk.Error {
 		return NewInvalidTokenError(ModuleName, err)
 	}
 
-	// Retrieving the client public key (aka the gateway public key), which
-	// may or may not be the same as the application public key depending on
+	// Retrieving the client public key
+	// NB: This is sometimes referred to as the gateway public key.
 	// the inputs to when the AAT was generated.
 	clientPubKey := rp.Token.ClientPublicKey
 

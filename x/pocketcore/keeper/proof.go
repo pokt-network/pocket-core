@@ -18,10 +18,7 @@ import (
 	pc "github.com/pokt-network/pocket-core/x/pocketcore/types"
 )
 
-// This is how servicers (a.k.a suppliers a.k.a as nodes a.k.a node runners) send proofs to the network.
-// Nothing actionable (requests have already been signed by this point), but just FYI.
-
-// auto sends a proof transaction for the claim
+// SendProofTx auto sends a proof transaction for the claim
 func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, node *pc.PocketNode, proofTx func(cliCtx util.CLIContext, txBuilder auth.TxBuilder, merkleProof pc.MerkleProof, leafNode pc.Proof, evidenceType pc.EvidenceType) (*sdk.TxResponse, error)) {
 	addr := node.GetAddress()
 	// get all mature (waiting period has passed) claims for your address

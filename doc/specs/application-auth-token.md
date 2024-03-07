@@ -2,7 +2,7 @@
 description: >-
   Version 0.0.1
 
-  The Pocket Network protocol contemplates the use of Application Auth Tokens (AATs)
+  The Pocket Network protocol contemplates the use of Application Authentication Tokens (AATs)
   to allow Gateways (off-chain) access Service Nodes (a.k.a Suppliers) on behalf
   of the Application.
 ---
@@ -26,8 +26,8 @@ staked `Application` to a `Client` by passing an AAT which includes their the
   - [clientPublicKey](#clientpublickey)
 - [ECDSA ed25519 Signature Scheme](#ecdsa-ed25519-signature-scheme)
 - [AAT Generation](#aat-generation)
-  - [1. Application === Client (Gateway)](#1-application--client-gateway)
-  - [2. Application !== Gateway (Client)](#2-application--gateway-client)
+  - [1. Application !== Client (Gateway)](#1-application--client-gateway)
+  - [2. Application === Client (Gateway)](#2-application--client-gateway)
   - [AAT Signature Generation](#aat-signature-generation)
   - [Relay Generation \& Signing using AAT](#relay-generation--signing-using-aat)
 
@@ -76,30 +76,10 @@ When generating a new AAT, the owner of the `Application` private key can choose
 which `Client` public key is used to sign Relays. More explicitly, this can be
 decomposed into two options:
 
-1. **Sovereign Application** - Use the same public key for signing the AAT and the relay requests
-2. **Gateway** - Use a different public key for signing the AAT and the relay requests
+1. **Application Key != Client Key ** - Recommended for all Gateways.
+2. **Application Key == Client Key** - Recommended for independent Applications that are not Gateways.
 
-### 1. Application === Client (Gateway)
-
-```mermaid
-flowchart TB
-    App([AppPrivKey])
-
-    subgraph AAT Generation
-        direction TB
-        AATU["AAT (unsigned)"]
-        AAT["AAT"]
-
-        App -- AppPublicKey --> AATU
-        App -- ClientPublicKey --> AATU
-        AATU -- hash --> AATUB[AAT Bytes]
-        AATUB -- Sign with AppPrivKey --> sig[Application Signature]
-        AATU -- AAT Structure --> AAT
-        sig -- Signature --> AAT
-    end
-```
-
-### 2. Application !== Gateway (Client)
+### 1. Application !== Client (Gateway)
 
 ```mermaid
 flowchart TB
@@ -113,6 +93,26 @@ flowchart TB
 
         App -- AppPublicKey --> AATU
         CG -- ClientPublicKey --> AATU
+        AATU -- hash --> AATUB[AAT Bytes]
+        AATUB -- Sign with AppPrivKey --> sig[Application Signature]
+        AATU -- AAT Structure --> AAT
+        sig -- Signature --> AAT
+    end
+```
+
+### 2. Application === Client (Gateway)
+
+```mermaid
+flowchart TB
+    App([AppPrivKey])
+
+    subgraph AAT Generation
+        direction TB
+        AATU["AAT (unsigned)"]
+        AAT["AAT"]
+
+        App -- AppPublicKey --> AATU
+        App -- ClientPublicKey --> AATU
         AATU -- hash --> AATUB[AAT Bytes]
         AATUB -- Sign with AppPrivKey --> sig[Application Signature]
         AATU -- AAT Structure --> AAT
@@ -148,10 +148,11 @@ This section can be summarized by two key points:
 - AAT includes client public key, signed by application private key
 - Relay request includes an AAT, signed by client private key
 
-The `Client` is needed to sign the relays while the `Application` is the one that
-needs to stake on-chain to get access to Pocket Network's services. Recall that
-when an `Application` generates an `AAT`, it can either use its own public key or
-another public key (i.e. usually a Gateway's public key) to sign the `AAT`.
+The `Client`, an application to send relays, needs to sign every relay request,
+while `Application` needs to be staked once with tokens on-chain to get access to
+Pocket Network's services. In every session, the maximum number of relays for an
+app is proportional to the tokens to be staked with the app. To make more relays,
+you need to stake more tokens.
 
 ```mermaid
 flowchart TB

@@ -181,16 +181,14 @@ var createAATCmd = &cobra.Command{
 	Use:   "create-aat <appAddr> <clientPubKey>",
 	Short: "Creates an application authentication token",
 	Long: `Creates a signed Application Authentication Token.
+Creates a signed AAT (= Application Authentication Token) where the version is
+hardcoded as "0.0.1" that is the only version supported by the protocol.
 
-This CLI is hard-coded to generate an AAT with spec version 0.0.1.
+This command prompts you to input the <appAddr> account passphrase.
+When you send a relay request with AAT, <appAddr> needs to be a staked
+application.
 
-The output is intended to be embedded into the Gateway for Relay servicing.
-
-Upon AAT generation, the user will be prompted for the <appAddr> account passphrase.
-
-<appAddr> is associated with the application
-
-Make sure to read doc/specs/application-auth-token.md to understand what's recommended during AAT configuration.`,
+Please read doc/specs/application-auth-token.md for additional details.`,
 	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)

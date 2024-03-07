@@ -22,9 +22,9 @@ Arguments:
 
 - `<fromAddr>`: Target Address to stake.
 - `<amount>`: The amount of uPOKT to stake. Must be higher than the current value of the `ApplicationStakeMinimum`
-  parameter, found [here](https://docs.pokt.network/learn/protocol-parameters/#applicationstakeminimum).
+  parameter.
 - `<relayChainIDs>`: A comma separated list of RelayChain Network Identifiers. Find the RelayChain Network
-  Identifiers [here](https://docs.pokt.network/supported-blockchains/).
+  Identifiers [here](https://docs.pokt.network/reference/supported-chains).
 - `<chainID>`: The Pocket chain identifier; "mainnet" or "testnet".
 - `<fee>`: An amount of uPOKT for the network.
 
