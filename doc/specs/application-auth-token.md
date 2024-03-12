@@ -76,8 +76,13 @@ When generating a new AAT, the owner of the `Application` private key can choose
 which `Client` public key is used to sign Relays. More explicitly, this can be
 decomposed into two options:
 
-1. **Application Key != Client Key ** - Recommended for all Gateways.
+1. **Application Key != Client Key** - Recommended for all Gateways.
 2. **Application Key == Client Key** - Recommended for independent Applications that are not Gateways.
+
+_Note: Please note that option 2 is only shown for theoretical purposes. Due to
+the scaling limitations of Morse (v0) implemented in `pocket-core`, Gateways
+have to be used. The original design / intention of Pocket, and how Shannon (v1)
+will operate is support both modes._
 
 ### 1. Application !== Client (Gateway)
 
