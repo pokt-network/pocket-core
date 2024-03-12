@@ -60,7 +60,7 @@ func TestError_ErrNilApplicationAddr(t *testing.T) {
 	}
 }
 
-func TestError_ErrApplicaitonStatus(t *testing.T) {
+func TestError_ErrApplicationStatus(t *testing.T) {
 	type args struct {
 		codespace sdk.CodespaceType
 	}

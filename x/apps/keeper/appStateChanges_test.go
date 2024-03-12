@@ -4,11 +4,12 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/pokt-network/pocket-core/codec"
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/apps/types"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestAppStateChange_ValidateApplicaitonBeginUnstaking(t *testing.T) {
@@ -53,7 +54,7 @@ func TestAppStateChange_ValidateApplicaitonBeginUnstaking(t *testing.T) {
 	}
 }
 
-func TestAppStateChange_ValidateApplicaitonStaking(t *testing.T) {
+func TestAppStateChange_ValidateApplicationStaking(t *testing.T) {
 	tests := []struct {
 		name            string
 		application     types.Application

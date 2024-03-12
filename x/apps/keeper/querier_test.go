@@ -44,7 +44,7 @@ func Test_queryApplications(t *testing.T) {
 				t.Errorf("queryApplications() got = %v, want %v", got, tt.want)
 			}
 			if !reflect.DeepEqual(got1, tt.want1) {
-				t.Errorf("queryApplicaitons() got1 = %v, want %v", got1, tt.want1)
+				t.Errorf("queryApplication() got1 = %v, want %v", got1, tt.want1)
 			}
 		})
 	}
