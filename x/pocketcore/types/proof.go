@@ -130,8 +130,6 @@ func (rp RelayProof) ValidateBasic() sdk.Error {
 	}
 
 	// Retrieving the client public key
-	// NB: This is sometimes referred to as the gateway public key.
-	// the inputs to when the AAT was generated.
 	clientPubKey := rp.Token.ClientPublicKey
 
 	// The relay proof message that should have been signed by the client above
