@@ -3,8 +3,8 @@ description: >-
   Version 0.0.1
 
   The Pocket Network protocol contemplates the use of Application Authentication Tokens (AATs)
-  to allow Gateways (off-chain) access Service Nodes (a.k.a Suppliers) on behalf
-  of the Application.
+  to allow an off-chain client to access Nodes (a.k.a Suppliers) on behalf
+  of Application.
 ---
 
 # Application Authentication Token <!-- omit in toc -->
@@ -26,8 +26,6 @@ staked `Application` to a `Client` by passing an AAT which includes their the
   - [clientPublicKey](#clientpublickey)
 - [ECDSA ed25519 Signature Scheme](#ecdsa-ed25519-signature-scheme)
 - [AAT Generation](#aat-generation)
-  - [1. Application !== Client (Gateway)](#1-application--client-gateway)
-  - [2. Application === Client (Gateway)](#2-application--client-gateway)
   - [AAT Signature Generation](#aat-signature-generation)
   - [Relay Generation \& Signing using AAT](#relay-generation--signing-using-aat)
 
@@ -61,8 +59,6 @@ The hexadecimal `publicKey` of the `Application`
 
 Required for signature verification.
 
-Also known as the `gatewayPublicKey`.
-
 The hexadecimal public key allowing granular control of who can use the `AAT`.
 
 ## ECDSA ed25519 Signature Scheme
@@ -73,23 +69,12 @@ that are used within this specification.
 ## AAT Generation
 
 When generating a new AAT, the owner of the `Application` private key can choose
-which `Client` public key is used to sign Relays. More explicitly, this can be
-decomposed into two options:
-
-1. **Application Key != Client Key** - Recommended for all Gateways.
-2. **Application Key == Client Key** - Recommended for independent Applications that are not Gateways.
-
-_Note: Please note that option 2 is only shown for theoretical purposes. Due to
-the scaling limitations of Morse (v0) implemented in `pocket-core`, Gateways
-have to be used. The original design / intention of Pocket, and how Shannon (v1)
-will operate is support both modes._
-
-### 1. Application !== Client (Gateway)
+which `Client` public key is used to sign Relays.
 
 ```mermaid
 flowchart TB
     App([AppPrivKey])
-    CG([ClientPrivateKey/ \n GatePrivateKey])
+    CG([ClientPrivateKey])
 
     subgraph AAT Generation
         direction TB
@@ -98,26 +83,6 @@ flowchart TB
 
         App -- AppPublicKey --> AATU
         CG -- ClientPublicKey --> AATU
-        AATU -- hash --> AATUB[AAT Bytes]
-        AATUB -- Sign with AppPrivKey --> sig[Application Signature]
-        AATU -- AAT Structure --> AAT
-        sig -- Signature --> AAT
-    end
-```
-
-### 2. Application === Client (Gateway)
-
-```mermaid
-flowchart TB
-    App([AppPrivKey])
-
-    subgraph AAT Generation
-        direction TB
-        AATU["AAT (unsigned)"]
-        AAT["AAT"]
-
-        App -- AppPublicKey --> AATU
-        App -- ClientPublicKey --> AATU
         AATU -- hash --> AATUB[AAT Bytes]
         AATUB -- Sign with AppPrivKey --> sig[Application Signature]
         AATU -- AAT Structure --> AAT
@@ -175,7 +140,7 @@ flowchart TB
 
     RPU -- hash --> RPUB["RelayProof Bytes"]
 
-    RPUB -- "Sign with Client/Gateway\nPrivate Key" --> sig["Client/Gateway Signature"]
+    RPUB -- "Sign with Client Private Key" --> sig["Client Signature"]
     RPU -- "RelayProof Structure" --> RP
     sig -- Signature --> RP
 ```

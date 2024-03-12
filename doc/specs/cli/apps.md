@@ -61,23 +61,24 @@ Transaction submitted with hash: <Transaction Hash>
 pocket apps create-aat <appAddr> <clientPubKey>
 ```
 
-This CLI is hard-coded to generate an AAT with spec version 0.0.1.
+Creates a signed Application Authentication Token.
+Creates a signed AAT (= Application Authentication Token) where the version is
+hardcoded as "0.0.1" that is the only version supported by the protocol.
 
-The output is intended to be embedded into the Gateway for Relay servicing.
+This command prompts you to input the `<appAddr>` account passphrase.
+When you send a relay request with AAT, `<appAddr>` needs to be a staked
+application.
 
-Upon AAT generation, the user will be prompted for the <appAddr> account passphrase.
-
-Read the Application Authentication Token documentation here:
-
-{% page-ref page="../application-auth-token.md" %}
+Please read [application-auth-token.md](../application-auth-token.md)
+for additional details.
 
 Arguments:
 
-- `<appAddr>`: Application Address
-  The address of the `Application` account to use to produce this AAT.
-  This is the account that has to be staked on-chain to be able to use the Pocket Network.
-- `<clientPubKey>`: Gateway Public Key
-  The public key of the gateway that will be signing and sending Relays sent to the Pocket Network.
+- `<appAddr>`:
+  The address of an `Application` account to use to produce this AAT.
+  The account has to be staked on-chain to be able to use the Pocket Network.
+- `<clientPubKey>`:
+  The public key of a client that will be signing and sending Relays to the Pocket Network.
 
 Example output:
 
