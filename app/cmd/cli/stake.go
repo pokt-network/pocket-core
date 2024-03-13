@@ -8,9 +8,10 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/spf13/cobra"
+
 	"github.com/pokt-network/pocket-core/app"
 	"github.com/pokt-network/pocket-core/types"
-	"github.com/spf13/cobra"
 )
 
 func init() {

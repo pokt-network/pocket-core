@@ -3,12 +3,14 @@ package types
 import (
 	sha "crypto"
 	"encoding/hex"
-	"github.com/pokt-network/pocket-core/crypto"
-	sdk "github.com/pokt-network/pocket-core/types"
+	"math/big"
+
 	"github.com/tendermint/tendermint/crypto/tmhash"
 	"github.com/tendermint/tendermint/privval"
 	_ "golang.org/x/crypto/sha3"
-	"math/big"
+
+	"github.com/pokt-network/pocket-core/crypto"
+	sdk "github.com/pokt-network/pocket-core/types"
 )
 
 var (
@@ -38,29 +40,31 @@ func NetworkIdentifierVerification(hash string) sdk.Error {
 	return nil
 }
 
-// "SignatureVerification" - Verify the signature using hex strings
-func SignatureVerification(publicKey, msgHex, sigHex string) sdk.Error {
-	// decode the signature from hex
-	sig, err := hex.DecodeString(sigHex)
+// SignatureVerification verifies that:
+// - The privKey associated with publicKey generated sigHex
+// - sigHex signed msgHex
+func SignatureVerification(publicKeyHex, msgHex, sigHex string) sdk.Error {
+	// Decode the signature from hex
+	sigBytes, err := hex.DecodeString(sigHex)
 	if err != nil {
 		return NewSigDecodeError(ModuleName)
 	}
-	// ensure Length is valid
-	if len(sig) != crypto.Ed25519SignatureSize {
+	// Ensure Length is valid
+	if len(sigBytes) != crypto.Ed25519SignatureSize {
 		return NewInvalidSignatureSizeError(ModuleName)
 	}
-	// decode public key from hex
-	pk, err := crypto.NewPublicKey(publicKey)
+	// Decode public key from hex
+	publicKey, err := crypto.NewPublicKey(publicKeyHex)
 	if err != nil {
 		return NewPubKeyDecodeError(ModuleName)
 	}
-	// decode message from hex
-	msg, err := hex.DecodeString(msgHex)
+	// Decode message from hex
+	msgBytes, err := hex.DecodeString(msgHex)
 	if err != nil {
 		return NewMsgDecodeError(ModuleName)
 	}
-	// verify the bz
-	if ok := pk.VerifyBytes(msg, sig); !ok {
+	// verify that publicKey signed msgBytes and generated sigBytes
+	if ok := publicKey.VerifyBytes(msgBytes, sigBytes); !ok {
 		return NewInvalidSignatureError(ModuleName)
 	}
 	return nil

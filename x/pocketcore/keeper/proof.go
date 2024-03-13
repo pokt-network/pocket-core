@@ -4,19 +4,21 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"math"
+	"reflect"
+	"time"
+
+	"github.com/tendermint/tendermint/rpc/client"
+
 	"github.com/pokt-network/pocket-core/codec"
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/auth"
 	"github.com/pokt-network/pocket-core/x/auth/util"
 	pc "github.com/pokt-network/pocket-core/x/pocketcore/types"
-	"github.com/tendermint/tendermint/rpc/client"
-	"math"
-	"reflect"
-	"time"
 )
 
-// auto sends a proof transaction for the claim
+// SendProofTx auto sends a proof transaction for the claim
 func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, node *pc.PocketNode, proofTx func(cliCtx util.CLIContext, txBuilder auth.TxBuilder, merkleProof pc.MerkleProof, leafNode pc.Proof, evidenceType pc.EvidenceType) (*sdk.TxResponse, error)) {
 	addr := node.GetAddress()
 	// get all mature (waiting period has passed) claims for your address

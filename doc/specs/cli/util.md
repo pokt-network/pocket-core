@@ -11,7 +11,7 @@ pocket util generate-chains
 ```
 
 Generate the chains.json file for RelayChain Network Identifiers. Find the RelayChain Network
-Identifiers [here](https://docs.pokt.network/supported-blockchains/).
+Identifiers [here](https://docs.pokt.network/reference/supported-chains).
 
 Example output:
 
@@ -35,7 +35,7 @@ pocket util delete-chains
 ```
 
 Delete the chains.json file for RelayChain Network Identifiers. Find the RelayChain Network
-Identifiers [here](https://docs.pokt.network/supported-blockchains/).
+Identifiers [here](https://docs.pokt.network/reference/supported-chains).
 
 Example Output:
 
@@ -53,11 +53,11 @@ Rolls back the blockchain, the state, and app to a previous height
 
 Arguments:
 
-* `<height>`: the height you want to rollback to.
+- `<height>`: the height you want to rollback to.
 
 Flags
 
-* `blocks`: rollback block store and state
+- `blocks`: rollback block store and state
 
 ## Decode Transaction
 
@@ -69,8 +69,8 @@ Decodes a given transaction encoded in Amino/Proto base64 bytes
 
 Arguments:
 
-* `<tx>`: The transaction amino encoded bytes.
-* `<legacyCodec>`: Enable/Disable amino encoding for transaction.
+- `<tx>`: The transaction amino encoded bytes.
+- `<legacyCodec>`: Enable/Disable amino encoding for transaction.
 
 Example output:
 
@@ -95,7 +95,7 @@ Generate completion script for the specified shell
 
 Arguments:
 
-* `<shell>`: the shell you currently use. Supported options: **bash / zsh / fish / powershell**
+- `<shell>`: the shell you currently use. Supported options: **bash / zsh / fish / powershell**
 
 ## Convert Evidence to Proto from Amino
 
@@ -303,8 +303,8 @@ In the event of a network reset, this will export a genesis file based on the pr
 
 Arguments:
 
-* `<height>`: the height from which to generate genesis.json
-* `<newChainID>`: the chainID to use for exporting.
+- `<height>`: the height from which to generate genesis.json
+- `<newChainID>`: the chainID to use for exporting.
 
 Example Output:
 
@@ -333,4 +333,3 @@ Example Output:
     }
 }
 ```
-

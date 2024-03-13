@@ -45,7 +45,7 @@ Arguments:
 - `<amount>`: The amount of uPOKT to stake. Must be higher than the current value of the `StakeMinimum` parameter,
   found [here](https://docs.pokt.network/learn/protocol-parameters/#stakeminimum).
 - `<relayChainIDs>`: A comma separated list of RelayChain Network Identifiers. Find the RelayChain Network
-  Identifiers [here](https://docs.pokt.network/supported-blockchains/).
+  Identifiers [here](https://docs.pokt.network/reference/supported-chains).
 - `<serviceURI>`: The Service URI Applications will use to communicate with Nodes for Relays.
 - `<networkID>`: The Pocket chain identifier; "mainnet" or "testnet".
 - `<fee>`: An amount of uPOKT for the network.
@@ -63,7 +63,7 @@ Transaction submitted with hash: <Transaction Hash>
 pocket nodes stake non-custodial <operatorPublicKey> <outputAddress> <amount> <RelayChainIDs> <serviceURI> <networkID> <fee> <isBefore8.0>
 ```
 
-Stakes a non-custodial node in the network, making it available for service. The signer may be the operator or the output address. The signer must specify the passphrase of either the output or operator address when prompted for the `<fromAddr>` account passphrase. This will determine where the staked funds are taken from. 
+Stakes a non-custodial node in the network, making it available for service. The signer may be the operator or the output address. The signer must specify the passphrase of either the output or operator address when prompted for the `<fromAddr>` account passphrase. This will determine where the staked funds are taken from.
 
 if the node is already staked, this transaction acts as an _update_ transaction. A node can update `<relayChainIDs>`
 , `<serviceURI>`, and increase the stake `<amount>` with this transaction. If the node is currently staked at `X` and
@@ -77,7 +77,7 @@ Arguments:
 - `<amount>`: The amount of uPOKT to stake. Must be higher than the current value of the `StakeMinimum` parameter,
   found [here](https://docs.pokt.network/learn/protocol-parameters/#stakeminimum).
 - `<relayChainIDs>`: A comma separated list of RelayChain Network Identifiers. Find the RelayChain Network
-  Identifiers [here](https://docs.pokt.network/supported-blockchains/).
+  Identifiers [here](https://docs.pokt.network/reference/supported-chains).
 - `<serviceURI>`: The Service URI Applications will use to communicate with Nodes for Relays.
 - `<networkID>`: The Pocket chain identifier; "mainnet" or "testnet".
 - `<fee>`: An amount of uPOKT for the network.

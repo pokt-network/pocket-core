@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/pokt-network/pocket-core/app"
 	"github.com/spf13/cobra"
+
+	"github.com/pokt-network/pocket-core/app"
 )
 
 func init() {

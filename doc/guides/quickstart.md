@@ -189,7 +189,7 @@ pocket accounts set-validator <address>
 {% hint style="info" %} Check with `pocket accounts get-validator`
 {% endhint %}
 
-### Set [Relay Chains](https://docs.pokt.network/supported-blockchains/)
+### Set [Relay Chains](https://docs.pokt.network/reference/supported-chains)
 
 {% tabs %} {% tab title="Command" %}
 
@@ -468,7 +468,7 @@ Use pocket core flags --mainnet or --testnet to automatically write
 Use the CLI or Manually Edit: `$HOME/.pocket/config/chains.json`
 
 {% hint style="info" %} Relay Chain ID's and docs can be
-found [here](https://docs.pokt.network/supported-blockchains/). {% endhint %}
+found [here](https://docs.pokt.network/reference/supported-chains). {% endhint %}
 
 These are external blockchain nodes such as ethereum, polygon and harmony. You will need to set these up by following their respective documentation. Once they are synced, you can enter the url and credentials into the following file.
 

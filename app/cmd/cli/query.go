@@ -6,13 +6,13 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/spf13/cobra"
+
+	"github.com/pokt-network/pocket-core/app"
 	"github.com/pokt-network/pocket-core/app/cmd/rpc"
 	"github.com/pokt-network/pocket-core/types"
 	types2 "github.com/pokt-network/pocket-core/x/apps/types"
-
-	"github.com/pokt-network/pocket-core/app"
 	nodeTypes "github.com/pokt-network/pocket-core/x/nodes/types"
-	"github.com/spf13/cobra"
 )
 
 func init() {
@@ -342,9 +342,13 @@ var queryAccount = &cobra.Command{
 }
 
 var nodeStakingStatus string
+
 var nodeJailedStatus string
+
 var blockchain string
+
 var nodePage int
+
 var nodeLimit int
 
 func init() {
@@ -490,6 +494,7 @@ var queryNodeParams = &cobra.Command{
 }
 
 var appStakingStatus string
+
 var appPage, appLimit int
 
 func init() {

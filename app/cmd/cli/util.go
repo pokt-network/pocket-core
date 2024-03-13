@@ -2,14 +2,15 @@ package cli
 
 import (
 	"fmt"
-	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"os"
 	"strconv"
 
-	"github.com/pokt-network/pocket-core/app"
 	"github.com/spf13/cobra"
 	"github.com/tendermint/tendermint/libs/log"
 	"github.com/tendermint/tendermint/state"
+
+	"github.com/pokt-network/pocket-core/app"
+	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 )
 
 func init() {

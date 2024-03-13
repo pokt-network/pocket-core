@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	nodesTypes "github.com/pokt-network/pocket-core/x/nodes/types"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -13,7 +12,9 @@ import (
 	"time"
 
 	"github.com/julienschmidt/httprouter"
+
 	"github.com/pokt-network/pocket-core/app"
+	nodesTypes "github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 )
 

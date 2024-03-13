@@ -303,6 +303,6 @@ If a Proof Transaction is `Code:0` (valid) then a POKT reward is minted to the S
 
 **Source code references:**
 
-- Merkle: https://github.com/pokt-network/pocket-core/blob/staging/x/pocketcore/types/merkle.go
-- Claim: https://github.com/pokt-network/pocket-core/blob/staging/x/pocketcore/keeper/claim.go
-- Proof: https://github.com/pokt-network/pocket-core/blob/staging/x/pocketcore/keeper/proof.go
+- Merkle: [x/pocketcore/types/merkle.go](https://github.com/pokt-network/pocket-core/blob/staging/x/pocketcore/types/merkle.go)
+- Claim: [x/pocketcore/keeper/claim.go](https://github.com/pokt-network/pocket-core/blob/staging/x/pocketcore/keeper/claim.go)
+- Proof: [x/pocketcore/keeper/proof.go](https://github.com/pokt-network/pocket-core/blob/staging/x/pocketcore/keeper/proof.go)

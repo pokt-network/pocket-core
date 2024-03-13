@@ -15,8 +15,12 @@ import (
 	pocketKeeper "github.com/pokt-network/pocket-core/x/pocketcore/keeper"
 )
 
-func GenerateAAT(appPubKey, clientPubKey string, key crypto.PrivateKey) (aatjson []byte, err error) {
-	aat, er := pocketKeeper.AATGeneration(appPubKey, clientPubKey, key)
+// GenerateAAT generates an AAT to be used for relay request authentication.
+// - appPubKey is the public key of the application that's staking for on-chain service.
+// - clientPubKey is the public key of a client facilitating relays on behalf of the app.
+// - appPubKey and clientPubKey may or may not be the same.
+func GenerateAAT(appPubKey, clientPubKey string, appPrivKey crypto.PrivateKey) (aatjson []byte, err error) {
+	aat, er := pocketKeeper.AATGeneration(appPubKey, clientPubKey, appPrivKey)
 	if er != nil {
 		return nil, er
 	}

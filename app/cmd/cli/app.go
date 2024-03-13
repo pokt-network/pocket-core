@@ -9,10 +9,11 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/spf13/cobra"
+
 	"github.com/pokt-network/pocket-core/app"
 	"github.com/pokt-network/pocket-core/crypto/keys/mintkey"
 	"github.com/pokt-network/pocket-core/types"
-	"github.com/spf13/cobra"
 )
 
 func init() {
@@ -26,7 +27,7 @@ func init() {
 var appCmd = &cobra.Command{
 	Use:   "apps",
 	Short: "application management",
-	Long: `The apps namespace handles all applicaiton related interactions,
+	Long: `The apps namespace handles all application related interactions,
 from staking and unstaking; to generating AATs.`,
 }
 
@@ -179,10 +180,15 @@ command, you must have the private key of the current staked app <fromAddr>
 var createAATCmd = &cobra.Command{
 	Use:   "create-aat <appAddr> <clientPubKey>",
 	Short: "Creates an application authentication token",
-	Long: `Creates a signed application authentication token (version 0.0.1 of the AAT spec), that can be embedded into application software for Relay servicing.
-Will prompt the user for the <appAddr> account passphrase.
-Read the Application Authentication Token documentation for more information.
-NOTE: USE THIS METHOD AT YOUR OWN RISK. READ THE APPLICATION SECURITY GUIDELINES IN ORDER TO UNDERSTAND WHAT'S THE RECOMMENDED AAT CONFIGURATION FOR YOUR APPLICATION.`,
+	Long: `Creates a signed Application Authentication Token.
+Creates a signed AAT (= Application Authentication Token) where the version is
+hardcoded as "0.0.1" that is the only version supported by the protocol.
+
+This command prompts you to input the <appAddr> account passphrase.
+When you send a relay request with AAT, <appAddr> needs to be a staked
+application.
+
+Please read doc/specs/application-auth-token.md for additional details.`,
 	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
@@ -203,15 +209,22 @@ NOTE: USE THIS METHOD AT YOUR OWN RISK. READ THE APPLICATION SECURITY GUIDELINES
 		}
 		fmt.Println("Enter passphrase: ")
 		cred := app.Credentials(pwd)
-		privkey, err := mintkey.UnarmorDecryptPrivKey(kp.PrivKeyArmor, cred)
+
+		// Retrieve the priv & public keys
+		pubKey := kp.PublicKey.RawBytes()
+		pubKeyHexEncoded := hex.EncodeToString(pubKey)
+		privKeyArmored := kp.PrivKeyArmor
+		privKey, err := mintkey.UnarmorDecryptPrivKey(privKeyArmored, cred)
 		if err != nil {
 			return
 		}
-		aat, err := app.GenerateAAT(hex.EncodeToString(kp.PublicKey.RawBytes()), args[1], privkey)
+
+		aat, err := app.GenerateAAT(pubKeyHexEncoded, args[1], privKey)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
+
 		fmt.Println(string(aat))
 	},
 }

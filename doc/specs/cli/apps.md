@@ -20,13 +20,13 @@ just enter the current parameter value \(the same one you entered for your initi
 
 Arguments:
 
-* `<fromAddr>`: Target Address to stake.
-* `<amount>`: The amount of uPOKT to stake. Must be higher than the current value of the `ApplicationStakeMinimum`
-  parameter, found [here](https://docs.pokt.network/learn/protocol-parameters/#applicationstakeminimum).
-* `<relayChainIDs>`: A comma separated list of RelayChain Network Identifiers. Find the RelayChain Network
-  Identifiers [here](https://docs.pokt.network/supported-blockchains/).
-* `<chainID>`: The Pocket chain identifier; "mainnet" or "testnet".
-* `<fee>`:  An amount of uPOKT for the network.
+- `<fromAddr>`: Target Address to stake.
+- `<amount>`: The amount of uPOKT to stake. Must be higher than the current value of the `ApplicationStakeMinimum`
+  parameter.
+- `<relayChainIDs>`: A comma separated list of RelayChain Network Identifiers. Find the RelayChain Network
+  Identifiers [here](https://docs.pokt.network/reference/supported-chains).
+- `<chainID>`: The Pocket chain identifier; "mainnet" or "testnet".
+- `<fee>`: An amount of uPOKT for the network.
 
 Example output:
 
@@ -45,9 +45,9 @@ the `<fromAddr>` account passphrase.
 
 Arguments:
 
-* `<fromAddr>`: The address of the sender.
-* `<chainID>`: The Pocket chain identifier; "mainnet" or "testnet".
-* `<fee>`:  An amount of uPOKT for the network.
+- `<fromAddr>`: The address of the sender.
+- `<chainID>`: The Pocket chain identifier; "mainnet" or "testnet".
+- `<fee>`: An amount of uPOKT for the network.
 
 Example output:
 
@@ -61,38 +61,32 @@ Transaction submitted with hash: <Transaction Hash>
 pocket apps create-aat <appAddr> <clientPubKey>
 ```
 
-Creates a signed application authentication token \(version `0.0.1` of the AAT spec\), that can be embedded into
-application software for Relay servicing. Will prompt the user for the `<appAddr>` account passphrase.
+Creates a signed Application Authentication Token.
+Creates a signed AAT (= Application Authentication Token) where the version is
+hardcoded as "0.0.1" that is the only version supported by the protocol.
 
-Read the Application Authentication Token documentation here:
+This command prompts you to input the `<appAddr>` account passphrase.
+When you send a relay request with AAT, `<appAddr>` needs to be a staked
+application.
 
-{% page-ref page="../application-auth-token.md" %}
-
-_**NOTE: USE THIS METHOD AT YOUR OWN RISK. READ THE APPLICATION SECURITY GUIDELINES TO UNDERSTAND WHAT'S THE RECOMMENDED
-AAT CONFIGURATION FOR YOUR APPLICATION.**_
+Please read [application-auth-token.md](../application-auth-token.md)
+for additional details.
 
 Arguments:
 
-* `<appAddr>`: The address of the Application account to use to produce this AAT.
-* `<clientPubKey>`: The account public key of the client that will be signing and sending Relays sent to the Pocket
-  Network.
+- `<appAddr>`:
+  The address of an `Application` account to use to produce this AAT.
+  The account has to be staked on-chain to be able to use the Pocket Network.
+- `<clientPubKey>`:
+  The public key of a client that will be signing and sending Relays to the Pocket Network.
 
 Example output:
 
 ```javascript
 {
-	"version"
-:
-	"0.0.1",
-		"applicationPublicKey"
-:
-	"0x...",
-		"clientPublicKey"
-:
-	"0x...",
-		"signature"
-:
-	"0x..."
+    "version" : "0.0.1",
+    "applicationPublicKey": "0x...",
+    "clientPublicKey": "0x...",
+    "signature": "0x..."
 }
 ```
-
