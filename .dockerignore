@@ -1,0 +1,16 @@
+# this is not need on context
+.circleci
+# only workflow files that could be needed on the image should be added to the context
+!.github/workflows
+# ide
+.editorconfig
+# doc files
+doc
+docs
+# yml/yaml
+**/*.yaml
+**/*.yml
+# markdown
+**/*.md
+# images
+**/*.png
