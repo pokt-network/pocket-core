@@ -3,11 +3,13 @@ package keeper
 import (
 	"testing"
 
-	appTypes "github.com/pokt-network/pocket-core/x/apps/types"
-	"github.com/pokt-network/pocket-core/x/auth/types"
-	nodeTypes "github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	appTypes "github.com/pokt-network/pocket-core/x/apps/types"
+	"github.com/pokt-network/pocket-core/x/auth/types"
+	govTypes "github.com/pokt-network/pocket-core/x/gov/types"
+	nodeTypes "github.com/pokt-network/pocket-core/x/nodes/types"
 )
 
 var (
@@ -55,6 +57,11 @@ func TestGetPoolAddresses(t *testing.T) {
 			name:    "App nodes pool address",
 			pool:    appTypes.StakedPoolName,
 			address: "63533fb8f43b4883a1f37265f1561ce7b1c6c307",
+		},
+		{
+			name:    "DAO owned address",
+			pool:    govTypes.DAOAccountName,
+			address: "6386713deb27b609daad5e2e32ee6591753e5f4e",
 		},
 	}
 	ctx, keeper := createTestInput(t, false, initialPower, 0)

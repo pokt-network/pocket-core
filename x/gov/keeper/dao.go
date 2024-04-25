@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+
 	sdk "github.com/pokt-network/pocket-core/types"
 	exported2 "github.com/pokt-network/pocket-core/x/auth/exported"
 	"github.com/pokt-network/pocket-core/x/gov/types"
