@@ -44,7 +44,7 @@ func TestTiger_Encode(t *testing.T) {
 		t.Fatal(err)
 	}
 	msg := &nodeTypes.MsgSend{
-		Amount:      types.NewInt(10000),
+		Amount:      types.NewInt(50000),
 		FromAddress: fromAddr,
 		ToAddress:   toAddr,
 	}
@@ -53,7 +53,7 @@ func TestTiger_Encode(t *testing.T) {
 		decoder,
 		"mainnet",
 		"", // empty memo
-		types.NewCoins(types.NewCoin(types.DefaultStakeDenom, types.NewInt(50000))),
+		types.NewCoins(types.NewCoin(types.DefaultStakeDenom, types.NewInt(10000))),
 	)
 	entropy := int64(749259425513723904)
 	txBytes, err := builder.BuildAndSignWithEntropyForTesting(privKey, msg, entropy)
@@ -61,8 +61,8 @@ func TestTiger_Encode(t *testing.T) {
 		t.Fatal(err)
 	}
 	// hexString := base64.StdEncoding.EncodeToString(txBytes)
-	hexString := hex.EncodeToString(txBytes)
-	fmt.Println("raw_hex_bytes", hexString)
+	// hexString := hex.EncodeToString(txBytes)
+	// fmt.Println("raw_hex_bytes", hexString)
 
 	// txDecoded, err := decoder(txBytes, 900000)
 	// if err != nil {
@@ -75,11 +75,11 @@ func TestTiger_Encode(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Printf("%+v\n", stdTx)
-	fmt.Println("stdTx.Msgs: ", stdTx.Msg.Type(), stdTx.Msg.GetSignBytes())
-	fmt.Println("stdTx.Signature: ", stdTx.Signature)
-	fmt.Println("hex.hex.EncodeToString(stdTx.Signature.PublicKey): ", hex.EncodeToString(stdTx.Signature.PublicKey.Bytes()))
-	fmt.Println("hex.EncodeToString(stdTx.Signature.Signature): ", hex.EncodeToString(stdTx.Signature.Signature))
+	// fmt.Printf("%+v\n", stdTx)
+	// fmt.Println("stdTx.Msgs: ", stdTx.Msg.Type(), stdTx.Msg.GetSignBytes())
+	// fmt.Println("stdTx.Signature: ", stdTx.Signature)
+	// fmt.Println("hex.hex.EncodeToString(stdTx.Signature.PublicKey): ", hex.EncodeToString(stdTx.Signature.PublicKey.Bytes()))
+	// fmt.Println("hex.EncodeToString(stdTx.Signature.Signature): ", hex.EncodeToString(stdTx.Signature.Signature))
 
 	// jsonData, err := json.Marshal(stdTx)
 	jsonData, err := json.MarshalIndent(stdTx, "", "    ")
@@ -87,6 +87,7 @@ func TestTiger_Encode(t *testing.T) {
 		t.Fatal(err)
 	}
 	fmt.Println("json", string(jsonData))
+	fmt.Println(stdTx, stdTx.GetMsg().Type())
 
 	// protoStdTx := auth.ProtoStdTx{}
 	// err = cdc.UnmarshalBinaryLengthPrefixed(txBytes, &protoStdTx, 90000)
@@ -99,3 +100,49 @@ func TestTiger_Encode(t *testing.T) {
 // Refernce:
 // PoktTransaction = {"chain_id":"mainnet","entropy":749259425513723904,"fee":[{"amount":"10000","denom":"upokt"}],"memo":"","msg":{"type":"pos/Send","value":{"amount":"50000","from_address":"a709f36c78b4246cfaa0ecc363cd7c4917544c0a","to_address":"f6e2eb3fb67c630d6961ef8cfb74d8d282d3e8ab"}}}
 // PoktStdTransaction = {"msg":{"typeUrl":"/x.nodes.MsgSend","value":"pwnzbHi0JGz6oOzDY818SRdUTAr24us/tnxjDWlh74z7dNjSgtPoqzUwMDAw"},"fee":[{"amount":"10000","denom":"upokt"}],"txSig":{"publicKey":"A77Offlk9zIVYBzYRHBPUV/5qwgNT0JaxtBa/VCvMSc=","Signature":"4pY1m0pjUNG0YN9cRa5gTd6Pishx5Jm04GtYFmDhpg1zMUyM6ZQ4ArlAXmGisMAMjuUR1EfMzR6e53f9HS/wnQ=="},"memo":"","entropy":749259425513723904}
+
+/*
+
+~~~ Mine ~~~
+
+json {
+    "msg": {
+        "from_address": "a709f36c78b4246cfaa0ecc363cd7c4917544c0a",
+        "to_address": "f6e2eb3fb67c630d6961ef8cfb74d8d282d3e8ab",
+        "amount": "50000"
+    },
+    "fee": [
+        {
+            "denom": "upokt",
+            "amount": "10000"
+        }
+    ],
+    "signature": {
+        "pub_key": "03bece7df964f73215601cd844704f515ff9ab080d4f425ac6d05afd50af3127",
+        "signature": "sfJPdWoW8HMRrbsw47t81z7Kv/v4S7xTBDZQyh4VKFnUKCZC6FYlWALa7xa5lV8uvxumcDVDCMJaofzXXEheDw=="
+    },
+    "memo": "",
+    "entropy": 749259425513723904
+
+~~~ Thereis ~~~
+
+{
+        "msg": {
+            "typeUrl": "/x.nodes.MsgSend",
+            "value": "pwnzbHi0JGz6oOzDY818SRdUTAr24us/tnxjDWlh74z7dNjSgtPoqzUwMDAw"
+        },
+        "fee": [
+            {
+                "amount": "10000",
+                "denom": "upokt"
+            }
+        ],
+        "memo": "",
+        "entropy": 749259425513723904,
+        "signature": {
+            "publicKey": "A77Offlk9zIVYBzYRHBPUV/5qwgNT0JaxtBa/VCvMSc=",
+            "Signature": "GS89yqTf1u9Mc/WvaEo7MmRdyVkPrno1BZi9FcnoXADJLMlKOpS/ZB+hiXpOiYV6mHEk50SHDEBXQgLUOdBwvw=="
+        }
+    }
+}
+*/

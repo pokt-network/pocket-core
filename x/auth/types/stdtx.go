@@ -3,16 +3,18 @@ package types
 import (
 	"encoding/json"
 	"fmt"
+	"log"
+	"os"
+
+	"github.com/tendermint/tendermint/crypto"
+	"github.com/tendermint/tendermint/crypto/multisig"
+	"gopkg.in/yaml.v2"
+
 	"github.com/pokt-network/pocket-core/codec"
 	"github.com/pokt-network/pocket-core/codec/types"
 	posCrypto "github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
 	types2 "github.com/pokt-network/pocket-core/x/nodes/types"
-	"github.com/tendermint/tendermint/crypto"
-	"github.com/tendermint/tendermint/crypto/multisig"
-	"gopkg.in/yaml.v2"
-	"log"
-	"os"
 )
 
 // ProtoStdTx is a standard way to wrap a ProtoMsg with Fee and Sigs.
@@ -50,13 +52,18 @@ func StdSignBytes(chainID string, entropy int64, fee sdk.Coins, msg sdk.Msg, mem
 	if err != nil {
 		return nil, fmt.Errorf("could not marshal fee to json for StdSignBytes function: %v", err.Error())
 	}
-	bz, err := ModuleCdc.MarshalJSON(StdSignDoc{
+
+	docToSign := StdSignDoc{
 		ChainID: chainID,
 		Fee:     feeBytes,
 		Memo:    memo,
 		Msg:     msgsBytes,
 		Entropy: entropy,
-	})
+	}
+	jsonData, _ := json.MarshalIndent(docToSign, "", "    ")
+	fmt.Println("json docToSign", string(jsonData))
+
+	bz, err := ModuleCdc.MarshalJSON(docToSign)
 	if err != nil {
 		return nil, fmt.Errorf("could not marshal bytes to json for StdSignDoc function: %v", err.Error())
 	}
