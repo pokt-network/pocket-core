@@ -5,10 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/pokt-network/pocket-core/codec/types"
 	"io"
 
 	"github.com/tendermint/go-amino"
+
+	"github.com/pokt-network/pocket-core/codec/types"
 )
 
 // deprecated: Codec defines a wrapper for an Amino codec that properly handles protobuf
