@@ -27,7 +27,7 @@ COPY .github/workflows/entrypoint.sh /home/app/entrypoint.sh
 COPY .github/workflows/change_datadir_ownership_to_app.sh /home/app/change_datadir_ownership_to_app.sh
 
 RUN chmod +x /home/app/entrypoint.sh && \
-    chmod +x /home/app/fix_permissions.sh && \
+    chmod +x /home/app/change_datadir_ownership_to_app.sh && \
     chown -R app /bin/pocket \
     && mkdir -p /home/app/.pocket/config \
     && chown -R app /home/app/.pocket
