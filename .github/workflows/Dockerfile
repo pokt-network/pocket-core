@@ -20,11 +20,11 @@ COPY .github/workflows/entrypoint.sh /home/app/entrypoint.sh
 # this could be used as a one time run entrypoint.
 # e.g:
 # docker-compose:
-#   entrypoint: [ "/home/app/fix_permissions.sh", "/home/app/.pocket"]
+#   entrypoint: [ "/home/app/change_datadir_ownership_to_app.sh", "/home/app/.pocket"]
 #   user: root
 # docker:
-#   --entrypoint="/home/app/fix_permissions.sh /home/app/.pocket" -u root
-COPY .github/workflows/fix_permissions.sh /home/app/fix_permissions.sh
+#   --entrypoint="/home/app/change_datadir_ownership_to_app.sh /home/app/.pocket" -u root
+COPY .github/workflows/change_datadir_ownership_to_app.sh /home/app/change_datadir_ownership_to_app.sh
 
 RUN chmod +x /home/app/entrypoint.sh && \
     chmod +x /home/app/fix_permissions.sh && \

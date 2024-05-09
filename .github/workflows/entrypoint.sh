@@ -54,17 +54,17 @@ if {$config != ""} {
 }
 
 if {[regexp -nocase "datadir=" $command] && ![regexp -nocase "datadir=${datadir}" $command]} {
-  send_user "WARNING: --datadir provided with a different path to the one defined on Dockerfile. This could lead to errors when use this entrypoint to run CLI commands.\n"
+  send_user "WARNING: --datadir provided with a different path than the one defined in the Dockerfile. This could lead to errors using pocket CLI commands.\n"
 } elseif {![regexp -nocase "datadir=" $command]} {
-  send_user "INFO: param --datadir was not provided; attaching ${datadirParam} on every command executed with this entrypoint\n"
+  send_user "INFO: param --datadir was not provided; attaching ${datadirParam} on every command\n"
   set command "${command} ${datadirParam}"
 }
 
 if {![regexp -nocase "datadir=${defaultDatadir}" $command]} {
 	send_user "WARNING: --datadir is not the default one
 Please review:
-1. Mount your config folder to the same path you specify on --datadir
-2. Review your config.json on the following points to match with the value of --datadir
+1. Mount your config folder to the same path you specify in --datadir
+2. Review your config.json to ensure the following configs match the value of --datadir
   2.1. tendermint_config.RootDir
   2.2. RPC.RootDir
   2.3. P2P.RootDir
