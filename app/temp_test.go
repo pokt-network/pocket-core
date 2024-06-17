@@ -34,6 +34,7 @@ func TestTiger_Encode(t *testing.T) {
 	cdc := memCodec() // app.Codec()
 	encoder := auth.DefaultTxEncoder(cdc)
 	decoder := auth.DefaultTxDecoder(cdc)
+	// privKey, err := crypto.NewPrivateKey("5d86a93dee1ef5f950ccfaafd09d9c812f790c3b2c07945501f68b339118aca0e237efc54a93ed61689959e9afa0d4bd49fa11c0b946c35e6bebaccb052ce3fc")
 	privKey, err := crypto.NewPrivateKey("3505756aeeaa33364451f0681c44631db9d4bf5b6acc8d571b7d76005057ebf603bece7df964f73215601cd844704f515ff9ab080d4f425ac6d05afd50af3127")
 	if err != nil {
 		t.Fatal(err)
