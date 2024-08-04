@@ -95,6 +95,7 @@ const (
 	CodeInvalidMerkleRangeError          = 89
 	CodeEvidenceSealed                   = 90
 	CodeChainsOverLimitError             = 91
+	CodeZeroNodesError                   = 92
 )
 
 var (
@@ -126,6 +127,7 @@ var (
 	EmptyNonNativeChainError         = errors.New("the non-native chain is of Length 0")
 	EmptyBlockIDError                = errors.New("the block addr is of Length 0")
 	InsufficientNodesError           = errors.New("there are less than the minimum session nodes found")
+	NoNodesError                     = errors.New("there are zero session nodes found")
 	EmptySessionKeyError             = errors.New("the session key passed is of Length 0")
 	MismatchedByteArraysError        = errors.New("the byte arrays are not of the same Length")
 	FilterNodesError                 = errors.New("unable to filter nodes: ")
@@ -448,6 +450,10 @@ func NewEmptyNonNativeChainError(codespace sdk.CodespaceType) sdk.Error {
 
 func NewInsufficientNodesError(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeInsufficientNodesError, InsufficientNodesError.Error())
+}
+
+func NewZeroNodesError(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, CodeZeroNodesError, InsufficientNodesError.Error())
 }
 
 func NewInvalidSessionError(codespace sdk.CodespaceType) sdk.Error {

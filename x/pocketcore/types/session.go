@@ -122,8 +122,8 @@ func NewSessionNodes(
 	// all nodesAddrs at session genesis
 	nodesAddrs, totalNodes := keeper.GetValidatorsByChain(sessionCtx, chain)
 	// validate nodesAddrs
-	if totalNodes < sessionNodesCount {
-		return nil, NewInsufficientNodesError(ModuleName)
+	if totalNodes <= 0 {
+		return nil, NewZeroNodesError(ModuleName)
 	}
 	sessionNodes = make(SessionNodes, sessionNodesCount)
 	var node exported.ValidatorI
