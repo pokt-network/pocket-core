@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/tendermint/tendermint/libs/strings"
+
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/apps/types"
-	"github.com/tendermint/tendermint/libs/strings"
 )
 
 func ensurePubKeyTypeSupported(
@@ -45,6 +46,8 @@ func ensurePubKeyTypeSupported(
 func (k Keeper) ValidateApplicationStaking(ctx sdk.Ctx, application types.Application, amount sdk.BigInt) sdk.Error {
 	// convert the amount to sdk.Coin
 	coin := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), amount))
+	// TODO_IN_THIS_PR: Related to gateways having a limit on num chains.
+	// Validate the number of chains that can be staked for
 	if int64(len(application.Chains)) > k.MaxChains(ctx) {
 		return types.ErrTooManyChains(types.ModuleName)
 	}

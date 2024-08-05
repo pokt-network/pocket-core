@@ -78,7 +78,7 @@ func (s Session) Validate(node sdk.Address, app appexported.ApplicationI, sessio
 		return NewUnsupportedBlockchainAppError(ModuleName)
 	}
 	// validate sessionNodes
-	err := s.SessionNodes.Validate(sessionNodeCount)
+	err := s.SessionNodes.Validate()
 	if err != nil {
 		return err
 	}
@@ -117,7 +117,8 @@ func NewSessionNodes(
 ) (sessionNodes SessionNodes, err sdk.Error) {
 	// retrieve the enforce max chains flag's value from the codec
 	isEnforceMaxChains := ModuleCdc.IsAfterEnforceMaxChainsUpgrade(ctx.BlockHeight())
-	// retrieve the max chains value from the sessionCtx
+	// Retrieve the max chains value from the sessionCtx.
+	// Used to enforce an upper limit on the number of chains a node can stake for.
 	nodeMaxChains := keeper.MaxChains(sessionCtx)
 	// all nodesAddrs at session genesis
 	nodesAddrs, totalNodes := keeper.GetValidatorsByChain(sessionCtx, chain)
@@ -150,7 +151,7 @@ func NewSessionNodes(
 
 		// cross check the node from the `new` or `end` world state
 		node = keeper.Validator(ctx, n)
-		// if not found or jailed or is overstaked to chains
+		// if not found, or staked for too many chains, or jailed or incorrect
 		if node == nil ||
 			(isEnforceMaxChains && int64(len(node.GetChains())) > nodeMaxChains) ||
 			node.IsJailed() ||
@@ -172,10 +173,7 @@ func NewSessionNodes(
 }
 
 // "Validate" - Validates the session node object
-func (sn SessionNodes) Validate(sessionNodesCount int) sdk.Error {
-	if len(sn) < sessionNodesCount {
-		return NewInsufficientNodesError(ModuleName)
-	}
+func (sn SessionNodes) Validate() sdk.Error {
 	for _, n := range sn {
 		if n == nil {
 			return NewEmptyAddressError(ModuleName)
