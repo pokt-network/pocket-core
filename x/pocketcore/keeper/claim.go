@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/tendermint/tendermint/rpc/client"
+
 	"github.com/pokt-network/pocket-core/codec"
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/auth"
 	"github.com/pokt-network/pocket-core/x/auth/util"
 	pc "github.com/pokt-network/pocket-core/x/pocketcore/types"
-	"github.com/tendermint/tendermint/rpc/client"
 )
 
 // "SendClaimTx" - Automatically sends a claim of work/challenge based on relays or challenges stored.
@@ -181,11 +182,6 @@ func (k Keeper) ValidateClaim(ctx sdk.Ctx, claim pc.MsgClaim) (err sdk.Error) {
 		}
 	}
 	// Ensure that the app is not staked to more than the permitted number of chains
-	lenAppChains := int64(len(app.GetChains()))
-	if pc.ModuleCdc.IsAfterEnforceMaxChainsUpgrade(ctx.BlockHeight()) &&
-		lenAppChains > k.appKeeper.MaxChains(sessionContext) {
-		return pc.NewChainsOverLimitError(pc.ModuleName, lenAppChains, k.appKeeper.MaxChains(sessionContext))
-	}
 	// get the session node count for the time of the session
 	sessionNodeCount := int(k.SessionNodeCount(sessionContext))
 	// check cache

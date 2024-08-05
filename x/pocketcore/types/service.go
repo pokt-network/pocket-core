@@ -67,12 +67,6 @@ func (r *Relay) Validate(
 	if !found {
 		return sdk.ZeroInt(), NewAppNotFoundError(ModuleName)
 	}
-	// Ensure that the app is not staked to more than the permitted number of chains
-	numAppChains := int64(len(app.GetChains()))
-	if ModuleCdc.IsAfterEnforceMaxChainsUpgrade(ctx.BlockHeight()) &&
-		numAppChains > appsKeeper.MaxChains(sessionCtx) {
-		return sdk.ZeroInt(), NewChainsOverLimitError(ModuleName, numAppChains, appsKeeper.MaxChains(ctx))
-	}
 	// get session node count from that session height
 	sessionNodeCount := pocketKeeper.SessionNodeCount(sessionCtx)
 	// get max possible relays
