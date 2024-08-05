@@ -68,7 +68,6 @@ func (r *Relay) Validate(
 		return sdk.ZeroInt(), NewAppNotFoundError(ModuleName)
 	}
 	// Ensure that the app is not staked for more than the permitted number of chains
-	// TODO_IN_THIS_PR: Related to gateways having a limit on num chains.
 	numAppChains := int64(len(app.GetChains()))
 	if ModuleCdc.IsAfterEnforceMaxChainsUpgrade(ctx.BlockHeight()) &&
 		numAppChains > appsKeeper.MaxChains(sessionCtx) {

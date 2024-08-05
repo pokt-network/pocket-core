@@ -182,7 +182,6 @@ func (k Keeper) ValidateClaim(ctx sdk.Ctx, claim pc.MsgClaim) (err sdk.Error) {
 		}
 	}
 	// Ensure that the app is not staked to more than the permitted number of chains
-	// TODO_IN_THIS_PR: Related to gateways having a limit on num chains.
 	lenAppChains := int64(len(app.GetChains()))
 	if pc.ModuleCdc.IsAfterEnforceMaxChainsUpgrade(ctx.BlockHeight()) &&
 		lenAppChains > k.appKeeper.MaxChains(sessionContext) {
