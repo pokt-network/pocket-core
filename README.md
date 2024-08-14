@@ -117,7 +117,7 @@ An offline pruning tool is provided by [C0D3R](https://c0d3r.org/). The tool is 
 
 ## Accessing TestNet
 
-TestNet information can be found at [testnet.md](doc/guide/testnet.md) and is maintained by the [nodefleet.org](https://nodefleet.org/) team.
+TestNet information can be found at [testnet.md](doc/guides/testnet.md) and is maintained by the [nodefleet.org](https://nodefleet.org/) team.
 
 ## Charts & Analytics
 
