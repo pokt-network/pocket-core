@@ -117,7 +117,7 @@ An offline pruning tool is provided by [C0D3R](https://c0d3r.org/). The tool is 
 
 ## Accessing TestNet
 
-TestNet information can be found at [testnet.md](doc/guides/testnet.md) and is maintained by the [nodefleet.org](https://nodefleet.org/) team.
+TestNet information can be found at [testnet.md](doc/guides/testnet.md) and is maintained by the [Stakenodes](https://stakenodes.org/) team.
 
 ## Charts & Analytics
 
@@ -133,7 +133,12 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on contributions and 
 
 ## Seeds (MainNet & TestNet)
 
-Seeds are maintained by [NodeFleet](https://nodefleet.org/).
+Seeds are maintained by:
+
+
+`Testnet:` [Stakenodes](https://stakenodes.org/).
+
+`Mainnet:` [NodeFleet](https://nodefleet.org/).
 
 You can find all the details at [pokt-network/pocket-seeds](https://github.com/pokt-network/pocket-seeds).
 
