@@ -228,7 +228,7 @@ func (app *BaseApp) MountStores(keys ...sdk.StoreKey) {
 	}
 }
 
-// MountStores mounts all IAVL or DB stores to the provided keys in the BaseApp
+// MountKVStores mounts all IAVL or DB stores to the provided keys in the BaseApp
 // multistore.
 func (app *BaseApp) MountKVStores(keys map[string]*sdk.KVStoreKey) {
 	keys[sdk.ParamsKey.Name()] = sdk.ParamsKey
@@ -373,7 +373,7 @@ func (app *BaseApp) setConsensusParams(consensusParams *abci.ConsensusParams) {
 	app.consensusParams = consensusParams
 }
 
-// setConsensusParams stores the consensus params to the main store.
+// storeConsensusParams stores the consensus params to the main store.
 func (app *BaseApp) storeConsensusParams(consensusParams *abci.ConsensusParams) {
 	consensusParamsBz, err := proto.Marshal(consensusParams)
 	if err != nil {
