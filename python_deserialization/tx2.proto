@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+// Основное сообщение StdTx
+message StdTx {
+    Msg msg = 1;                  // Сообщение (тип Msg)
+    repeated Coin fee = 2;                // Плата (тип Coins)
+    TxSignature signature = 3;   // Подпись (тип StdSignature)
+    string memo = 4;              // Мемо
+    int64 entropy = 5;            // Энтропия
+}
+
+// Сообщение Msg
+message Msg {
+    SessionHeader sessionHeader = 1;  // Заголовок сессии
+    HashRange merkleRoot = 2;        // Merkle Root
+    int64 totalProofs = 3;           // Общее количество доказательств
+    bytes fromAddress = 4;            // Адрес отправителя
+    int32 evidenceType = 5;    // Тип доказательства
+    int64 expirationHeight = 6;
+}
+
+// Заголовок сессии
+message SessionHeader {
+	string applicationPubKey = 1;
+	string chain = 2;
+	int64 sessionBlockHeight = 3;
+}
+
+// Плата (Coins)
+message Coins {
+    repeated Coin coin = 1;  // Повторяющееся поле для нескольких монет
+}
+
+// Монета (Coin)
+message Coin {
+    string denom = 1;  // Сумма
+    string amount = 2;   // Наименование
+}
+
+// Подпись (StdSignature)
+message TxSignature {
+        string pub_key = 1;
+        string signature = 2;
+    }
+
+message HashRange {
+	bytes hash = 1;
+	Range range = 2;
+}
+
+// Диапазон (Range)
+message Range {
+	uint64 lower = 1;
+	uint64 upper = 2;
+}
