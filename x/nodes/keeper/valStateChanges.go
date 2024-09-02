@@ -586,7 +586,7 @@ func (k Keeper) JailValidator(ctx sdk.Ctx, addr sdk.Address) {
 		ctx.Logger().Info(fmt.Errorf("cannot jail an unstaked validator, likely left in the set to update Tendermint Val Set: %v\n", validator).Error())
 		return
 	}
-	// clear caching for sesssions
+	// clear caching for sessions
 	k.ClearSessionCache()
 	k.deleteValidatorFromStakingSet(ctx, validator)
 	validator.Jailed = true
