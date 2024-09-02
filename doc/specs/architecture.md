@@ -146,7 +146,7 @@ concatenated together. This makes indexing a nightmare.
 
 ### **Custom Indexer**
 
-Since LevelDB comparators order lexicongraphically, the implementation uses ELEN to encode numbers to ensure
+Since LevelDB comparators order lexicographically, the implementation uses ELEN to encode numbers to ensure
 alphanumerical ordering at insertion
 time. [https://www.zanopha.com/docs/elen.pdf](https://www.zanopha.com/docs/elen.pdf) Since the keys are sorted
 alphanumerically from the start, we don't have to:
@@ -206,7 +206,7 @@ The `Max_Validators` DAO param assigns a ceiling threshold on the number of _Ten
 not limit the number of _Servicer Nodes_ in the network. Max*Validators caps \_Tendermint Validators* to help with the
 current P2P bottlenecks that exist today. Less Validators = Less Consensus P2P traffic. Max*Validators is not a static
 floor. For instance, if the Max_Validator threshold is exceeded the Validator with the lowest amount of \_Stake* out of
-all the the Validators is removed as a Tendermint Validator and simply exists as a _Servicer_. These changes are likely
+all the Validators is removed as a Tendermint Validator and simply exists as a _Servicer_. These changes are likely
 to happen in between blocks as new Validators stake in the network.
 
 Summary:
