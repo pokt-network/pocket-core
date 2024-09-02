@@ -62,9 +62,9 @@ func testRelayAt(
 	clientPubKey := clientPrivateKey.PublicKey()
 	appPubKey := appPrivateKey.PublicKey()
 
-	blocksPerSesssion := keeper.BlocksPerSession(ctx)
+	blocksPerSession := keeper.BlocksPerSession(ctx)
 	clientSessionHeight :=
-		((clientBlockHeight-1)/blocksPerSesssion)*blocksPerSesssion + 1
+		((clientBlockHeight-1)/blocksPerSession)*blocksPerSession + 1
 
 	validRelay := types.Relay{
 		Payload: types.Payload{
@@ -127,7 +127,7 @@ func TestKeeper_HandleRelay(t *testing.T) {
 	types.GlobalPocketConfig.ClientBlockSyncAllowance = 10000
 
 	nodeBlockHeight := ctx.BlockHeight()
-	blocksPerSesssion := keeper.BlocksPerSession(ctx)
+	blocksPerSession := keeper.BlocksPerSession(ctx)
 	latestSessionHeight := keeper.GetLatestSessionBlockHeight(ctx)
 
 	t.Cleanup(func() {
@@ -146,7 +146,7 @@ func TestKeeper_HandleRelay(t *testing.T) {
 	allSessionRangesTests := 4 // The range of block heights we will mock
 
 	// Set up mocks for heights we'll query later.
-	for i := int64(1); i <= blocksPerSesssion*int64(allSessionRangesTests); i++ {
+	for i := int64(1); i <= blocksPerSession*int64(allSessionRangesTests); i++ {
 		mockCtx.On("PrevCtx", nodeBlockHeight-i).Return(ctx, nil)
 		mockCtx.On("PrevCtx", nodeBlockHeight+i).Return(ctx, nil)
 	}
@@ -176,7 +176,7 @@ func TestKeeper_HandleRelay(t *testing.T) {
 			t,
 			mockCtx,
 			keeper,
-			latestSessionHeight-blocksPerSesssion*int64(i),
+			latestSessionHeight-blocksPerSession*int64(i),
 			clientPrivateKey,
 			appPrivateKey,
 			nodePubKey,
@@ -190,7 +190,7 @@ func TestKeeper_HandleRelay(t *testing.T) {
 			t,
 			mockCtx,
 			keeper,
-			latestSessionHeight+blocksPerSesssion*int64(i),
+			latestSessionHeight+blocksPerSession*int64(i),
 			clientPrivateKey,
 			appPrivateKey,
 			nodePubKey,
@@ -215,7 +215,7 @@ func TestKeeper_HandleRelay(t *testing.T) {
 		t,
 		mockCtx,
 		keeper,
-		latestSessionHeight-blocksPerSesssion*int64(sessionRangeTc),
+		latestSessionHeight-blocksPerSession*int64(sessionRangeTc),
 		clientPrivateKey,
 		appPrivateKey,
 		nodePubKey,
@@ -231,7 +231,7 @@ func TestKeeper_HandleRelay(t *testing.T) {
 		t,
 		mockCtx,
 		keeper,
-		latestSessionHeight+blocksPerSesssion*int64(sessionRangeTc),
+		latestSessionHeight+blocksPerSession*int64(sessionRangeTc),
 		clientPrivateKey,
 		appPrivateKey,
 		nodePubKey,
@@ -254,7 +254,7 @@ func TestKeeper_HandleRelay(t *testing.T) {
 		t,
 		mockCtx,
 		keeper,
-		latestSessionHeight-blocksPerSesssion*int64(sessionRangeTc),
+		latestSessionHeight-blocksPerSession*int64(sessionRangeTc),
 		clientPrivateKey,
 		appPrivateKey,
 		nodePubKey,
@@ -270,7 +270,7 @@ func TestKeeper_HandleRelay(t *testing.T) {
 		t,
 		mockCtx,
 		keeper,
-		latestSessionHeight+blocksPerSesssion*int64(sessionRangeTc),
+		latestSessionHeight+blocksPerSession*int64(sessionRangeTc),
 		clientPrivateKey,
 		appPrivateKey,
 		nodePubKey,
