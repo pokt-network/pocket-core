@@ -1,11 +1,11 @@
 package keeper
 
 import (
-	"github.com/pokt-network/pocket-core/codec/types"
 	"math/rand"
 	"testing"
 
 	"github.com/pokt-network/pocket-core/codec"
+	"github.com/pokt-network/pocket-core/codec/types"
 	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/store"
 	sdk "github.com/pokt-network/pocket-core/types"
@@ -50,8 +50,11 @@ func getRandomValidatorAddress() sdk.Address {
 	return sdk.Address(getRandomPubKey().Address())
 }
 
-// nolint: deadcode unused
-func createTestKeeperAndContext(t *testing.T, isCheckTx bool) (sdk.Context, Keeper) {
+func createTestKeeperAndContext(
+	t *testing.T,
+	isCheckTx bool,
+	subspaces ...sdk.Subspace,
+) (sdk.Context, Keeper) {
 	keyAcc := sdk.NewKVStoreKey(auth.StoreKey)
 	db := dbm.NewMemDB()
 	ms := store.NewCommitMultiStore(db, false, 5000000)
@@ -82,7 +85,14 @@ func createTestKeeperAndContext(t *testing.T, isCheckTx bool) (sdk.Context, Keep
 	akSubspace := sdk.NewSubspace(auth.DefaultParamspace)
 	ak := keeper.NewKeeper(cdc, keyAcc, akSubspace, maccPerms)
 	ak.GetModuleAccount(ctx, "FAKE")
-	pk := NewKeeper(cdc, sdk.ParamsKey, sdk.ParamsTKey, govTypes.DefaultParamspace, ak, akSubspace)
+	pk := NewKeeper(
+		cdc,
+		sdk.ParamsKey,
+		sdk.ParamsTKey,
+		govTypes.DefaultParamspace,
+		ak,
+		append(subspaces, akSubspace)...,
+	)
 	moduleManager := module.NewManager(
 		auth.NewAppModule(ak),
 	)

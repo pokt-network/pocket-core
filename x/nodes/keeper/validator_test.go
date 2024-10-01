@@ -262,7 +262,7 @@ func TestValidator_Proto_MarshalingCompatibility(t *testing.T) {
 	assert.NotNil(t, val_2.RewardDelegators)
 	assert.True(
 		t,
-		types.CompareStringMaps(val_2.RewardDelegators, val_1.RewardDelegators),
+		sdk.CompareStringMaps(val_2.RewardDelegators, val_1.RewardDelegators),
 	)
 
 	// Validator --> []byte --> LegacyValidator

@@ -29,6 +29,14 @@ func TestSortJSON(t *testing.T) {
 		{unsortedJSON: `{"chain_id":"test-chain-1","sequence":1,"fee_bytes":{"amount":[{"amount":5,"denom":"photon"}],"gas":10000},"msg_bytes":{"inputs":[{"address":"696E707574","coins":[{"amount":10,"denom":"atom"}]}],"outputs":[{"address":"6F7574707574","coins":[{"amount":10,"denom":"atom"}]}]},"alt_bytes":null}`,
 			want:    `{"alt_bytes":null,"chain_id":"test-chain-1","fee_bytes":{"amount":[{"amount":5,"denom":"photon"}],"gas":10000},"msg_bytes":{"inputs":[{"address":"696E707574","coins":[{"amount":10,"denom":"atom"}]}],"outputs":[{"address":"6F7574707574","coins":[{"amount":10,"denom":"atom"}]}]},"sequence":1}`,
 			wantErr: false},
+
+		// non-object values
+		{unsortedJSON: "null", want: "null"},
+		{unsortedJSON: "42", want: "42"},
+		{unsortedJSON: "-3.14", want: "-3.14"},
+		{unsortedJSON: "\"str\"", want: "\"str\""},
+		{unsortedJSON: "[\"string\",12345,null]", want: "[\"string\",12345,null]"},
+		{unsortedJSON: "[[3,1,2],{},[1,2,3]]", want: "[[3,1,2],{},[1,2,3]]"},
 	}
 
 	for tcIndex, tc := range cases {
@@ -91,4 +99,32 @@ func Test_CompareVersionStrings(t *testing.T) {
 
 	comp, err = CompareVersionStrings("", "1")
 	assert.NotNil(t, err)
+}
+
+func TestCompareStringMaps(t *testing.T) {
+	m1 := map[string]int{}
+	m2 := map[string]int{}
+	assert.True(t, CompareStringMaps(m1, m2))
+
+	// m1 is non-empty and m2 is empty
+	m1["a"] = 10
+	m1["b"] = 100
+	assert.False(t, CompareStringMaps(m1, m2))
+
+	// m1 and m2 are not empty and identical
+	m2["b"] = 100
+	m2["a"] = 10
+	assert.True(t, CompareStringMaps(m2, m1))
+
+	// m1 is non-empty and m2 is nil
+	m2 = nil
+	assert.False(t, CompareStringMaps(m1, m2))
+	assert.False(t, CompareStringMaps(nil, m1))
+
+	// m1 and m2 are both nil
+	m1 = nil
+	assert.True(t, CompareStringMaps(m1, m2))
+
+	// Empty and nil maps are identical
+	assert.True(t, CompareStringMaps(nil, map[string]int{}))
 }
