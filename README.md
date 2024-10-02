@@ -101,7 +101,8 @@ For more detailed command information, see the [usage section](doc/specs/cli/).
 
 ## Documentation
 
-[Visit our user documentation](https://docs.pokt.network) for tutorials and technical information on the Pocket Network.
+- Visit [our user documentation](https://docs.pokt.network) for tutorials and technical information on the Pocket Network.
+- Visit [pocket-core-doc](https://github.com/pokt-network/pocket-core-doc) repo for operations such as protocol upgrade, chainhalt recovery, etc.
 
 ## Portal
 
