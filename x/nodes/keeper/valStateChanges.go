@@ -268,7 +268,7 @@ func (k Keeper) ValidateEditStake(ctx sdk.Ctx, currentValidator, newValidtor typ
 		// For more details, see
 		// https://forum.pokt.network/t/pip32-unleashing-the-potential-of-non-custodial-node-running/4796
 		if k.Cdc.IsAfterRewardDelegatorUpgrade(ctx.BlockHeight()) &&
-			!types.CompareStringMaps(
+			!sdk.CompareStringMaps(
 				currentValidator.RewardDelegators,
 				newValidtor.RewardDelegators,
 			) &&

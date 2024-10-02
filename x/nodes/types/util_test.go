@@ -37,31 +37,3 @@ func TestCompareSlices(t *testing.T) {
 	assert.True(t, CompareSlices(nil, []int{}))
 	assert.True(t, CompareSlices([]int{}, []int{}))
 }
-
-func TestCompareStringMaps(t *testing.T) {
-	m1 := map[string]int{}
-	m2 := map[string]int{}
-	assert.True(t, CompareStringMaps(m1, m2))
-
-	// m1 is non-empty and m2 is empty
-	m1["a"] = 10
-	m1["b"] = 100
-	assert.False(t, CompareStringMaps(m1, m2))
-
-	// m1 and m2 are not empty and identical
-	m2["b"] = 100
-	m2["a"] = 10
-	assert.True(t, CompareStringMaps(m2, m1))
-
-	// m1 is non-empty and m2 is nil
-	m2 = nil
-	assert.False(t, CompareStringMaps(m1, m2))
-	assert.False(t, CompareStringMaps(nil, m1))
-
-	// m1 and m2 are both nil
-	m1 = nil
-	assert.True(t, CompareStringMaps(m1, m2))
-
-	// Empty and nil maps are identical
-	assert.True(t, CompareStringMaps(nil, map[string]int{}))
-}

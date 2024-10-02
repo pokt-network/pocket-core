@@ -569,7 +569,7 @@ func TestValidatorStateChange_Delegators(t *testing.T) {
 	assert.True(t, found)
 	assert.True(
 		t,
-		types.CompareStringMaps(validatorCur.RewardDelegators, singleDelegator),
+		sdk.CompareStringMaps(validatorCur.RewardDelegators, singleDelegator),
 	)
 
 	// Attempt to reset the delegators with operator's signature --> Success
@@ -586,7 +586,7 @@ func TestValidatorStateChange_Delegators(t *testing.T) {
 	assert.True(t, found)
 	assert.True(
 		t,
-		types.CompareStringMaps(validatorCur.RewardDelegators, singleDelegator),
+		sdk.CompareStringMaps(validatorCur.RewardDelegators, singleDelegator),
 	)
 }
 

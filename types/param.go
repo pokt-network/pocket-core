@@ -212,11 +212,11 @@ func (s Subspace) checkType(store KVStore, key []byte, param interface{}) {
 func (s Subspace) Set(ctx Ctx, key []byte, param interface{}) {
 	store := s.kvStore(ctx)
 	s.checkType(store, key, param)
-	bz, err := s.cdc.MarshalJSON(param)
-	if err != nil {
-		panic(err)
-	}
+
+	// Sort marshaled JSON to make sure a map param value is canonicalized.
+	bz := MustSortJSON(s.cdc.MustMarshalJSON(param))
 	_ = store.Set(key, bz)
+
 	tstore := s.transientStore(ctx)
 	_ = tstore.Set(key, []byte{})
 }
@@ -254,10 +254,8 @@ func (s Subspace) SetWithSubkey(ctx Ctx, key []byte, subkey []byte, param interf
 
 	newkey := concatKeys(key, subkey)
 
-	bz, err := s.cdc.MarshalJSON(param)
-	if err != nil {
-		panic(err)
-	}
+	// Sort marshaled JSON to make sure a map param value is canonicalized.
+	bz := MustSortJSON(s.cdc.MustMarshalJSON(param))
 	_ = store.Set(newkey, bz)
 
 	tstore := s.transientStore(ctx)

@@ -80,19 +80,3 @@ func CompareSlices[T comparable](a, b []T) bool {
 
 	return true
 }
-
-// True if two maps are equivalent.
-// Nil is considered to be the same as an empty map.
-func CompareStringMaps[T comparable](a, b map[string]T) bool {
-	if len(a) != len(b) {
-		return false
-	}
-
-	for k, v := range a {
-		if v != b[k] {
-			return false
-		}
-	}
-
-	return true
-}
