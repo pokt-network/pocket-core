@@ -46,6 +46,7 @@ The Pocket Core application will allow anyone to spin up a Pocket Network full n
 - [Contributing](#contributing)
 - [Seeds (MainNet \& TestNet)](#seeds-mainnet--testnet)
 - [Docker Image](#docker-image)
+- [Chain Halt Rollback Recovery Guide](#chain-halt-rollback-recovery-guide)
 - [Support \& Contact](#support--contact)
   - [GPokT](#gpokt)
 - [License](#license)
@@ -150,6 +151,10 @@ The latest image can be pulled like so:
 docker pull ghcr.io/pokt-network/pocket-v0:latest
 ```
 
+## Chain Halt Rollback Recovery Guide
+
+See the rollback guide [here](doc/guides/rollback.md) put together by @msmania based on a real world scenario.
+
 ## Support & Contact
 
 <div>
@@ -165,7 +170,3 @@ You can also use our chatbot, [GPokT](https://gpoktn.streamlit.app), to ask ques
 ## License
 
 This project is licensed under the MIT License; see the [LICENSE.md](LICENSE.md) file for details
-
-```
-
-```
