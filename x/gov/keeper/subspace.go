@@ -2,9 +2,9 @@ package keeper
 
 import (
 	"fmt"
-	"github.com/pokt-network/pocket-core/codec"
 	"os"
 
+	"github.com/pokt-network/pocket-core/codec"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/gov/types"
 )
@@ -213,6 +213,7 @@ func (k Keeper) ModifyParam(ctx sdk.Ctx, aclKey string, paramValue []byte, owner
 		k.Logger(ctx).Error(types.ErrSubspaceNotFound(types.ModuleName, subspaceName).Error())
 		os.Exit(1)
 	}
+	// TODO(#1617): Check the return value of `Update` and handle errors appropriately
 	_ = space.Update(ctx, []byte(paramKey), paramValue)
 	k.spaces[subspaceName] = space
 	// create the event
