@@ -8,8 +8,10 @@
     - [Querying Binary Version](#querying-binary-version)
 - [Validators w/ Tendermint RPC](#validators-w-tendermint-rpc)
   - [RPC \& Tendermint Public Endpoints](#rpc--tendermint-public-endpoints)
-  - [Querying Net Info](#querying-net-info)
-  - [Querying Status](#querying-status)
+    - [BreezyTm (StakeNodes)](#breezytm-stakenodes)
+      - [Querying Net Info](#querying-net-info)
+      - [Querying Status](#querying-status)
+    - [Ian (Cryptonode.tools)](#ian-cryptonodetools)
 - [TestNet Seeds](#testnet-seeds)
 
 ## Validator List w/ Pocket RPC
@@ -72,23 +74,31 @@ https://node6.tendermint.testnet.pokt.network/
 
 ### RPC & Tendermint Public Endpoints
 
-`breezytm | Stakenodes (277262895459336194)` has made his Validator endpoints available
-behind a public load balancer here:
+#### BreezyTm (StakeNodes)
+
+`breezytm | Stakenodes (277262895459336194)` has made his Validator's RPC + Tendermint
+endpoints available behind a public load balancer here:
 
 - **RPC**: [rpc.testnet.pokt.network/lb/6d6f727365/](https://rpc.testnet.pokt.network/lb/6d6f727365/)
 - **Tendermint**: [rpc.testnet.pokt.network/lb/6d6f727365/](https://tendermint.testnet.pokt.network/lb/6d6f727365)
 
-### Querying Net Info
+##### Querying Net Info
 
 ```bash
 curl https://tendermint.testnet.pokt.network/lb/6d6f727365//net_info
 ```
 
-### Querying Status
+##### Querying Status
 
 ```bash
 curl https://tendermint.testnet.pokt.network/lb/6d6f727365//status
 ```
+
+#### Ian (Cryptonode.tools)
+
+`Ian | cryptonode.tools (693644362575511573)` also made his Validator's TM endpoint available here
+
+- **Tendermint**: [https://morse-tendermint.chains-eu6.cryptonode.tools/](https://morse-tendermint.chains-eu6.cryptonode.tools/)
 
 ## TestNet Seeds
 
