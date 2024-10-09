@@ -2,108 +2,62 @@
 
 ## Table of Contents <!-- omit in toc -->
 
-- [Validator List w/ Pocket RPC](#validator-list-w-pocket-rpc)
-  - [Example Queries](#example-queries)
-    - [Querying State](#querying-state)
-    - [Querying Binary Version](#querying-binary-version)
-- [Validators w/ Tendermint RPC](#validators-w-tendermint-rpc)
-  - [RPC \& Tendermint Public Endpoints](#rpc--tendermint-public-endpoints)
-    - [BreezyTm (StakeNodes)](#breezytm-stakenodes)
-      - [Querying Net Info](#querying-net-info)
-      - [Querying Status](#querying-status)
-    - [Ian (Cryptonode.tools)](#ian-cryptonodetools)
+- [RPC \& Tendermint Public Endpoints](#rpc--tendermint-public-endpoints)
+  - [BreezyTm (StakeNodes)](#breezytm-stakenodes)
+  - [Ian (Cryptonode.tools)](#ian-cryptonodetools)
+- [Example Queries](#example-queries)
+  - [Example Query - Net Info](#example-query---net-info)
+  - [Example Query - Status](#example-query---status)
+  - [Example Query - State](#example-query---state)
+  - [Example Query - Binary Version](#example-query---binary-version)
 - [TestNet Seeds](#testnet-seeds)
 
-## Validator List w/ Pocket RPC
+## RPC & Tendermint Public Endpoints
 
-```bash
-https://node1.testnet.pokt.network/
-https://node2.testnet.pokt.network/
-https://node3.testnet.pokt.network/
-https://node4.testnet.pokt.network/
-https://node5.testnet.pokt.network/
-https://node6.testnet.pokt.network/
-```
-
-### Example Queries
-
-#### Querying State
-
-```bash
-curl -X POST https://node1.testnet.pokt.network/v1/query/state | tee query_state.json | jq
-```
-
-Output:
-
-```bash
-# {
-#   "app_hash": "",
-#   "app_state": {
-#     "application": {
-#       "applications": [
-#         {
-#           "address": "065013157ffb401642d0418b408474b361ee0836",
-#           "chains": [
-#             "004A",
-#             "004B",
-# ...
-```
-
-#### Querying Binary Version
-
-```bash
-curl https://node1.testnet.pokt.network/v1
-```
-
-Output:
-
-```bash
-#"BETA-0.10.2"%
-```
-
-## Validators w/ Tendermint RPC
-
-```bash
-https://node1.tendermint.testnet.pokt.network/
-https://node2.tendermint.testnet.pokt.network/
-https://node3.tendermint.testnet.pokt.network/
-https://node4.tendermint.testnet.pokt.network/
-https://node5.tendermint.testnet.pokt.network/
-https://node6.tendermint.testnet.pokt.network/
-```
-
-### RPC & Tendermint Public Endpoints
-
-#### BreezyTm (StakeNodes)
+### BreezyTm (StakeNodes)
 
 `breezytm | Stakenodes (277262895459336194)` has made his Validator's RPC + Tendermint
 endpoints available behind a public load balancer here:
 
-- **RPC**: [rpc.testnet.pokt.network/lb/6d6f727365/](https://rpc.testnet.pokt.network/lb/6d6f727365/)
-- **Tendermint**: [rpc.testnet.pokt.network/lb/6d6f727365/](https://tendermint.testnet.pokt.network/lb/6d6f727365)
+- **RPC**: [rpc.testnet.pokt.network/lb/6d6f727365](https://rpc.testnet.pokt.network/lb/6d6f727365/)
+- **Tendermint**: [rpc.testnet.pokt.network/lb/6d6f727365](https://tendermint.testnet.pokt.network/lb/6d6f727365)
 
-##### Querying Net Info
-
-```bash
-curl https://tendermint.testnet.pokt.network/lb/6d6f727365//net_info
-```
-
-##### Querying Status
-
-```bash
-curl https://tendermint.testnet.pokt.network/lb/6d6f727365//status
-```
-
-#### Ian (Cryptonode.tools)
+### Ian (Cryptonode.tools)
 
 `Ian | cryptonode.tools (693644362575511573)` also made his Validator's TM endpoint available here
 
 - **Tendermint**: [https://morse-tendermint.chains-eu6.cryptonode.tools/](https://morse-tendermint.chains-eu6.cryptonode.tools/)
+
+## Example Queries
+
+### Example Query - Net Info
+
+```bash
+curl https://tendermint.testnet.pokt.network/lb/6d6f727365/net_info
+```
+
+### Example Query - Status
+
+```bash
+curl https://tendermint.testnet.pokt.network/lb/6d6f727365/status
+```
+
+### Example Query - State
+
+```bash
+curl -X POST https://rpc.testnet.pokt.network/lb/6d6f727365/v1/query/state | tee query_state.json | jq
+```
+
+### Example Query - Binary Version
+
+```bash
+curl https://rpc.testnet.pokt.network/lb/6d6f727365/v1
+```
 
 ## TestNet Seeds
 
 The following seeds can be used to sync with TestNet. Copy-paste the following list of seeds into the `config.json` file on the `seeds` variable:
 
 ```bash
-d90094952a3a67a99243cca645cdd5bd55fe8d27@seed1.testnet.pokt.network:26668, 2a5258dcdbaa5ca6fd882451f5a725587427a793@seed2.testnet.pokt.network:26669, a37baa84a53f2aab1243986c1cd4eff1591e50d0@seed3.testnet.pokt.network:26668, fb18401cf435bd24a2e8bf75ea7041afcf122acf@seed4.testnet.pokt.network:26669
+b3d86cd8ab4aa0cb9861cb795d8d154e685a94cf@seed1.testnet.pokt.network:26663,5b0107a5252f6a037eed7f5c24a7d916e4dd93bd@testnet_seed_4.cryptonode.tools:16646
 ```
