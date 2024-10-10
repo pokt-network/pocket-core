@@ -19,14 +19,15 @@
 `breezytm | Stakenodes (277262895459336194)` has made his Validator's RPC + Tendermint
 endpoints available behind a public load balancer here:
 
-- **RPC**: [rpc.testnet.pokt.network/lb/6d6f727365](https://rpc.testnet.pokt.network/lb/6d6f727365/)
+- **RPC**: [rpc.testnet.pokt.network/lb/6d6f727365](https://rpc.testnet.pokt.network/lb/6d6f727365)
 - **Tendermint**: [rpc.testnet.pokt.network/lb/6d6f727365](https://tendermint.testnet.pokt.network/lb/6d6f727365)
 
 ### Ian (Cryptonode.tools)
 
-`Ian | cryptonode.tools (693644362575511573)` also made his Validator's TM endpoint available here
+`Ian | cryptonode.tools (693644362575511573)` also made his Validator's endpoints available here
 
-- **Tendermint**: [https://morse-tendermint.chains-eu6.cryptonode.tools/](https://morse-tendermint.chains-eu6.cryptonode.tools/)
+- **RPC**: [https://pokt_testnet.chains-eu6.cryptonode.tools](https://pokt_testnet.chains-eu6.cryptonode.tools)
+- **Tendermint**: [https://morse-tendermint.chains-eu6.cryptonode.tools](https://morse-tendermint.chains-eu6.cryptonode.tools)
 
 ## Example Queries
 
