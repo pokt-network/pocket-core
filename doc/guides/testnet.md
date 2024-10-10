@@ -24,7 +24,7 @@ endpoints available behind a public load balancer here:
 
 ### Ian (Cryptonode.tools)
 
-`Ian | cryptonode.tools (693644362575511573)` also made his Validator's endpoints available here
+`Ian | cryptonode.tools (693644362575511573)` Validator endpoints available here:
 
 - **RPC**: [https://pokt_testnet.chains-eu6.cryptonode.tools](https://pokt_testnet.chains-eu6.cryptonode.tools)
 - **Tendermint**: [https://morse-tendermint.chains-eu6.cryptonode.tools](https://morse-tendermint.chains-eu6.cryptonode.tools)
