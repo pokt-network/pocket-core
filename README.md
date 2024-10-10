@@ -137,7 +137,7 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on contributions and 
 
 ## Seeds (MainNet & TestNet)
 
-Seeds are maintained by [NodeFleet](https://nodefleet.org/).
+Seeds for the `mainnet` are maintained by [NodeFleet](https://nodefleet.org/), and seeds for the `testnet` are managed by [Stakenodes](https://www.stakenodes.org/) and [Cryptonode](https://cryptonode.tools/).
 
 You can find all the details at [pokt-network/pocket-seeds](https://github.com/pokt-network/pocket-seeds).
 
