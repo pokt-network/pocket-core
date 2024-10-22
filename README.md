@@ -46,8 +46,8 @@ The Pocket Core application will allow anyone to spin up a Pocket Network full n
 - [Contributing](#contributing)
 - [Seeds (MainNet \& TestNet)](#seeds-mainnet--testnet)
 - [Docker Image](#docker-image)
+- [Rollback Recovery Process](#rollback-recovery-process)
 - [Support \& Contact](#support--contact)
-  - [GPokT](#gpokt)
 - [License](#license)
 
 ## Installation
@@ -102,7 +102,6 @@ For more detailed command information, see the [usage section](doc/specs/cli/).
 ## Documentation
 
 - Visit [our user documentation](https://docs.pokt.network) for tutorials and technical information on the Pocket Network.
-- Visit [pocket-core-doc](https://github.com/pokt-network/pocket-core-doc) repo for operations such as protocol upgrade, chainhalt recovery, etc.
 
 ## Portal
 
@@ -154,6 +153,10 @@ The latest image can be pulled like so:
 docker pull ghcr.io/pokt-network/pocket-v0:latest
 ```
 
+## Rollback Recovery Process
+
+An example of a rollback recovery process can be found [here](doc/guides/rollback.md).
+
 ## Support & Contact
 
 <div>
@@ -161,10 +164,6 @@ docker pull ghcr.io/pokt-network/pocket-v0:latest
   <a href="https://t.me/POKTnetwork"><img src="https://img.shields.io/badge/Telegram-blue.svg"></a>
   <a href="https://research.pokt.network"><img src="https://img.shields.io/discourse/https/research.pokt.network/posts.svg"></a>
 </div>
-
-### GPokT
-
-You can also use our chatbot, [GPokT](https://gpoktn.streamlit.app), to ask questions about Pocket Network. As of updating this documentation, please note that it may require you to provide your own LLM API token. If the deployed version of GPokT is down, you can deploy your own version by following the instructions [here](https://github.com/pokt-network/gpokt).
 
 ## License
 
