@@ -20,7 +20,7 @@
 endpoints available behind a public load balancer here:
 
 - **RPC**: [rpc.testnet.pokt.network/lb/6d6f727365](https://rpc.testnet.pokt.network/lb/6d6f727365)
-- **Tendermint**: [rpc.testnet.pokt.network/lb/6d6f727365](https://tendermint.testnet.pokt.network/lb/6d6f727365)
+- **Tendermint**: [tendermint.testnet.pokt.network/lb/6d6f727365](https://tendermint.testnet.pokt.network/lb/6d6f727365)
 
 ### Ian (Cryptonode.tools)
 
