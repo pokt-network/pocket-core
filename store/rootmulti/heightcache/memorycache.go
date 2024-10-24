@@ -108,7 +108,7 @@ func (m MemoryCache) Commit(height int64) {
 	m.pastHeights[lowestIdx].height = m.current.height
 	m.pastHeights[lowestIdx].data = map[string]string{}
 
-	orderedKeys := make([]string, len(m.current.data))
+	orderedKeys := make([]string, 0, len(m.current.data))
 	for k, v := range m.current.data {
 		m.pastHeights[lowestIdx].data[k] = v
 		orderedKeys = append(orderedKeys, k)
