@@ -2,10 +2,11 @@ package auth
 
 import (
 	"fmt"
+	"log"
+
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/auth/keeper"
 	"github.com/pokt-network/pocket-core/x/auth/types"
-	"log"
 )
 
 // ExportGenesis returns a GenesisState for a given context and keeper
@@ -13,6 +14,9 @@ func ExportGenesis(ctx sdk.Ctx, k keeper.Keeper) types.GenesisState {
 	params := k.GetParams(ctx)
 	accounts := k.GetAllAccountsExport(ctx)
 	supply := k.GetSupply(ctx)
+	fmt.Println("~~~")
+	fmt.Println(params, "---", accounts, "---", supply)
+	fmt.Println("~~~")
 	return types.NewGenesisState(params, accounts, supply.GetTotal())
 }
 

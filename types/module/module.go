@@ -29,11 +29,13 @@ package module
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
+
+	abci "github.com/tendermint/tendermint/abci/types"
 
 	"github.com/pokt-network/pocket-core/codec"
 	sdk "github.com/pokt-network/pocket-core/types"
-	abci "github.com/tendermint/tendermint/abci/types"
 )
 
 // __________________________________________________________________________________________
@@ -264,7 +266,14 @@ func (m *Manager) InitGenesis(ctx sdk.Ctx, genesisData map[string]json.RawMessag
 func (m *Manager) ExportGenesis(ctx sdk.Ctx) map[string]json.RawMessage {
 	genesisData := make(map[string]json.RawMessage)
 	for _, moduleName := range m.OrderExportGenesis {
+		if moduleName == "auth" {
+			continue
+		}
+		fmt.Println("OLSH HERE")
+		fmt.Println(moduleName)
+		// fmt.Println(m.Modules[moduleName])
 		genesisData[moduleName] = m.Modules[moduleName].ExportGenesis(ctx)
+		fmt.Println("AFTER")
 	}
 	return genesisData
 }
