@@ -54,12 +54,12 @@ The Pocket Core application will allow anyone to spin up a Pocket Network full n
 
 ```bash
 # Build local binary
-git clone git@github.com:pokt-network/pocket && \
-cd pocket && \
-go build app/cmd/pocket_core/pocket.go
+git clone git@github.com:pokt-network/pocket-core && \
+cd pocket-core && \
+go build -o $(pwd)/pocket ./app/cmd/pocket_core/main.go
 
 # Assign local binary and add to your `PATH`  if you'd like to use it without direct reference to the binary.
-export POKT=$(pwd)/main
+export POKT=$(pwd)/pocket
 ```
 
 TIP: You can find alternative ways of installing `pocket` (e.g. homebrew) via the instructions [here](doc/guides/quickstart.md).
