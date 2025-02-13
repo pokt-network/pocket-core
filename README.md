@@ -5,7 +5,6 @@
 </div>
 
 # Pocket Core <!-- omit in toc -->
-
 Official golang implementation of the Pocket Network Protocol.
 
 <div>
