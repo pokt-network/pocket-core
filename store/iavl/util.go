@@ -24,13 +24,6 @@ func debug(format string, args ...interface{}) {
 	}
 }
 
-func maxInt8(a, b int8) int8 {
-	if a > b {
-		return a
-	}
-	return b
-}
-
 // Returns a slice of the same length (big endian)
 // except incremented by one.
 // Appends 0x00 if bz is all 0xFF.
