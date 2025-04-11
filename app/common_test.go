@@ -130,7 +130,7 @@ func NewInMemoryTendermintNodeProto(t *testing.T, genesisState []byte) (tendermi
 	return NewInMemoryTendermintNodeProtoWithValidators(t, genesisState, nil)
 }
 
-// NewInMemoryTendermintNodeWithValidators will create a TM node with 'n' "validators".
+// NewInMemoryTendermintNodeProtoWithValidators will create a TM node with 'n' "validators".
 // If "validators" is nil, this creates a pre-leanpokt TM node, else it will enable lean pocket
 func NewInMemoryTendermintNodeProtoWithValidators(t *testing.T, genesisState []byte, validators []crypto.PrivateKey) (tendermintNode *node.Node, keybase keys.Keybase, cleanup func()) {
 	// create the in memory tendermint node and keybase

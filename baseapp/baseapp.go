@@ -355,7 +355,7 @@ func (app *BaseApp) setCheckState(header abci.Header) { // todo <- modified here
 	}
 }
 
-// setCheckState sets checkState with the cached multistore and
+// setDeliverState sets checkState with the cached multistore and
 // the context wrapping it.
 // It is called by InitChain() and BeginBlock(),
 // and deliverState is set nil on Commit().
@@ -373,7 +373,7 @@ func (app *BaseApp) setConsensusParams(consensusParams *abci.ConsensusParams) {
 	app.consensusParams = consensusParams
 }
 
-// setConsensusParams stores the consensus params to the main store.
+// storeConsensusParams stores the consensus params to the main store.
 func (app *BaseApp) storeConsensusParams(consensusParams *abci.ConsensusParams) {
 	consensusParamsBz, err := proto.Marshal(consensusParams)
 	if err != nil {
